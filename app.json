@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "dazzzle-react-native",
+    "name": "Dazzzle Dating",
     "slug": "dazzzle-react-native",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,12 +27,13 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splash.png",
+          // "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1A1A1A"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
