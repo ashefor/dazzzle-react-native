@@ -1,30 +1,10 @@
-// import { Link } from 'expo-router';
-// import { View, Text, StyleSheet } from 'react-native';
-
-// export default function HomeScreen() {
-//   return (
-//     <View style={styles.container}>
-//       <Text>Home</Text>
-//       <Link href="./(tabs)">View details</Link>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-// });
-
 import CustomButton from '@/components/CustomButton';
 import Images from '@/constants/images';
 import { useGlobalContext } from '@/context/GlobalProvider';
 import { Redirect, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { View, Text, ScrollView, Image, ImageBackground } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar, setStatusBarStyle } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { View, Text, ScrollView, Image, ImageBackground, SafeAreaView } from 'react-native';
 import { Button, XGroup, XStack, YStack } from 'tamagui'
 
 
@@ -37,8 +17,8 @@ export default function HomeScreen() {
   return (
    <>
     <ImageBackground className='h-screen w-full' source={Images.onboard} >
-      <SafeAreaView className='h-full bg-black/[0.7]'>
-      <View className='w-full min-h-[85vh] items-center justify-end px-4'>
+      <SafeAreaView className='h-full bg-black/[0.6]'>
+      <View className='w-full h-full items-center justify-end px-4 py-6'>
           <Image source={Images.logo} className='w-[130px] h-[84px]' resizeMode='contain' />
           {/* <Image source={Images.cards} className='max-w-[380px] w-full h-[380px]' resizeMode='contain'/> */}
           <View className='relative mt-5'>
@@ -57,7 +37,7 @@ export default function HomeScreen() {
       </View>
       </SafeAreaView>
     </ImageBackground>
-    <StatusBar backgroundColor='transparent' style="light" />
+    <StatusBar style="light" />
    </>
   );
 }

@@ -33,7 +33,7 @@ const ChangePasswordScreen = () => {
 
                             </YStack>
                             <Form.Trigger asChild>
-                                <CustomButton title='Sign In' handlePress={() => { }} />
+                                <CustomButton title='Save' handlePress={() => { }} />
                             </Form.Trigger>
                         </Form>
                     </View>

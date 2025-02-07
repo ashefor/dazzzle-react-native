@@ -53,7 +53,7 @@ const SignIn = () => {
                             <YStack gap="$3">
                             <FormField
                 title="Username"
-                value={form.password}
+                value={form.email}
                 placeholder='Enter username'
                 handleChangeText={(text: string) => setForm({...form, email: text})}
             />

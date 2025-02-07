@@ -1,0 +1,259 @@
+import { View, LayoutRectangle, Image, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native'
+import React, { useState } from 'react'
+import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, SizableText, styled, Text, XStack } from 'tamagui'
+import UsersBasicFilter from '@/components/basic-filter';
+import { router, Stack } from 'expo-router';
+import icons from '@/constants/icons';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+const AnimatedYStack = styled(YStack, {
+    flex: 1,
+    x: 0,
+    opacity: 1,
+
+    animation: '100ms',
+    variants: {
+        // 1 = right, 0 = nowhere, -1 = left
+        direction: {
+            ':number': (direction) => ({
+                enterStyle: {
+                    x: direction > 0 ? -25 : 25,
+                    opacity: 0,
+                },
+                exitStyle: {
+                    zIndex: 0,
+                    x: direction < 0 ? -25 : 25,
+                    opacity: 0,
+                },
+            }),
+        },
+    } as const,
+})
+
+const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
+    return (
+        <YStack
+            position="absolute"
+            backgroundColor="$color5"
+            opacity={0.7}
+            animation="100ms"
+            enterStyle={{
+                opacity: 0,
+            }}
+            exitStyle={{
+                opacity: 0,
+            }}
+            {...(active && {
+                backgroundColor: '$color8',
+                opacity: 0.6,
+            })}
+            {...props}
+        />
+    )
+}
+
+const TabsAdvancedBackground = () => {
+    const [tabState, setTabState] = React.useState<{
+        currentTab: string
+        /**
+         * Layout of the Tab user might intend to select (hovering / focusing)
+         */
+        intentAt: TabLayout | null
+        /**
+         * Layout of the Tab user selected
+         */
+        activeAt: TabLayout | null
+        /**
+         * Used to get the direction of activation for animating the active indicator
+         */
+        prevActiveAt: TabLayout | null
+    }>({
+        activeAt: null,
+        currentTab: 'basic',
+        intentAt: null,
+        prevActiveAt: null,
+    })
+
+    const setCurrentTab = (currentTab: string) => setTabState({ ...tabState, currentTab })
+    const setIntentIndicator = (intentAt: LayoutRectangle | null) => setTabState({ ...tabState, intentAt })
+    const setActiveIndicator = (activeAt: LayoutRectangle | null) =>
+        setTabState({ ...tabState, prevActiveAt: tabState.activeAt, activeAt })
+    const { activeAt, intentAt, prevActiveAt, currentTab } = tabState
+
+    // 1 = right, 0 = nowhere, -1 = left
+    const direction = (() => {
+        if (!activeAt || !prevActiveAt || activeAt.x === prevActiveAt.x) {
+            return 0
+        }
+        return activeAt.x > prevActiveAt.x ? -1 : 1
+    })()
+
+    const handleOnInteraction: TabsTabProps['onInteraction'] = (type, layout) => {
+        if (type === 'select') {
+            setActiveIndicator(layout)
+        } else {
+            setIntentIndicator(layout)
+        }
+    }
+
+    return (
+        <Tabs
+            className='bg-transparent mt-5 h-full'
+            value={currentTab}
+            onValueChange={setCurrentTab}
+            orientation="horizontal"
+            width={'auto'}
+            flexDirection="column"
+            activationMode="manual"
+            backgroundColor="$background"
+            borderRadius="$4"
+            position="relative"
+        >
+            <YStack className='w-full bg-[#5B5B5B] ' alignSelf='center' justifyContent="space-between">
+                <AnimatePresence>
+                    {intentAt && (
+                        <TabsRovingIndicator
+                            className='bg-black text-white rounded-[40px]'
+                            borderRadius="$4"
+                            width={intentAt.width}
+                            height={intentAt.height}
+                            x={intentAt.x}
+                            y={intentAt.y}
+                        />
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {activeAt && (
+                        <TabsRovingIndicator
+                            className='bg-black text-white rounded-[40px]'
+                            theme="active"
+                            width={activeAt.width}
+                            height={activeAt.height}
+                            x={activeAt.x}
+                            y={activeAt.y}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <Tabs.List
+                    disablePassBorderRadius
+                    loop={false}
+                    gap="$2"
+                    justifyContent="space-between"
+                >
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$1"
+                        marginVertical="$1"
+                        marginHorizontal="$1"
+                        value="basic"
+                        flex={1}
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className='text-white text-sm'>Personal</SizableText>
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$1"
+                        marginVertical="$1"
+                        marginHorizontal="$1"
+                        flex={1}
+                        value="advanced"
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className='text-white text-sm'>Looks</SizableText>
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$1"
+                        marginVertical="$1"
+                        marginHorizontal="$1"
+                        flex={1}
+                        value="advanced"
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className='text-white text-sm'>Personality</SizableText>
+                    </Tabs.Tab>
+
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$1"
+                        marginVertical="$1"
+                        marginHorizontal="$1"
+                        flex={1}
+                        value="advanced"
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className='text-white text-sm'>Lifestyle</SizableText>
+                    </Tabs.Tab>
+
+
+                </Tabs.List>
+            </YStack>
+
+            <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
+                <AnimatedYStack key={currentTab} className=''>
+                    <Tabs.Content value={currentTab} forceMount flex={1} className=' py-6 h-full' justifyContent="center">
+                        {currentTab === 'basic' && <UsersBasicFilter />}
+                        {/* {currentTab === 'advanced' && <UserPhotos />} */}
+                    </Tabs.Content>
+                </AnimatedYStack>
+            </AnimatePresence>
+        </Tabs>
+    )
+}
+
+const FilterUsers = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+
+    return (
+        <>
+            <Stack.Screen options={{
+                headerRight: () => <XStack gap={'$4'} className='px-4'>
+                    <TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
+                        <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
+                    </TouchableOpacity>
+                </XStack>,
+            }} />
+            <Modal
+                    animationType="slide"
+
+                    visible={modalVisible}
+                    presentationStyle="pageSheet"
+                    onRequestClose={() => {
+                        Alert.alert('Modal has been closed.');
+                        setModalVisible(!modalVisible);
+                    }}
+                >
+                    <SafeAreaProvider>
+                        <SafeAreaView className='bg-[#1A1A1A] h-full'>
+                            <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                                <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
+                                    {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
+                                    <Ionicons name="close" size={24} color="#ffffff" />
+                                </TouchableOpacity>
+                                <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Search filters</Text>
+                            </View>
+                            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+                                <ScrollView>
+                                    <UsersBasicFilter />
+                                </ScrollView>
+                            </KeyboardAvoidingView>
+                        </SafeAreaView>
+                    </SafeAreaProvider>
+                </Modal>
+        </>
+
+    )
+}
+
+export default FilterUsers

@@ -13,5 +13,6 @@ import relType3 from "../assets/images/relationship/3.jpg";
 import relType4 from "../assets/images/relationship/4.jpg";
 import relType5 from "../assets/images/relationship/5.jpg";
 import relType6 from "../assets/images/relationship/6.jpg";
+import coverPhoto from "../assets/images/cover-photo.jpg";
 
-export default { male, female, header, imagePlaceholder, onboard, onboard3, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6 };
+export default { male, female, header, imagePlaceholder, onboard, onboard3, coverPhoto, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6 };

@@ -1,0 +1,125 @@
+import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Pressable } from 'react-native'
+import React, { useEffect, useState } from 'react'
+// import { SafeAreaView } from 'react-native-safe-area-context'
+
+import { Link, router } from 'expo-router'
+import { useGlobalContext } from '@/context/GlobalProvider'
+import Images from '@/constants/images'
+import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView } from 'tamagui'
+import CustomButton from '@/components/CustomButton'
+import * as ImagePicker from 'expo-image-picker';
+import Feather from '@expo/vector-icons/Feather'
+
+const OnboardRelationshipType = () => {
+    const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
+    const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
+    const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
+    const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setProgress(Math.ceil((4 / 5) * 100))
+        }, 500);
+    }, [])
+
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const submit = async () => {
+
+        setIsSubmitting(true);
+        try {
+            // await signIn(form.email, form.password);
+            // const user = await getCurrentUser();
+            // setUser(user);
+            router.push('/onboard/choose-interests');
+        } catch (error: any) {
+            Alert.alert('Error', error.message ? error.message : 'Failed to log in')
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    const chooseRelationshipType = (type: string) => {
+        if (selectedRelationshipTypes.includes(type)) {
+            setSelectedRelationshipTypes(selectedRelationshipTypes.filter((item) => item !== type));
+        } else {
+            setSelectedRelationshipTypes([...selectedRelationshipTypes, type]);
+        }
+    };
+
+    return (
+        <SafeAreaView className='bg-[#1A1A1A] h-full'>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+                <YStack gap="$5" className='px-4'>
+                    <Progress size="$3" value={progress}>
+                        <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
+                    </Progress>
+                </YStack>
+                <ScrollView className='h-full'>
+                    <YStack className='p-4' gap="$5">
+                        <YStack>
+                            <Text className='text-2xl text-white font-firabold'>Relationship Type</Text>
+                            <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
+                        </YStack>
+                        <YStack>
+                            <XStack gap="$5" className='flex-wrap mb-6' justifyContent='space-between'>
+                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4' /> bg-[#DF3FE5]
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>Fun
+                                        &
+                                        Friendship</Text>
+                                </Pressable>
+                                <Pressable onPress={() => chooseRelationshipType('2')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('2') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType2} className='w-20 h-20 rounded-full mb-4' />
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
+                                        Serious
+                                        Relationship
+                                    </Text>
+                                </Pressable>
+                                <Pressable onPress={() => chooseRelationshipType('3')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('3') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType3} className='w-20 h-20 rounded-full mb-4' />
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
+                                        Male
+                                        Friends
+                                    </Text>
+                                </Pressable>
+                                <Pressable onPress={() => chooseRelationshipType('4')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('4') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType4} className='w-20 h-20 rounded-full mb-4' />
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
+                                        Female
+                                        Friends
+                                    </Text>
+                                </Pressable>
+                                <Pressable onPress={() => chooseRelationshipType('5')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('5') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType5} className='w-20 h-20 rounded-full mb-4' />
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
+                                        Serious
+                                        Relationship
+                                    </Text>
+                                </Pressable>
+                                <Pressable onPress={() => chooseRelationshipType('6')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('6') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType6} className='w-20 h-20 rounded-full mb-4' />
+                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
+                                        Serious
+                                        Relationship
+                                    </Text>
+                                </Pressable>
+                            </XStack>
+                            <YStack>
+                                <CustomButton title='Next' handlePress={submit} />
+                                <View className='justify-center pt-5 flex-row gap-2'>
+                                    <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
+                                    <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
+                                </View>
+                            </YStack>
+                        </YStack>
+                    </YStack>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    )
+}
+
+export default OnboardRelationshipType
+
+const styles = StyleSheet.create({})
