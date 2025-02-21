@@ -1,6 +1,5 @@
+import { API_URL } from '@/constants/constants';
 import axios from 'axios';
-import { APP_URL } from '../constants/url';
-import { store } from '../redux/store/store';
 
 
 
@@ -8,21 +7,13 @@ import { store } from '../redux/store/store';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
-
-    baseURL: APP_URL.dev,
+    baseURL: API_URL,
     headers: {
         Accept: "application/json",
     },
 });
 
-export const WithAuth = () => {
-    const user = store.getState().user
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzM2OTczMDg4fQ.NNBxDoZV_D5VX67RNG7Hoa2FApke8p7hZlTJQiT1zcM"
-
-    axiosInstance.defaults.headers['Authorization'] = Bearer ${token};
-    return axiosInstance; // returns the axios instance with the token set
-};
-export const AxiosWithAuth = () => {
+export const Axios = () => {
     const user = store.getState().user
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzM2OTczMDg4fQ.NNBxDoZV_D5VX67RNG7Hoa2FApke8p7hZlTJQiT1zcM"
 

@@ -226,6 +226,11 @@ const MyProfile = () => {
                         headerStyle: { backgroundColor: '#1A1A1A' },
                         headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
                             <ArrowBackIcon />
+                        </TouchableOpacity>,
+                        headerRight: () => <TouchableOpacity>
+                            <Text className='text-white font-firamedium text-sm'>
+                                Edit 
+                            </Text>
                         </TouchableOpacity>
                     }}
                 />

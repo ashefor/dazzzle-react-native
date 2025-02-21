@@ -7,8 +7,16 @@ import AccessIcon from '@/components/icons/AccessIcon';
 import MailIcon from '@/components/icons/MailIcon';
 import GearIcon from '@/components/icons/GearIcon';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useGlobalContext } from '@/context/GlobalProvider';
 
 export default function ProfileScreen() {
+  const {setAuthState} = useGlobalContext();
+
+  const handleLogOut = () => {
+    setAuthState(undefined);
+    router.replace('/(auth)/sign-in');
+  }
+
   return (
     <ScrollView className='h-full'>
       <View className='h-screen bg-[#1A1A1A] p-4'>
@@ -93,7 +101,7 @@ export default function ProfileScreen() {
               <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
             </XStack>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/sign-in')} activeOpacity={0.8}>
+          <TouchableOpacity onPress={handleLogOut} activeOpacity={0.8}>
             <XStack justifyContent='space-between' className='py-3 px-4 bg-[#5B5B5B] border-b-white rounded-b-xl'>
               <XStack alignItems='center' gap="$4">
                 {/* <MailIcon /> */}

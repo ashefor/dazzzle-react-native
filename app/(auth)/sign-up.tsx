@@ -14,7 +14,7 @@ import { WebBrowserResult } from 'expo-web-browser'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 
 const SignIn = () => {
-    const { setUser, setIsLoggedIn } = useGlobalContext();
+    const { setUser, setAuthState } = useGlobalContext();
     const [result, setResult] = useState<WebBrowserResult>();
 
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
@@ -40,7 +40,7 @@ const SignIn = () => {
             // await signIn(form.email, form.password);
             // const user = await getCurrentUser();
             // setUser(user);
-            setIsLoggedIn(true);
+            setAuthState('incomplete');
             router.replace('/onboard/bio-data');
         } catch (error: any) {
             Alert.alert('Error', error.message ? error.message : 'Failed to log in')

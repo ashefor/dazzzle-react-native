@@ -1,7 +1,7 @@
 import { View, LayoutRectangle, Image, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, SizableText, styled, Text, XStack } from 'tamagui'
-import UsersBasicFilter from '@/components/basic-filter';
+import UsersBasicFilter from '@/components/UsersBasicFilter';
 import { router, Stack } from 'expo-router';
 import icons from '@/constants/icons';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -225,32 +225,27 @@ const FilterUsers = () => {
                 </XStack>,
             }} />
             <Modal
-                    animationType="slide"
-
-                    visible={modalVisible}
-                    presentationStyle="pageSheet"
-                    onRequestClose={() => {
-                        Alert.alert('Modal has been closed.');
-                        setModalVisible(!modalVisible);
-                    }}
-                >
-                    <SafeAreaProvider>
-                        <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                            <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
-                                <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
-                                    {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
-                                    <Ionicons name="close" size={24} color="#ffffff" />
-                                </TouchableOpacity>
-                                <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Search filters</Text>
-                            </View>
-                            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                                <ScrollView>
-                                    <UsersBasicFilter />
-                                </ScrollView>
-                            </KeyboardAvoidingView>
-                        </SafeAreaView>
-                    </SafeAreaProvider>
-                </Modal>
+                animationType="slide"
+                visible={modalVisible}
+                presentationStyle="pageSheet"
+                onRequestClose={() => {
+                    Alert.alert('Modal has been closed.');
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <SafeAreaProvider>
+                    <SafeAreaView className='bg-[#1A1A1A] h-full'>
+                        <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
+                                {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
+                                <Ionicons name="close" size={24} color="#ffffff" />
+                            </TouchableOpacity>
+                            <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Search filters</Text>
+                        </View>
+                        <UsersBasicFilter />
+                    </SafeAreaView>
+                </SafeAreaProvider>
+            </Modal>
         </>
 
     )

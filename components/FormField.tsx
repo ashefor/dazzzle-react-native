@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import Icons from '@/constants/icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-const FormField = ({title, value, handleChangeText, otherStyles, keyBoardType, returnKeyType, placeholder, ...props}: {title?: string, value: string, handleChangeText: (value: string) => void, otherStyles?: string, keyBoardType?: InputModeOptions, returnKeyType?: ReturnKeyType, placeholder?: string}) => {
+const FormField = ({title, value, handleChangeText, otherStyles, keyBoardType, returnKeyType, placeholder, ...props}: {title?: string, value?: string, handleChangeText: (value: string) => void, otherStyles?: string, keyBoardType?: InputModeOptions, returnKeyType?: ReturnKeyType, placeholder?: string}) => {
     const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -19,7 +19,7 @@ const FormField = ({title, value, handleChangeText, otherStyles, keyBoardType, r
         placeholder={placeholder}
         placeholderTextColor={"#fbfbfb73"}
         selectionColor={'#DD3FE5'}
-        // returnKeyType={returnKeyType || 'done'}
+        returnKeyType={returnKeyType || 'done'}
         secureTextEntry={title === 'Password' && !showPassword}
         {...props}
         />

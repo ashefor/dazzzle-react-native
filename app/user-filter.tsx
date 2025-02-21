@@ -4,7 +4,7 @@ import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, Siz
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import FormField from '@/components/FormField';
 import CustomButton from '@/components/CustomButton';
-import UsersBasicFilter from '@/components/basic-filter';
+import UsersBasicFilter from '@/components/UsersBasicFilter';
 
 const AnimatedYStack = styled(YStack, {
     flex: 1,
