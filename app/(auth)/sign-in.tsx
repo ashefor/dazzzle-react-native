@@ -13,6 +13,7 @@ import { AuthApiResponse } from '@/models/user'
 import { isValidUsernameOrEmail } from '@/utils/validators'
 import { API_URL } from '@/constants/constants'
 import { useAxiosContext } from '@/context/AxiosProvider'
+import { setItem } from '@/utils/asyncStorage'
 
 const SignIn = () => {
     const { setUser, setAuthState, setToken } = useGlobalContext();
@@ -60,14 +61,16 @@ const SignIn = () => {
         if (!isFormValid) {
             return Alert.alert('Error', 'Please fill in all fields')
         }
-        console.log('isFormValid', isFormValid);
         setIsSubmitting(true);
         try {
             const response = await axiosRequest.post(API_URL + '/user/login-process', form);
             const authApiResponse = response.data as AuthApiResponse
+            console.log('authApiResponse', authApiResponse)
             const user = authApiResponse.data.auth_info;
             const token = authApiResponse.data.access_token;
             const isProfileComplete = authApiResponse.data.auth_info.isProfileComplete;
+            setItem('dazzzle-user', user);
+            setItem('dazzzle-token', token);
             setUser(user);
             setToken(token);
             if (!isProfileComplete) {

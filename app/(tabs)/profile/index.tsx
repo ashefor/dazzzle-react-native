@@ -8,13 +8,22 @@ import MailIcon from '@/components/icons/MailIcon';
 import GearIcon from '@/components/icons/GearIcon';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useGlobalContext } from '@/context/GlobalProvider';
+import { useAxiosContext } from '@/context/AxiosProvider';
+import { ReactionCodes } from '@/models/general';
+import { getItem, clear, removeItem } from '@/utils/asyncStorage';
 
 export default function ProfileScreen() {
   const {setAuthState} = useGlobalContext();
+      const { axiosRequest } = useAxiosContext();
 
-  const handleLogOut = () => {
-    setAuthState(undefined);
-    router.replace('/(auth)/sign-in');
+  const handleLogOut = async() => {
+    const {data} = await axiosRequest.post('/user/logout');
+    if (data.reaction === ReactionCodes.SUCCESS) {
+      await removeItem('dazzzle-user');
+      await removeItem('dazzzle-token');
+      setAuthState(undefined);
+      router.replace('/(auth)/sign-in');
+    }
   }
 
   return (
@@ -30,7 +39,7 @@ export default function ProfileScreen() {
           </Avatar>
           <YStack>
             <Text className='text-xl text-white font-firasemibold'>Michael Ashefor</Text>
-            <Link className='text-sm text-tertiary font-firaregular py-2' href='/my-profile'>View Profile</Link>
+            <Link className='text-sm text-tertiary font-firaregular py-2' href='/profile/my-profile'>View Profile</Link>
           </YStack>
         </XStack>
         <YStack gap="$4" className='mt-8'>

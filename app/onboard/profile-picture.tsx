@@ -1,15 +1,20 @@
 import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Link, router } from 'expo-router'
+import { Link, router, useFocusEffect } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather'
+import { ReactionCodes } from '@/models/general'
+import { useAxiosContext } from '@/context/AxiosProvider'
+import Toast from '@/components/toast/toast'
 
 const OnboardProfilePicture = () => {
+    const { axiosRequest } = useAxiosContext();
+    const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((1 / 5) * 100));
 
@@ -19,29 +24,62 @@ const OnboardProfilePicture = () => {
         }, 500);
     }, [])
 
-    const [form, setForm] = useState({
-        first_name: '',
-        last_name: '',
-        phone_number: '',
-        birthday: '',
-        gender: '',
-    })
+    const fetchUserProfileUpdateStatus = async () => {
+            try {
+              const response = await axiosRequest.get('/profile/check-profile-updated');
+              const reaction = response.data.reaction;
+              const responseData = response.data.data;
+              console.log('responseData', responseData);
+              if (reaction === ReactionCodes.SUCCESS) {
+                const profileData = responseData['profileInfo'];
+                console.log('profileData', profileData);
+                if (profileData) {
+                    if (profileData.profile_picture_url) {
+                        setProfilePictureUrl(profileData.profile_picture_url);
+                    }
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          };
 
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    useFocusEffect(
+            // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+            useCallback(() => {
+                // Invoked whenever the route is focused.
+                fetchUserProfileUpdateStatus();
+    
+                // Return function is invoked whenever the route gets out of focus.
+                return () => {
+                    console.log('This route is now unfocused.');
+                };
+            }, [])
+        )
 
     const submit = async () => {
-
-        setIsSubmitting(true);
         try {
-            // await signIn(form.email, form.password);
-            // const user = await getCurrentUser();
-            // setUser(user);
-            router.push('/onboard/location');
+            const formData = new FormData();
+            // const imageBlob = await convertToBlobWithBase64Only(image?.base64!);
+            formData.append('filepond', {uri: image?.uri!, type: 'image/jpeg', name: 'image.jpg'} as unknown as Blob);
+            const {data} = await axiosRequest.post('/upload-profile-image', formData, {headers: {enctype: 'multipart/form-data'}});
+            const response = data.data;
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                Toast.success('Profile updated successfully');
+                router.push('/onboard/location');
+            } else {
+                Alert.alert('Error', response.data.data.message ? response.data.data.message : 'Failed to log in')
+            }
         } catch (error: any) {
+            console.log('error', error);
             Alert.alert('Error', error.message ? error.message : 'Failed to log in')
-        } finally {
-            setIsSubmitting(false);
         }
+    }
+
+    const convertToBlobWithBase64Only = async (base64Url: RequestInfo | URL | string) => {
+        const response = await fetch(base64Url);
+        const blob = await response.blob();
+        return blob
     }
 
     const pickImage = async () => {
@@ -54,9 +92,8 @@ const OnboardProfilePicture = () => {
                 cameraType: ImagePicker.CameraType.front,
                 aspect: [4, 3],
                 quality: 1,
+                base64: true
             });
-
-            console.log(result);
 
             if (!result.canceled) {
                 setImage(result.assets[0]);
@@ -84,15 +121,15 @@ const OnboardProfilePicture = () => {
                             <YStack>
                                 <TouchableOpacity onPress={pickImage}>
                                     <View className='h-56 w-56 mx-auto my-10'>
-                                    {image ? (
-                                        <Image source={{ uri: image.uri }} style={{ width: '100%', height: '100%', borderRadius: 200 }} />
-                                    ) : (
-                                        <YStack gap="$2" className='w-full h-full rounded-full flex items-center justify-center items-center border border-dashed border-[#DD3FE5]'>
-                                        <Feather name='image' size={32} color="#DD3FE5" />
-                                        <Text className='text-sm text-white font-firamedium'>Add Profile Picture</Text>
-                                    </YStack>
-                                    )
-}
+                                        {image ? (
+                                            <Image source={{ uri: image.uri }} onError={() => setImage(undefined)} style={{ width: '100%', height: '100%', borderRadius: 200 }} />
+                                        ) : (
+                                            <YStack gap="$2" className='w-full h-full rounded-full flex items-center justify-center items-center border border-dashed border-[#DD3FE5]'>
+                                                <Feather name='image' size={32} color="#DD3FE5" />
+                                                <Text className='text-sm text-white font-firamedium'>Add Profile Picture</Text>
+                                            </YStack>
+                                        )
+                                        }
                                     </View>
                                 </TouchableOpacity>
                             </YStack>

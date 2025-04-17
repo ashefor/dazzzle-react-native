@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import Icons from '@/constants/icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-const FormField = ({title, value, handleChangeText, otherStyles, keyBoardType, returnKeyType, placeholder, ...props}: {title?: string, value?: string, handleChangeText: (value: string) => void, otherStyles?: string, keyBoardType?: InputModeOptions, returnKeyType?: ReturnKeyType, placeholder?: string}) => {
+const FormField = ({title, value, secureTextEntry, handleChangeText, otherStyles, keyBoardType, returnKeyType, placeholder, ...props}: {title?: string, value?: string, secureTextEntry?: boolean, handleChangeText: (value: string) => void, otherStyles?: string, keyBoardType?: InputModeOptions, returnKeyType?: ReturnKeyType, placeholder?: string}) => {
     const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -20,10 +20,10 @@ const FormField = ({title, value, handleChangeText, otherStyles, keyBoardType, r
         placeholderTextColor={"#fbfbfb73"}
         selectionColor={'#DD3FE5'}
         returnKeyType={returnKeyType || 'done'}
-        secureTextEntry={title === 'Password' && !showPassword}
+        secureTextEntry={(title === 'Password' || secureTextEntry) && !showPassword}
         {...props}
         />
-        {title === 'Password' && (
+        {(title === 'Password' || secureTextEntry) && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}> 
           <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={24} color="white" />
             {/* <Image source={showPassword ? Icons.eye : Icons.eyeHide} className='w-6 h-6' resizeMode='contain'/> */}

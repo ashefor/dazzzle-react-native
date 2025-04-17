@@ -1,6 +1,7 @@
 // import { getCurrentUser } from '@/lib/appwrite';
+import { getItem } from '@/utils/asyncStorage';
 import { createContext, useContext, useState, useEffect, Dispatch, SetStateAction } from 'react';
-import {Text} from 'react-native'
+import { Text } from 'react-native'
 
 interface IMenuContext {
     isLoading: boolean;
@@ -32,8 +33,30 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [token, setToken] = useState<string>('');
 
+    const fetchUserAuthState = async () => {
+        try {
+            setIsLoading(true);
+            const token = await getItem('dazzzle-token');
+            const user = await getItem('dazzzle-user');
+            if (token) {
+                setToken(token);
+                setAuthState('completed');
+            } else {
+                if (user) {
+                    setAuthState('incomplete');
+                } else {
+                    setAuthState(undefined);
+                }
+            }
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
-        setIsLoading(false);
+        fetchUserAuthState();
+
         // getCurrentUser().then((user) => {
         //     if (user) {
         //         setUser(user);

@@ -26,10 +26,16 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     // Request interceptor
     axiosRequest.interceptors.request.use(
         (config) => {
-            setLoading(true);
+            const shouldHideLoader = config.headers.get('hide-loader') === 'true';
+            if (shouldHideLoader) {
+                setLoading(false);
+            } else {
+                setLoading(true);
+            }
             if (authState) {
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
+            
             return config;
         },
         (error) => {
@@ -55,11 +61,11 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
                 axiosRequest
             }}
         >
-            <Modal animationType="none" visible={loading} presentationStyle="overFullScreen" transparent>
+            {/* <Modal animationType="none" visible={loading} presentationStyle="overFullScreen" transparent>
                 <YStack flex={1} alignItems="center" justifyContent="center" backgroundColor={"$black075"}>
                     <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
                 </YStack>
-            </Modal>
+            </Modal> */}
             {children}
         </AxiosContext.Provider>
     )

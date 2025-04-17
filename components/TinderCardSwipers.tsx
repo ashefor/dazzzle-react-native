@@ -1,277 +1,243 @@
+import { useAxiosContext } from '@/context/AxiosProvider';
+import { ReactionCodes } from '@/models/general';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
-import React, { useState, useRef } from 'react';
+import { Link, router } from 'expo-router';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   Dimensions,
-  Image,
-  Animated,
-  PanResponder,
-  SafeAreaView,
   ImageBackground,
+  Pressable,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
+import TinderCard from './TinderCard';
+import SkeletonLoading from 'expo-skeleton-loading'
+import icons from '@/constants/icons';
+import { Foundation } from '@expo/vector-icons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const Users = [
-    { id: "1", uri: require('../assets/images/onboard.jpg') },
-    { id: "2", uri: require('../assets/images/onboard2.jpg') },
-    { id: "3", uri: require('../assets/images/onboard3.png') },
-    { id: "4", uri: require('../assets/images/onboard.jpg') },
-    { id: "5", uri: require('../assets/images/onboard2.jpg') },
-];
+interface User {
+  countryName: string
+  coverImage: string
+  detailString: string
+  dob: string
+  fullName: string
+  gender: string
+  id: number
+  isPremiumUser: boolean
+  profileImage: string
+  userAge: number
+  userOnlineStatus: number
+  username: string
+}
 
+const alreadyRemoved: string[] = []
 const TinderCardSwipers = () => {
-  const position = useRef(new Animated.ValueXY()).current;
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { axiosRequest } = useAxiosContext();
+  const [users, setUsers] = useState<User[]>([]);
+  const childRefs = useRef<any[]>([]);
+  const [lastDirection, setLastDirection] = useState<string>();
+  const [initialLoading, setInitialLoading] = useState(true);
+  let isThrottled = false;
 
-  const rotate = position.x.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: ['-30deg', '0deg', '10deg'],
-    extrapolate: 'clamp',
-  });
+  useEffect(() => {
+    childRefs.current = childRefs.current.slice(0, users.length);
+  }, [users]);
 
-  const rotateAndTranslate = {
-    transform: [
-      { rotate },
-      ...position.getTranslateTransform(),
-    ],
+  const swiped = async (direction: string, item: any) => {
+    if (isThrottled) {
+      return; // Skip swipes if throttling is active
+    }
+    setLastDirection(direction)
+    alreadyRemoved.push(item.username)
+    const swipePromise = saveSwipeChoice(item.id, direction);
+    if (users.length < 6) {
+      fetchUsers();
+    }
+
+    isThrottled = true;
+    setTimeout(() => {
+      isThrottled = false;
+    }, 1000);
+
+    await swipePromise;
+  }
+
+  const saveSwipeChoice = async (userId: string, direction: string) => {
+    const isLike = direction === 'right' || direction === 'up';
+    const url = `/${userId}/${isLike ? `1` : '0'}/user-like-dislike`;
+    const request = axiosRequest.post(url, {}, { headers: { 'hide-loader': 'true' } });
+    return request;
   };
 
-  const likeOpacity = position.x.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: [0, 0, 1],
-    extrapolate: 'clamp',
-  });
+  const outOfFrame = (name: string) => {
+    setUsers((prevUsers) => prevUsers.filter(character => character.username !== name))
+  }
 
-  const dislikeOpacity = position.x.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: [1, 0, 0],
-    extrapolate: 'clamp',
-  });
+  const swipe = (dir: string) => {
+    const cardsLeft = users.filter(person => !alreadyRemoved.includes(person.username))
+    if (cardsLeft.length) {
+      const toBeRemoved = cardsLeft[cardsLeft.length - 1].username // Find the card object to be removed
+      const index = users.map(person => person.username).indexOf(toBeRemoved) // Find the index of which to make the reference to
+      alreadyRemoved.push(toBeRemoved) // Make sure the next card gets removed next time if this card do not have time to exit the screen
+      if (childRefs.current[index]) {
+        childRefs.current[index].swipe(dir); // Call swipe method on the specific card
+      }
+    }
+  }
 
-  const nextCardOpacity = position.x.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: [1, 0, 1],
-    extrapolate: 'clamp',
-  });
+  const fetchUsers = async (shouldFetchInitialItems = false) => {
+    try {
+      if (shouldFetchInitialItems) {
+        setInitialLoading(true);
+      }
+      const { data } = await axiosRequest.get('/random-user', { headers: { 'hide-loader': 'true' } });
+      if (data.reaction === ReactionCodes.SUCCESS) {
+        const users = data.data.filterData || [];
+        setUsers((prevUsers) => [...prevUsers, ...users]);
+      }
+      setInitialLoading(false);
+    } catch (error) {
+      console.log(error);
+      setInitialLoading(false);
+    }
+  };
 
-  const nextCardScale = position.x.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: [1, 0.8, 1],
-    extrapolate: 'clamp',
-  });
+  useEffect(() => {
+    fetchUsers(true);
+  }, [])
+  
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        position.setValue({ x: gestureState.dx, y: gestureState.dy });
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        if (gestureState.dx > 120) {
-          Animated.spring(position, {
-            toValue: { x: SCREEN_WIDTH + 275, y: gestureState.dy },
-            useNativeDriver: false,
-          }).start(() => {
-            setCurrentIndex((prevIndex) => prevIndex + 1);
-            position.setValue({ x: 0, y: 0 });
-          });
-        } else if (gestureState.dx < -120) {
-          Animated.spring(position, {
-            toValue: { x: -SCREEN_WIDTH - 275, y: gestureState.dy },
-            useNativeDriver: false,
-          }).start(() => {
-            setCurrentIndex((prevIndex) => prevIndex + 1);
-            position.setValue({ x: 0, y: 0 });
-          });
-        } else {
-          Animated.spring(position, {
-            toValue: { x: 0, y: 0 },
-            friction: 4,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-    })
-  ).current;
+  const refreshUsers = async () => {
+    try {
+      setInitialLoading(true);
+      const { data } = await axiosRequest.get('/random-user', { headers: { 'hide-loader': 'true' } });
+      if (data.reaction === ReactionCodes.SUCCESS) {
+        const users = data.data.filterData || [];
+        setUsers(users);
+      }
+      setInitialLoading(false);
+    } catch (error) {
+      setInitialLoading(false);
+      console.error('Error fetching liked users:', error);
+      // setUsers(prevUsers => [...prevUsers]);
+    }
+  }
 
   const renderUsers = () => {
-    return Users.map((item, i) => {
-      if (i < currentIndex) {
-        return null;
-      } else if (i === currentIndex) {
-        return (
-          <Animated.View
-            {...panResponder.panHandlers}
-            key={item.id}
-            style={[
-              rotateAndTranslate,
-              {
-                height: SCREEN_HEIGHT - 275,
-                width: SCREEN_WIDTH,
-                paddingHorizontal: 16,
-                paddingVertical: 20,
-                position: 'absolute',
-              },
-            ]}
-          >
-            <Animated.View
-              style={{
-                opacity: likeOpacity,
-                transform: [{ rotate: '-30deg' }],
-                position: 'absolute',
-                top: 50,
-                left: 40,
-                zIndex: 1000,
-              }}
-            >
-              <Text
-                style={{
-                  borderWidth: 1,
-                  borderColor: 'green',
-                  color: 'green',
-                  fontSize: 32,
-                  fontWeight: '800',
-                  backgroundColor: 'white',
-                  padding: 10,
-                }}
-              >
-                LIKE
-              </Text>
-            </Animated.View>
-
-            <Animated.View
-              style={{
-                opacity: dislikeOpacity,
-                transform: [{ rotate: '30deg' }],
-                position: 'absolute',
-                top: 50,
-                right: 40,
-                zIndex: 1000,
-              }}
-            >
-              <Text
-                style={{
-                  borderWidth: 1,
-                  borderColor: 'red',
-                  color: 'red',
-                  fontSize: 32,
-                  fontWeight: '800',
-                  backgroundColor: 'white',
-                  padding: 10,
-                }}
-              >
-                NOPE
-              </Text>
-            </Animated.View>
-                <ImageBackground
-              style={{
-                flex: 1,
-                height: null,
-                width: null,
-                borderRadius: 20,
-                overflow: 'hidden'
-              }}
-              source={item.uri}
-            >
-                <YStack className='flex-1 bg-black/[0.6]'>
-                    <YStack justifyContent="flex-end" className='px-7 pt-7 pb-14' flex={1}>
-                    <Link href={'../view-user/2'}>
-                        <YStack>
-                        <XStack alignItems='center' gap="$2" className=''>
-                        <Text className='font-firasemibold text-2xl text-white'>
-                            Michael,
-                            </Text>
-                            <Text className='text-white font-firaregular text-2xl text-white'>
-                            25
-                            </Text>
-                        </XStack>
-                        <Text className='text-white text-sm font-firaregular'>
-                            Female
-                            </Text>
-                        </YStack>
-                        </Link>
-                    </YStack>
-                </YStack>
-                </ImageBackground>
-            
-          </Animated.View>
-        );
-      } else {
-        return (
-          <Animated.View
-            key={item.id}
+    return users.map((item, index) =>
+    <TinderCard ref={(el) => (childRefs.current[index] = el)} key={`${item.username}-${index}`}>
+        <View
+          key={`${item.id}-${index}`}
+          style={{
+            height: SCREEN_HEIGHT - 225,
+            // width: '95%',
+            // marginHorizontal: '2.5%',
+            width: SCREEN_WIDTH,
+            paddingHorizontal: 16,
+            paddingVertical: 20,
+            position: 'absolute',
+            pointerEvents: 'auto',
+          }}
+        >
+          <ImageBackground
             style={{
-              opacity: nextCardOpacity,
-              transform: [{ scale: nextCardScale }],
-              height: SCREEN_HEIGHT - 275,
-              width: SCREEN_WIDTH,
-              paddingHorizontal: 16,
-              paddingVertical: 20,
-              position: 'absolute',
+              flex: 1,
+              width: '100%',
+              height: '100%',
+              borderRadius: 20,
+              overflow: 'hidden',
+              backgroundColor: 'white',
             }}
+            source={{ uri: item.profileImage }}
           >
-
-            <ImageBackground
-              style={{
-                flex: 1,
-                height: null,
-                width: null,
-                borderRadius: 20,
-                overflow: 'hidden'
-              }}
-              source={item.uri}
-            >
-                <YStack className='flex-1 bg-black/[0.6]'>
-                    <YStack justifyContent="flex-end" className='px-7 pt-7 pb-14' flex={1}>
-                    <Link href={'../view-user/2'}>
-                        <YStack>
+            <YStack className='flex-1 bg-black/[0.2]'>
+              <YStack justifyContent="flex-end" className='px-7 pt-7 pb-14' flex={1}>
+                <Link className='' style={{ pointerEvents: 'auto' }} asChild href={{
+                  pathname: '/view-user/[userName]',
+                  params: { userName: item.username },
+                }}>
+                  <Pressable style={{ zIndex: 1000 }} onPress={() => router.push(`/view-user/${item.username}`)}>
+                    <XStack className='items-center justify-between'>
+                      <YStack className=''>
                         <XStack alignItems='center' gap="$2" className=''>
-                        <Text className='font-firasemibold text-2xl text-white'>
-                            Michael,
-                            </Text>
-                            <Text className='text-white font-firaregular text-2xl'>
-                            25
-                            </Text>
+                          <Text className='font-firasemibold text-2xl text-white capitalize'>
+                            {item.username}
+                          </Text>
+                          <Text className='text-white font-firaregular text-2xl text-white'>
+                            {item.userAge}
+                          </Text>
                         </XStack>
+                        <XStack gap="$2" alignItems='center'>
                         <Text className='text-white text-sm font-firaregular'>
-                            Female
-                            </Text>
-                        </YStack>
-                        </Link>
-                    </YStack>
-                </YStack>
-                </ImageBackground>
-
-          </Animated.View>
-        );
-      }
-    }).reverse();
+                          {item.gender}
+                        </Text>
+                        {item.isPremiumUser && <Image source={icons.premium} className='w-5 h-5' resizeMode='contain'/>}
+                        </XStack>
+                      </YStack>
+                      <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
+                    </XStack>
+                  </Pressable>
+                </Link>
+              </YStack>
+            </YStack>
+          </ImageBackground>
+        </View>
+      </TinderCard>
+    )
   };
 
   return (
     <View className='flex-1'>
-      <View className=' bg-green-500'>{renderUsers()}</View>
+      <View>{initialLoading ? ( <View style={{
+        height: SCREEN_HEIGHT - 225,
+        width: SCREEN_WIDTH,
+        paddingHorizontal: 16,
+        paddingVertical: 20,
+        position: 'absolute',
+        pointerEvents: 'auto',
+      }}>
+        <View style={{ flex: 1, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 20, overflow: 'hidden', backgroundColor: '#ccc' }}>
+          <ActivityIndicator size={'large'} color={'#000'} />
+          </View>
+        </View>):  
+        users.length === 0 ? (
+          <View style={{
+            height: SCREEN_HEIGHT - 225,
+            width: SCREEN_WIDTH,
+            paddingHorizontal: 16,
+            paddingVertical: 20,
+            position: 'absolute',
+            pointerEvents: 'auto',
+          }}>
+            <View style={{ flex: 1, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderRadius: 20, overflow: 'hidden', backgroundColor: '#ccc' }}>
+              <Text className='text-2xl font-firaregular text-black'>No more users</Text>
+              </View>
+            </View>
+        ) : (
+          renderUsers()
+        )
+        }</View>
       <YStack className='absolute bottom-0 w-full py-6' alignItems='center' justifyContent='center'>
-                <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
-                        <FontAwesome name="close" size={36} color="#aeb11a" />
-                    </Button>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
-                        <Ionicons name="chatbox-ellipses" size={24} color="#59C526" />
-                    </Button>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
-                        <Ionicons name="heart" size={36} color="#EB4242" />
-                    </Button>
-                </XStack>
-            </YStack>
+        <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
+          <Button onPress={() => swipe('left')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+            <FontAwesome name="close" size={36} color="#aeb11a" />
+          </Button>
+          <Button onPress={refreshUsers} className='w-[50px] h-[50px] bg-white flex items-center justify-center rounded-full' unstyled>
+            {/* <Ionicons name="chatbox-ellipses" size={24} color="#59C526" /> */}
+            <Foundation name="refresh" size={24} color="#59C526" />
+          </Button>
+          <Button onPress={() => swipe('right')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+            <Ionicons name="heart" size={36} color="#EB4242" />
+          </Button>
+        </XStack>
+      </YStack>
     </View>
   );
 };

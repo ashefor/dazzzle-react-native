@@ -4,43 +4,19 @@ import { Link, router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
+import { useGeneralConfig } from '@/hooks/useGeneralConfig'
+import { Interest, ReactionCodes } from '@/models/general'
+import { useAxiosContext } from '@/context/AxiosProvider'
+import Toast from '@/components/toast/toast'
 
 const OnboardChooseInterests = () => {
+    const { axiosRequest } = useAxiosContext();
+    const userInterests = useGeneralConfig()?.interests;
+    const { setAuthState } = useGlobalContext();
     const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
-    const [interests, setInterests] = useState([
-        "Movies",
-        "Music",
-        "Travel",
-        "Food",
-        "Fitness",
-        "Gaming",
-        "Books",
-        "Tech",
-        "Nature",
-        "Social",
-        "Art",
-        "Wellness",
-        "Astrology",
-        "Anime",
-        "Pets",
-        "Photography",
-        "Cooking",
-        "Hiking",
-        "Cycling",
-        "Running",
-        "Yoga",
-        "Fashion",
-        "Dancing",
-        "Theater",
-        "Comedy",
-        "Self-Improvement",
-        "Science",
-        "Cars",
-        "Collecting",
-        "Volunteering"
-      ]);
+    const [interests, setInterests] = useState<Interest[]>([]);
 
-    const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+    const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -48,10 +24,34 @@ const OnboardChooseInterests = () => {
         }, 500);
     }, [])
 
+    useEffect(() => {
+        setInterests(userInterests!)
+    }, [userInterests])
+
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    const fetchUserProfileUpdateStatus = async () => {
+        try {
+            const response = await axiosRequest.get('/profile/check-profile-updated');
+            const reaction = response.data.reaction;
+            const responseData = response.data.data;
+            if (reaction === ReactionCodes.SUCCESS) {
+                console.log('responseData interests', responseData)
+                const profileData = responseData['profileInfo'];
+                if (profileData) {
 
-    const chooseSelectedInterests = (interest: string) => {
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfileUpdateStatus()
+    }, [])
+
+    const chooseSelectedInterests = (interest: number) => {
         if (selectedInterests.includes(interest)) {
             setSelectedInterests(selectedInterests.filter((item) => item !== interest));
         } else {
@@ -63,10 +63,12 @@ const OnboardChooseInterests = () => {
 
         setIsSubmitting(true);
         try {
-            // await signIn(form.email, form.password);
-            // const user = await getCurrentUser();
-            // setUser(user);
-            router.push('/(tabs)');
+            const { data } = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                Toast.success('Profile updated successfully');
+                setAuthState('completed');
+                router.replace('/(tabs)');
+            }
         } catch (error: any) {
             Alert.alert('Error', error.message ? error.message : 'Failed to log in')
         } finally {
@@ -91,10 +93,10 @@ const OnboardChooseInterests = () => {
                         </YStack>
                         <YStack>
                             <YStack className='flex-row flex-wrap my-6'>
-                                {interests.map((interest, index) => (
-                                    <Pressable onPress={() => chooseSelectedInterests(interest)} key={index} className={`rounded-lg px-4 py-2 mr-3 mb-3 ${selectedInterests.includes(interest) ? 'bg-[#DF3FE5]' : 'bg-[#414141]'}`}>
-                                    <Text className='text-sm text-white font-firamedium'>{interest}</Text>
-                                </Pressable>
+                                {interests && interests.map((interest, index) => (
+                                    <Pressable onPress={() => chooseSelectedInterests(interest.id)} key={index} className={`rounded-lg px-4 py-2 mr-3 mb-3 ${selectedInterests.includes(interest.id) ? 'bg-[#DF3FE5]' : 'bg-[#414141]'}`}>
+                                        <Text className='text-sm text-white font-firamedium'>{interest.value}</Text>
+                                    </Pressable>
                                 ))}
                             </YStack>
                             <YStack>

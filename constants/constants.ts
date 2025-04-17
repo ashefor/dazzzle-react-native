@@ -7,4 +7,4 @@ export const USE_BIOMETRICS = 'dazzzle-use-biometrics';
 // export const GMAPS_API_KEY = 'AIzaSyA4B2t-wfTGUClRl6FxE9Y5fFFYgyo6ems';
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
 export const CREDENTIALS_KEY = 'dazzzle-credentials';
-export const API_URL = 'https://yarho78hnc5bq1e711331.cleavr.xyz/api';
+export const API_URL = 'https://dazzzle.org/api';

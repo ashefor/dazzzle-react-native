@@ -7,11 +7,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { CountryPhoneCode } from '@/models/general';
 
-const CountryCodePicker = ({ onCountryCodeSelect }: { onCountryCodeSelect: (selectedCountry: string) => void }) => {
+const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
     const country_phone_codes = useGeneralConfig()?.country_phone_codes;
     const [country, setCountry] = React.useState('');
     const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>(country_phone_codes || []);
-    const [selectedCountryCode, setSelectedCountryCode] = React.useState('');
+    const [selectedCountryCode, setSelectedCountryCode] = React.useState(countryCode);
     const [showCountryPicker, setShowCountryPicker] = React.useState(false)
     const [countrySheetPosition, setCountrySheetPosition] = React.useState(0);
     const [snapPoints, setSnapPoints] = useState([65, 85]);
@@ -21,6 +21,11 @@ const CountryCodePicker = ({ onCountryCodeSelect }: { onCountryCodeSelect: (sele
             setFilteredCountryCodes(country_phone_codes)
         }
     }, [country_phone_codes])
+
+    useEffect(() => {
+        setSelectedCountryCode(countryCode)
+    }, [countryCode])
+
     const selectCountryCode = (country: string) => {
         Keyboard.dismiss();
         setSelectedCountryCode(country);
@@ -54,7 +59,7 @@ const CountryCodePicker = ({ onCountryCodeSelect }: { onCountryCodeSelect: (sele
     }, []);
     return (
         <>
-            <TouchableOpacity className='flex-row items-center gap-0.5' onPress={() => setShowCountryPicker(true)}>
+            <TouchableOpacity className='flex-row items-center gap-0.5 min-w-[50px]' onPress={() => setShowCountryPicker(true)}>
                 <Text className='text-base text-white font-firaregular'>{selectedCountryCode ? `(+${selectedCountryCode})` : ' '}</Text>
                 <Ionicons name="chevron-down" size={14} color="#A9A9A9" />
             </TouchableOpacity>
@@ -64,17 +69,18 @@ const CountryCodePicker = ({ onCountryCodeSelect }: { onCountryCodeSelect: (sele
                 modal={true}
                 open={showCountryPicker}
                 disableDrag={true}
-                // onOpenChange={setShowCountryPicker}
+                onOpenChange={setShowCountryPicker}
                 snapPoints={snapPoints}
                 snapPointsMode={'percent'}
                 dismissOnSnapToBottom
                 position={countrySheetPosition}
                 onPositionChange={setCountrySheetPosition}
                 zIndex={100_000}
-                animation="medium"
+                animation="quicker"
             >
                 <Sheet.Overlay
-                    animation="lazy"
+                onPress={() => setShowCountryPicker(false)}
+                    animation="quicker"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />

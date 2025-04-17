@@ -13,6 +13,7 @@ import eye from "../assets/icons/eye.png";
 import play from "../assets/icons/play.png";
 import filter from "../assets/icons/filter.png";
 import nigeriaFlag from "../assets/images/nigeria-flag.png"
+import premium from "../assets/icons/premium.png"
 
 export default {
   play,
@@ -29,5 +30,6 @@ export default {
   eyeHide,
   eye,
   filter,
-  nigeriaFlag
+  nigeriaFlag,
+  premium
 };

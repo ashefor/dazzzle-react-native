@@ -1,18 +1,56 @@
 import { SafeAreaView, Text, Image, View, ScrollView, TouchableOpacity, Animated, Dimensions, StatusBar } from 'react-native';
 import Images from '@/constants/images';
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, Avatar, Button, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import UserPhotos from '../components/UserPhotos';
+import UserPhotos from '../../../components/UserPhotos';
 import BasicInfo from '@/components/BasicInfo';
 import UserInterests from '@/components/UserInterests';
+import { getItem } from '@/utils/asyncStorage';
+import { LoggedInUser, LoggedInUserProfile, SingleUserDetails } from '@/models/user';
+import { useAxiosContext } from '@/context/AxiosProvider';
+import { ReactionCodes } from '@/models/general';
 
 const MyProfile = () => {
+    const { axiosRequest } = useAxiosContext();
+    const [isLoading, setIsLoading] = useState(true);
+    const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
+    const [loggedInUserProfile, setLoggedInUserProfile] = useState<LoggedInUserProfile | null>(null);
     const scrollY = useRef(new Animated.Value(0)).current;
+
+    // useEffect(() => {
+    //     getItem('dazzzle-user').then((user: LoggedInUser) => {
+    //         if (user) {
+    //             console.log('dazzle-user', user);
+    //         }
+    //     })
+    // }, [])
+
+    const fetchUserDetails = async () => {
+        try {
+            setIsLoading(true);
+            const {profile} = await getItem('dazzzle-user') as LoggedInUser;
+            setLoggedInUserProfile(profile);
+            const userName = profile.username;
+            const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                console.log('user details', data.data);
+                const user = data.data;
+                setUserDetails(user);
+                setIsLoading(false);
+            }
+        } catch (error) {
+            setIsLoading(false);
+        }
+    }
+    
+    useEffect(() => {
+        fetchUserDetails();
+    }, [])
 
     const AnimatedYStack = styled(YStack, {
         flex: 1,
@@ -198,9 +236,9 @@ const MyProfile = () => {
                 <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
                     <AnimatedYStack key={currentTab}>
                         <Tabs.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
-                            {currentTab === 'profile' && <BasicInfo editable={true}/>}
-                            {currentTab === 'photos' && <UserPhotos editable={true} />}
-                            {currentTab === 'interest' && <UserInterests />}
+                            {currentTab === 'profile' && <BasicInfo editable={true} userProfileData={userDetails?.userProfileData} userSpecificationData={userDetails?.userSpecificationData}/>}
+                            {currentTab === 'photos' && <UserPhotos editable={true} userPhotos={userDetails!.photosData} />}
+                            {currentTab === 'interest' && <UserInterests interests={userDetails!.userProfileData.interest}/>}
                         </Tabs.Content>
                     </AnimatedYStack>
                 </AnimatePresence>
@@ -234,7 +272,7 @@ const MyProfile = () => {
                         </TouchableOpacity>
                     }}
                 />
-                <YStack className='bg-[#1A1A1A] h-full relative py-24' flex={1}>
+                {loggedInUserProfile && <YStack className='bg-[#1A1A1A] h-full relative' flex={1}>
                     <YStack >
                         <YStack className='py-5 px-4'>
                             <YStack gap="$5">
@@ -243,26 +281,26 @@ const MyProfile = () => {
                                         <Avatar className='' gap="$2" circular size="$10">
                                             <Avatar.Image
                                                 accessibilityLabel="Nate Wienert"
-                                                src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?&w=100&h=100&dpr=2&q=80"
+                                                src={loggedInUserProfile.profile_picture_url ? loggedInUserProfile.profile_picture_url : 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?&w=100&h=100&dpr=2&q=80'}
                                             />
-                                            <Avatar.Fallback delayMs={600} backgroundColor="$blue10" />
+                                            <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
                                         </Avatar>
                                     </View>
                                 </XStack>
                                 <YStack>
                                     <Text className='text-lg font-firasemibold text-center text-white'>
-                                        Michael Ashefor
+                                        {loggedInUserProfile.first_name} {loggedInUserProfile.last_name}
                                     </Text>
-                                    <Text className='text-sm font-firaregular text-center text-white'>
-                                        Worem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.
-                                    </Text>
+                                    {loggedInUserProfile.about_me && <Text className='text-sm font-firaregular text-center text-white'>
+                                    {loggedInUserProfile.about_me}
+                                    </Text>}
                                 </YStack>
                             </YStack>
                             <TabsAdvancedBackground />
                         </YStack>
 
                     </YStack>
-                </YStack>
+                </YStack>}
 
             </ScrollView>
         </View>

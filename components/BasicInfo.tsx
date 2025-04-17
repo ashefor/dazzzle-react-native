@@ -11,6 +11,7 @@ import dayjs from 'dayjs'
 import { SheetManager } from 'react-native-actions-sheet'
 import Dropdown from './Dropdown'
 import Dropdownn from './Dropdownn'
+import { UserProfileData, UserSpecificationsData } from '@/models/user'
 
 type BasicInfoForm = {
     first_name: string;
@@ -45,7 +46,7 @@ const items = [
     { name: 'Durian' },
 ]
 
-const BasicInfo = ({ editable }: { editable: boolean }) => {
+const BasicInfo = ({ editable, userSpecificationData, userProfileData, ...props }: { editable?: boolean, userProfileData?: UserProfileData, userSpecificationData?: UserSpecificationsData }) => {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
     const [basicInfoForm, setBasicInfoForm] = useState<BasicInfoForm>({
@@ -70,243 +71,165 @@ const BasicInfo = ({ editable }: { editable: boolean }) => {
 
     return (
         <>
-        <YStack gap="$4">
-            <YStack gap="$3">
-                <XStack gap="$4" justifyContent='space-between' alignItems='center'>
-                    <Text className='text-sm text-white font-firamedium'>Basic Info</Text>
-                    {editable && <TouchableOpacity onPress={toggleEditModalVisible} activeOpacity={0.8}>
-                        <XStack>
-                            <Text className='text-sm text-[#DD3FE5] font-firaregular'>Edit</Text>
-                            <Feather name="edit-3" size={16} color="#DD3FE5" />
-                        </XStack>
-                    </TouchableOpacity>}
-                </XStack>
+            <YStack gap="$4">
                 <YStack gap="$3">
-                    <View className='p-4 rounded-lg bg-[#5B5B5B]'>
-                        <YStack gap="$4">
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white font-firaregular'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white font-firaregular'>English </Text>
-                                </YStack>
+                    <XStack gap="$4" justifyContent='space-between' alignItems='center'>
+                        <Text className='text-sm text-white font-firamedium'>Basic Info</Text>
+                        {editable && <TouchableOpacity onPress={toggleEditModalVisible} activeOpacity={0.8}>
+                            <XStack>
+                                <Text className='text-sm text-[#DD3FE5] font-firaregular'>Edit</Text>
+                                <Feather name="edit-3" size={16} color="#DD3FE5" />
                             </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white font-firaregular'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white font-firaregular'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white font-firaregular'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white font-firaregular'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white font-firaregular'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white font-firaregular'>English </Text>
-                                </YStack>
-                            </XStack>
-                        </YStack>
-                    </View>
+                        </TouchableOpacity>}
+                    </XStack>
+                    <YStack gap="$3">
+                        <View className='p-4 rounded-lg bg-[#5B5B5B]'>
+                            <YStack gap="$4">
+                                <XStack gap="$4">
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Gender </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.gender_text} </Text>
+                                    </YStack>
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.formatted_preferred_language} </Text>
+                                    </YStack>
+                                </XStack>
+                                <XStack gap="$4">
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Relationship Status </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.formatted_relationship_status
+                                        } </Text>
+                                    </YStack>
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Work Status </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.formatted_work_status} </Text>
+                                    </YStack>
+                                </XStack>
+                                <XStack gap="$4">
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Education </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.formatted_education} </Text>
+                                    </YStack>
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Birthday </Text>
+                                        <Text className=' text-white font-firaregular'>{userProfileData?.birthday} </Text>
+                                    </YStack>
+                                </XStack>
+                                <XStack gap="$4">
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Relationship Type </Text>
+                                        <YStack className='pl-2' gap={"$1.5"}>
+                                            {userProfileData?.relationship_type.map((type, index) => {
+                                                return (
+                                                    <XStack className='flex-row flex-wrap' gap={"$2"} key={type}>
+                                                        <Text className=' text-white font-firaregular'>{index + 1}.</Text>
+                                                        <Text className=' flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
+                                                    </XStack>
+                                                )
+                                            })}
+                                        </YStack>
+                                    </YStack>
+                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        <Text className='text-sm font-firamedium text-white'>Interests </Text>
+                                        <YStack className='pl-2' gap={"$1.5"}>
+                                            {userProfileData?.interest.map((type, index) => {
+                                                return (
+                                                    <XStack className='flex-row flex-wrap' gap={"$2"} key={type}>
+                                                        <Text className=' text-white font-firaregular'>{index + 1}.</Text>
+                                                        <Text className=' flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
+                                                    </XStack>
+                                                )
+                                            })}
+                                        </YStack>
+                                    </YStack>
+                                </XStack>
+                                <XStack gap="$4">
+                                    <YStack gap="$3" className='flex-1'>
+                                        <Text className='text-sm font-firamedium text-white'>Location </Text>
+                                        <Text className='text-white font-firaregular'>{userProfileData?.city && userProfileData?.city}, {userProfileData?.country_name && userProfileData?.country_name} </Text>
+                                    </YStack>
+                                </XStack>
+                            </YStack>
+                        </View>
+                    </YStack>
                 </YStack>
-            </YStack>
-            <YStack gap="$3">
-                <Text className='text-sm text-white font-firamedium'>Basic Info</Text>
-                <YStack gap="$3">
-                    <View className='p-4 rounded-lg bg-[#5B5B5B]'>
-                        <YStack gap="$4">
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
+                {userSpecificationData && Object.values(userSpecificationData).map((item) => {
+                    return (
+                        <YStack gap="$3" key={item.title}>
+                            <Text className='text-sm text-white font-firamedium'>{item.title}</Text>
+                            <YStack gap="$3">
+                                <View className='p-4 rounded-lg bg-[#5B5B5B]'>
+                                    <YStack gap="$4">
+                                        <XStack gap="$4" className='flex-wrap'>
+                                            {item.items.map((data, index) => {
+                                                return (
+                                                    <YStack key={data.label} gap="$3" className='flex-[0_0_45%]'>
+                                                        <Text className='text-sm font-firamedium text-white'>{data.label} </Text>
+                                                        <Text className='text-white'>{data.value || "-"}</Text>
+                                                    </YStack>
+                                                )
+                                            })}
+                                        </XStack>
+                                    </YStack>
+                                </View>
+                            </YStack>
                         </YStack>
-                    </View>
-                </YStack>
+                    )
+                })}
             </YStack>
-            <YStack gap="$3">
-                <Text className='text-sm text-white font-firamedium'>Basic Info</Text>
-                <YStack gap="$3">
-                    <View className='p-4 rounded-lg bg-[#5B5B5B]'>
-                        <YStack gap="$4">
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
+            <Modal
+                animationType="slide"
+                presentationStyle='formSheet'
+                visible={editModalVisible}
+                onDismiss={() => setEditModalVisible(false)}
+                onRequestClose={() => {
+                    setEditModalVisible(false);
+                }}
+            >
+                <SafeAreaProvider>
+                    <SafeAreaView className='bg-[#1A1A1A] h-full'>
+                        <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                            <TouchableOpacity onPress={() => setEditModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
+                                <Ionicons name="close" size={24} color="#ffffff" />
+                            </TouchableOpacity>
+                            <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Edit Basic Info</Text>
+                        </View>
+                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+                            <ScrollView className='px-4 py-2 h-full'>
+                                <YStack>
+                                    <Form gap="$7">
+                                        <YStack gap="$3">
+                                            <FormField
+                                                title="First Name"
+                                                value={basicInfoForm.first_name}
+                                                placeholder='Enter first name'
+                                                handleChangeText={(text: string) => updateBasicInfoForm('first_name', text)}
+                                            />
+                                            <FormField
+                                                title="Last Name"
+                                                value={basicInfoForm.last_name}
+                                                placeholder='Enter last name'
+                                                handleChangeText={(text: string) => updateBasicInfoForm('last_name', text)}
+                                            />
+                                            <Dropdown data={[
+                                                { value: "🐈", label: "🐈 un Gato" },
+                                                { value: "🦮", label: "🦮 un Perro" },
+                                                { value: "🐍", label: "🐍 una serpiente" },
+                                            ]}
+                                                onChange={console.log}
+                                                placeholder="Select pet" />
+                                        </YStack>
+                                        <Form.Trigger asChild disabled={status !== 'off'}>
+                                            <CustomButton title='Save Changes' handlePress={() => { }} />
+                                        </Form.Trigger>
+                                    </Form>
                                 </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                            <XStack gap="$4">
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Gender </Text>
-                                    <Text className=' text-white'>Female </Text>
-                                </YStack>
-                                <YStack gap="$3" className='flex-1'>
-                                    <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
-                                    <Text className=' text-white'>English </Text>
-                                </YStack>
-                            </XStack>
-                        </YStack>
-                    </View>
-                </YStack>
-            </YStack>
-            <Dropdown data={[
-                { value: "🐈", label: "🐈 un Gato" },
-                { value: "🦮", label: "🦮 un Perro" },
-                { value: "🐍", label: "🐍 una serpiente" },
-            ]}
-                onChange={console.log}
-                placeholder="Select pet" />
-            <Dropdownn data={[
-                { value: "🐈", label: "🐈 un Gato" },
-                { value: "🦮", label: "🦮 un Perro" },
-                { value: "🐍", label: "🐍 una serpiente" },
-            ]}
-                onChange={console.log}
-                placeholder="Select pet" />
-            <Pressable onPress={() => SheetManager.show('user-photo-action-sheet')}>
-                <Text className='text-white'>Open Select</Text>
-            </Pressable>
-        </YStack>
-        <Modal
-        animationType="slide"
-        presentationStyle='formSheet'
-        visible={editModalVisible}
-        onDismiss={() => setEditModalVisible(false)}
-        onRequestClose={() => {
-            setEditModalVisible(false);
-        }}
-    >
-        <SafeAreaProvider>
-            <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
-                    <TouchableOpacity onPress={() => setEditModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
-                        <Ionicons name="close" size={24} color="#ffffff" />
-                    </TouchableOpacity>
-                    <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Edit Basic Info</Text>
-                </View>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                    <ScrollView className='px-4 py-2 h-full'>
-                        <YStack>
-                            <Form gap="$7">
-                                <YStack gap="$3">
-                                    <FormField
-                                        title="First Name"
-                                        value={basicInfoForm.first_name}
-                                        placeholder='Enter first name'
-                                        handleChangeText={(text: string) => updateBasicInfoForm('first_name', text)}
-                                    />
-                                    <FormField
-                                        title="Last Name"
-                                        value={basicInfoForm.last_name}
-                                        placeholder='Enter last name'
-                                        handleChangeText={(text: string) => updateBasicInfoForm('last_name', text)}
-                                    />
-                                    <Dropdown data={[
-                                        { value: "🐈", label: "🐈 un Gato" },
-                                        { value: "🦮", label: "🦮 un Perro" },
-                                        { value: "🐍", label: "🐍 una serpiente" },
-                                    ]}
-                                        onChange={console.log}
-                                        placeholder="Select pet" />
-                                        <Dropdownn data={[
-                { value: "🐈", label: "🐈 un Gato" },
-                { value: "🦮", label: "🦮 un Perro" },
-                { value: "🐍", label: "🐍 una serpiente" },
-            ]}
-                onChange={console.log}
-                placeholder="Select pet" />
-                                </YStack>
-                                <Form.Trigger asChild disabled={status !== 'off'}>
-                                    <CustomButton title='Save Changes' handlePress={() => { }} />
-                                </Form.Trigger>
-                            </Form>
-                            <View className='justify-center pt-5 flex-row gap-2'>
-                                <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
-                            </View>
-                        </YStack>
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        </SafeAreaProvider>
-    </Modal>
+                            </ScrollView>
+                        </KeyboardAvoidingView>
+                    </SafeAreaView>
+                </SafeAreaProvider>
+            </Modal>
         </>
     )
 }

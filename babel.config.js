@@ -12,7 +12,8 @@ module.exports = function (api) {
           disableExtraction: process.env.NODE_ENV === 'development',
         },
       ],
-      "nativewind/babel"
+      "nativewind/babel",
+      "react-native-reanimated/plugin"
     ]
   };
 };

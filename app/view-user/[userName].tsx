@@ -1,7 +1,7 @@
-import {SafeAreaView as SafeAreaViewIOS,  StyleSheet, Text, Image, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform } from 'react-native';
-import React, { useRef } from 'react'
-import { AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
-import { router, Stack } from 'expo-router';
+import { SafeAreaView as SafeAreaViewIOS, StyleSheet, Text, Image, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform, Alert, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AlertDialog, AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -11,13 +11,23 @@ import Images from '@/constants/images';
 import BasicInfo from '../../components/BasicInfo';
 import UserPhotos from '../../components/UserPhotos';
 import UserInterests from '../../components/UserInterests';
+import { useAxiosContext } from '@/context/AxiosProvider';
+import { ReactionCodes } from '@/models/general';
+import { SingleUserDetails } from '@/models/user';
+import SkeletonLoading from 'expo-skeleton-loading'
+import icons from '@/constants/icons';
+
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeArea);
 
 const User = () => {
+    const { userName } = useLocalSearchParams();
+    const { axiosRequest } = useAxiosContext();
     const scrollY = useRef(new Animated.Value(0)).current;
+    const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Interpolate background color based on scroll position
     const headerBackgroundColor = scrollY.interpolate({
@@ -27,12 +37,10 @@ const User = () => {
     });
 
     const headerOpacity = scrollY.interpolate({
-        inputRange: [220, 250], // Adjust range to control when opacity starts and ends
+        inputRange: [150, 250], // Adjust range to control when opacity starts and ends
         outputRange: [0, 1], // From invisible to fully visible
         extrapolate: 'clamp',
     });
-
-
 
     const AnimatedYStack = styled(YStack, {
         flex: 1,
@@ -57,6 +65,94 @@ const User = () => {
             },
         } as const,
     })
+
+    const fetchUserDetails = async () => {
+        try {
+            setIsLoading(true);
+            const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                console.log('user details', data.data);
+                const user = data.data;
+                setUserDetails(user);
+                setIsLoading(false);
+            }
+        } catch (error) {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchUserDetails();
+    }, [])
+
+
+    const handleLikeOrDislikeUser = async (likeOrDislike: string) => {
+        try {
+            const userId = userDetails?.userData.userId;
+        const url = `/${userId}/${likeOrDislike}/user-like-dislike`;
+        const {data} = await axiosRequest.post(url, {}, { headers: { 'hide-loader': 'true' } });
+        if (data.reaction === ReactionCodes.SUCCESS) {
+            fetchUserDetails();
+        }
+        } catch (error) {
+            
+        }
+      };
+
+
+    const handleBlockUser = async () => {
+        try {
+            const params = {
+                block_user_id: userDetails?.userData.userId
+            }
+            console.log(params);
+            const { data } = await axiosRequest.post(`/block-user`, params);
+            console.log('user data from block', data);
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                setUserDetails((prevUserDetails) => {
+                    return {
+                        ...prevUserDetails!,
+                        blockByMeUser: true
+                    }
+                })
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const unblockUser = async () => {
+        try {
+            const userId = userDetails?.userData.userId;
+            const params = {
+                block_user_id: userDetails?.userData.userId
+            }
+            console.log(params);
+            const { data } = await axiosRequest.post(`${userId}/unblock-user-data`, {});
+            console.log('user data from unblock', data);
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                setUserDetails((prevUserDetails) => {
+                    return {
+                        ...prevUserDetails!,
+                        blockByMeUser: false
+                    }
+                })
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    const createBlockNotificationAlert = () =>
+        Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user?', [
+            {
+                text: 'Cancel',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            { text: 'Block', style: 'destructive', onPress: () => handleBlockUser() },
+        ]);
 
     const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
         return (
@@ -133,7 +229,6 @@ const User = () => {
                 size="$4"
                 flexDirection="column"
                 activationMode="manual"
-                backgroundColor="$background"
                 borderRadius="$4"
                 position="relative"
             >
@@ -164,9 +259,11 @@ const User = () => {
                     </AnimatePresence>
 
                     <Tabs.List
+                        unstyled
                         disablePassBorderRadius
                         loop={false}
                         gap="$2"
+                        backgroundColor={"$colorTransparent"}
                         justifyContent="space-between"
                     >
                         <Tabs.Tab
@@ -177,11 +274,13 @@ const User = () => {
                             marginHorizontal="$1.5"
                             value="profile"
                             flex={1}
-
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Profile</SizableText>
+                                className={`font-firamedium text-white`}>Profile</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -191,10 +290,13 @@ const User = () => {
                             marginHorizontal="$1.5"
                             value="photos"
                             flex={1}
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Photos</SizableText>
+                                className={`font-firamedium text-white`}>Photos</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -204,10 +306,13 @@ const User = () => {
                             marginHorizontal="$1.5"
                             value="interest"
                             flex={1}
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Interests</SizableText>
+                                className={`font-firamedium text-white`}>Interests</SizableText>
                         </Tabs.Tab>
                     </Tabs.List>
                 </YStack>
@@ -215,9 +320,9 @@ const User = () => {
                 <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
                     <AnimatedYStack key={currentTab}>
                         <Tabs.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
-                            {currentTab === 'profile' && <BasicInfo />}
-                            {currentTab === 'photos' && <UserPhotos />}
-                            {currentTab === 'interest' && <UserInterests />}
+                            {currentTab === 'profile' && <BasicInfo userProfileData={userDetails?.userProfileData} userSpecificationData={userDetails?.userSpecificationData} />}
+                            {currentTab === 'photos' && <UserPhotos userPhotos={userDetails!.photosData} />}
+                            {currentTab === 'interest' && <UserInterests interests={userDetails!.userProfileData.interest} />}
                         </Tabs.Content>
                     </AnimatedYStack>
                 </AnimatePresence>
@@ -255,22 +360,18 @@ const User = () => {
                     <YStack gap="$3">
                         <Popover.Close asChild>
                             <YGroup alignSelf="center" width={240} size="$4" separator={<Separator />}>
-                                <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]'>
-                                        <Text className='text-base text-white'>Dislike</Text>
-                                    </ListItem>
-                                </YGroup.Item>
-                                <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]'>
-                                        <Text className='text-base text-white'>Message</Text>
-                                    </ListItem>
-                                </YGroup.Item>
-                                <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]'>
-                                        <Text className='text-base text-white'> Block
+                                {userDetails && !userDetails.blockByMeUser && <YGroup.Item>
+                                    <ListItem className='bg-[#5B5B5B]' onPress={createBlockNotificationAlert}>
+                                        <Text className='text-base text-white'> Block @{userDetails?.userData.userName}
                                         </Text>
                                     </ListItem>
-                                </YGroup.Item>
+                                </YGroup.Item>}
+                                {userDetails && userDetails.blockByMeUser && <YGroup.Item>
+                                    <ListItem className='bg-[#5B5B5B]' onPress={unblockUser}>
+                                        <Text className='text-base text-white'> Unblock @{userDetails?.userData.userName}
+                                        </Text>
+                                    </ListItem>
+                                </YGroup.Item>}
                                 <YGroup.Item>
                                     <ListItem className='bg-[#5B5B5B]'>
                                         <Text className='text-base text-white'>Report</Text>
@@ -284,7 +385,35 @@ const User = () => {
         )
     }
 
-    
+    // const hasUserLikedOrDisliked = (likeData: {like: number, _id: number}[] | {like: number, _id: number}) => {
+    //     if (likeData && Array.isArray(likeData)) {
+    //         return likeData.some((like) => like.like == 1)
+    //     } else if (likeData && typeof likeData === 'object') {
+    //         return likeData.like == 0
+    //     } else {
+    //         return false
+    //     }
+    // }
+
+    const hasUserLiked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
+        if (likeData && Array.isArray(likeData)) {
+            return likeData.some((like) => like.like == 1)
+        } else if (likeData && typeof likeData === 'object') {
+            return likeData.like == 1
+        } else {
+            return false
+        }
+    }, [userDetails?.userLikeData])
+
+    const hasUserDisliked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
+        if (likeData && Array.isArray(likeData)) {
+            return likeData.some((like) => like.like == 0)
+        } else if (likeData && typeof likeData === 'object') {
+            return likeData.like == 0
+        } else {
+            return false
+        }
+    }, [userDetails?.userLikeData])
 
     return (
         <View className='flex-1 bg-primary h-full'>
@@ -301,67 +430,95 @@ const User = () => {
                 <Stack.Screen
                     options={{
                         headerStyle: { backgroundColor: 'red' },
+                        headerShown: true,
+                        headerTransparent: true,
                         header: (props) => <View>
                             <AnimatedSafeAreaView style={{ backgroundColor: headerBackgroundColor, }} />
                             <Animated.View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
                                 <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
                                     <ArrowBackIcon />
                                 </TouchableOpacity>
-                                <Animated.Text style={[styles.title, { opacity: headerOpacity }]} className='font-firabold text-center'>Michael Ashefor</Animated.Text>
-                                <UserMoreActionsPopover
+                                <Animated.Text style={[styles.title, { opacity: headerOpacity }]} className='font-firabold text-center'>{userDetails?.userData.first_name} {userDetails?.userData.last_name}</Animated.Text>
+                                {userDetails && <UserMoreActionsPopover
                                     placement="bottom"
-                                />
+                                />}
                             </Animated.View>
                         </View>
                     }}
                 />
                 <YStack className='bg-[#1A1A1A] h-full relative pb-24' flex={1}>
                     <YStack className='h-[150px]'>
-                        <ImageBackground source={Images.coverPhoto} className='w-full h-full' resizeMode='cover' >
+                        <ImageBackground source={{ uri: userDetails?.userData.coverPicture }} className='w-full h-full' resizeMode='cover' >
                             <View className='h-full w-full bg-black/[0.8]'>
 
                             </View>
                         </ImageBackground>
                     </YStack>
-                    <YStack >
-                        <YStack className='py-5 px-4'>
-                            <YStack gap="$5">
-                                <XStack alignItems="center" gap="$4" justifyContent='center'>
-                                    <View className='rounded-full'>
-                                        <Avatar className='' gap="$2" circular size="$10">
-                                            <Avatar.Image
-                                                accessibilityLabel="Nate Wienert"
-                                                src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?&w=100&h=100&dpr=2&q=80"
-                                            />
-                                            <Avatar.Fallback delayMs={600} backgroundColor="$blue10" />
-                                        </Avatar>
-                                    </View>
-                                </XStack>
-                                <Text className='text-lg font-firasemibold text-center text-white'>
-                                    Michael Ashefor
-                                </Text>
+                    {isLoading ? <YStack className='py-5 px-4' gap="$3">
+                        <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
+                        <View style={{ width: 100, height: 100, backgroundColor: "#adadad", marginLeft: 'auto', marginRight: 'auto', borderRadius: 100 }} />
+                    </SkeletonLoading>
+                    <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
+                        <View >
+                        <View style={{ backgroundColor: "#adadad", width: "40%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
+                           <View style={{ backgroundColor: "#adadad", width: "60%", height: 10, marginTop: 16, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
+                           <View style={{ backgroundColor: "#adadad", width: "75%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 16, borderRadius: 5 }} />
+                        </View>
+                    </SkeletonLoading>
+                    <ActivityIndicator size="large" color="#fff" />
+                    </YStack> : (
+                        userDetails ? (
+                            <YStack >
+                                <YStack className='py-5 px-4'>
+                                    <YStack gap="$3">
+                                        <XStack alignItems="center" gap="$4" justifyContent='center'>
+                                            <View className='rounded-full relative'>
+                                                {userDetails.isPremiumUser && <Image source={icons.premium} className='w-6 h-6 z-[1000]' resizeMode='contain' style={{ position: 'absolute', right: 0, bottom: 0 }}/>}
+                                                <Avatar className='' gap="$2" circular size="$10">
+                                                    <Avatar.Image
+                                                        accessibilityLabel="Nate Wienert"
+                                                        src={userDetails?.userData.profilePicture}
+                                                    />
+                                                    <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
+                                                </Avatar>
+                                            </View>
+                                        </XStack>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>
+                                            {userDetails?.userData.first_name} {userDetails?.userData.last_name} {userDetails?.userData.userAge && `(${userDetails?.userData.userAge})`}
+                                        </Text>
+                                        {userDetails?.userProfileData.aboutMe && <Text className='text-sm font-firaregular text-center text-white'>
+                                            {userDetails?.userProfileData.aboutMe}
+                                        </Text>}
+                                    </YStack>
+                                    {userDetails?.blockByMeUser ? <View className='mt-10 py-4'>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>@{userDetails?.userData.userName} is blocked</Text>
+                                    </View> : <TabsAdvancedBackground />}
+                                </YStack>
                             </YStack>
-                            <TabsAdvancedBackground />
-                        </YStack>
+                        ) :
+                            <View>
 
-                    </YStack>
+                            </View>
+                    )}
+
                 </YStack>
 
             </ScrollView>
-            <YStack className='absolute bottom-0 w-full py-7' alignItems='center' justifyContent='center'>
+            {userDetails && !userDetails.blockByMeUser && <YStack className='absolute bottom-0 w-full py-7' alignItems='center' justifyContent='center'>
                 <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
-                        <FontAwesome name="close" size={36} color="#aeb11a" />
+                    <Button onPress={() => handleLikeOrDislikeUser('0')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+                        <FontAwesome name="close" size={36} color={hasUserDisliked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
+                        {/* #EB4242 */}
                     </Button>
                     <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="chatbox-ellipses" size={24} color="#59C526" />
                     </Button>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
-                        <Ionicons name="heart" size={36} color="#EB4242" />
+                    <Button onPress={() => handleLikeOrDislikeUser('1')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+                        <Ionicons name="heart" size={36} color={hasUserLiked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                     </Button>
                 </XStack>
                 <SafeArea />
-            </YStack>
+            </YStack>}
             <StatusBar style="light" />
         </View>
     )

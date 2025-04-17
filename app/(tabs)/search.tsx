@@ -1,11 +1,15 @@
-import { View, LayoutRectangle, Image, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native'
-import React, { useState } from 'react'
+import { View, LayoutRectangle, Image, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert, useWindowDimensions, ImageBackground, TouchableWithoutFeedback, ActivityIndicator, FlatList, RefreshControl } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, SizableText, styled, Text, XStack } from 'tamagui'
-import UsersBasicFilter from '@/components/UsersBasicFilter';
+import UsersBasicFilter, { BasicFilter } from '@/components/UsersBasicFilter';
 import { router, Stack } from 'expo-router';
 import icons from '@/constants/icons';
+import Images from '@/constants/images'
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useAxiosContext } from '@/context/AxiosProvider';
+import { ReactionCodes } from '@/models/general';
+import { LikedUserProfile } from '@/models/user';
 
 const AnimatedYStack = styled(YStack, {
     flex: 1,
@@ -214,6 +218,89 @@ const TabsAdvancedBackground = () => {
 
 const FilterUsers = () => {
     const [modalVisible, setModalVisible] = useState(false);
+    const { axiosRequest } = useAxiosContext();
+    const { width } = useWindowDimensions();
+    const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
+    const [users, setUsers] = useState<LikedUserProfile[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [isFiltering, setIsFiltering] = useState(false);
+    const [filterParams, setFilterParams] = useState<BasicFilter | null>(null)
+
+    const fetchLikedUsers = async (pageUrl = '/get-featured-user-data', hideLoader = true) => {
+        try {
+            setLoading(true);
+            const { data } = await axiosRequest.get(pageUrl, { headers: { 'hide-loader': hideLoader ? 'true' : 'false' } });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                const { getFeatureUserList } = data.data;
+                setUsers(prevUsers => [...prevUsers, ...getFeatureUserList]);
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            console.error('Error fetching liked users:', error);
+        }
+    };
+
+    const refreshUsers = async () => {
+        try {
+            setRefreshing(true);
+            const { data } = await axiosRequest.get('/get-featured-user-data', { headers: { 'hide-loader': 'true' } });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                const { getFeatureUserList, totalCount, nextPageUrl } = data.data;
+                setUsers(getFeatureUserList);
+            }
+            setRefreshing(false);
+        } catch (error) {
+            setRefreshing(false);
+        }
+    }
+
+    const handleLoadMore = async () => {
+        // if (paginationDetails?.nextPageUrl) {
+        //     fetchLikedUsers(paginationDetails.nextPageUrl);
+        // }
+        fetchLikedUsers('/get-featured-user-data');
+    };
+
+
+    useEffect(() => {
+        fetchLikedUsers('/get-featured-user-data', false);
+    }, []);
+
+    const filterUsers = async(params: BasicFilter) => {
+        try {
+            const filterParams = {
+                username: params.username,
+                min_age: params.age[0].toString(),
+                max_age: params.age[1].toString(),
+                looking_for: params.looking_for,
+                distance: params.distance
+            } as {
+                username: string;
+                min_age: string;
+                max_age: string
+                looking_for: string;
+                distance: string;
+            }
+            const searchParams = new URLSearchParams(filterParams);
+            setModalVisible(false);
+            setFilterParams(params);
+            setUsers([]);
+            const { data } = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`, { headers: { 'hide-loader': 'true' } });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                const { filterData } = data.data;
+                console.log([...filterData]);
+                setUsers([...filterData]);
+            }
+        } catch (error) {
+        }
+    }
+
+    const clearFilter = () => {
+        setFilterParams(null);
+        setUsers([]);
+    }
 
     return (
         <>
@@ -224,6 +311,52 @@ const FilterUsers = () => {
                     </TouchableOpacity>
                 </XStack>,
             }} />
+            <View className='bg-[#1A1A1A] h-full'>
+                {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
+                <Text className='text-white'>Showing filter</Text>
+                <TouchableOpacity onPress={clearFilter} className='items-center justify-center'>
+                                {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
+                                <Ionicons name="close" size={24} color="#ffffff" />
+                            </TouchableOpacity>
+                </XStack>}
+                <FlatList
+                    className='p-1'
+                    data={users}
+                    keyExtractor={(item, index) => `${item._id}-${index}`}
+                    numColumns={width > 600 ? 3 : width > 991 ? 4 : 2}
+                    onEndReached={filterParams ? null : handleLoadMore}
+                    refreshing={refreshing}
+                    onRefresh={() => refreshUsers()}
+                    onEndReachedThreshold={0.5}
+                    ListEmptyComponent={
+                        <View className='my-4 p-4'>
+                            <View className='p-4 text-center bg-[#ccc] justify-center items-center rounded-md'>
+                                <Text className='text-sm font-firamedium'>No users found</Text>
+                            </View>
+                        </View>
+                    }
+                    ListFooterComponent={loading ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
+                    renderItem={
+                        ({ item }) => (
+                            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className=''>
+                                <View className='m-2' style={{
+                                    flex: 1 / numColumns,
+                                    flexDirection: "row",
+                                }}>
+                                    <View className='w-full h-full rounded-xl overflow-hidden bg-red-500'>
+                                        <ImageBackground resizeMode='cover' className='h-52 w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
+                                            <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
+                                                <Text className='text-sm font-firabold text-white'>{item.userFullName}</Text>
+                                                {item.isPremiumUser && <Image source={icons.premium} className='w-5 h-5' resizeMode='contain' />}
+                                            </View>
+                                        </ImageBackground>
+                                    </View>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        )
+                    }
+                />
+            </View>
             <Modal
                 animationType="slide"
                 visible={modalVisible}
@@ -242,7 +375,7 @@ const FilterUsers = () => {
                             </TouchableOpacity>
                             <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Search filters</Text>
                         </View>
-                        <UsersBasicFilter />
+                        <UsersBasicFilter filterUsers={filterUsers}/>
                     </SafeAreaView>
                 </SafeAreaProvider>
             </Modal>

@@ -9,31 +9,59 @@ import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Prog
 import CustomButton from '@/components/CustomButton'
 import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather'
+import { useGeneralConfig } from '@/hooks/useGeneralConfig'
+import { useAxiosContext } from '@/context/AxiosProvider'
+import { ReactionCodes } from '@/models/general'
+import Toast from '@/components/toast/toast'
 
 const OnboardRelationshipType = () => {
+    const { axiosRequest } = useAxiosContext();
+    const relationshipTypes = useGeneralConfig()?.relationship_types;
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
-    const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
+    // const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
 
     useEffect(() => {
+        console.log('relationshipTypes', relationshipTypes);
         setTimeout(() => {
             setProgress(Math.ceil((4 / 5) * 100))
         }, 500);
     }, [])
 
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const fetchUserProfileUpdateStatus = async () => {
+        try {
+            const response = await axiosRequest.get('/profile/check-profile-updated');
+            const reaction = response.data.reaction;
+            const responseData = response.data.data;
+            if (reaction === ReactionCodes.SUCCESS) {
+                console.log('responseData', responseData)
+                const profileData = responseData['profileInfo'];
+                if (profileData) {
+
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUserProfileUpdateStatus()
+    }, [])
 
     const submit = async () => {
-
         setIsSubmitting(true);
         try {
-            // await signIn(form.email, form.password);
-            // const user = await getCurrentUser();
-            // setUser(user);
-            router.push('/onboard/choose-interests');
+            const { data } = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                Toast.success('Profile updated successfully');
+                router.push('/onboard/choose-interests');
+            }
         } catch (error: any) {
-            Alert.alert('Error', error.message ? error.message : 'Failed to log in')
+            Alert.alert('Error', error.message ? error.message : 'Failed to update')
         } finally {
             setIsSubmitting(false);
         }
@@ -63,45 +91,43 @@ const OnboardRelationshipType = () => {
                         </YStack>
                         <YStack>
                             <XStack gap="$5" className='flex-wrap mb-6' justifyContent='space-between'>
-                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4' /> bg-[#DF3FE5]
+                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                    <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>Fun
                                         &
                                         Friendship</Text>
                                 </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('2')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('2') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                <Pressable onPress={() => chooseRelationshipType('2')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('2') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType2} className='w-20 h-20 rounded-full mb-4' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>
                                         Serious
                                         Relationship
                                     </Text>
                                 </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('3')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('3') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                <Pressable onPress={() => chooseRelationshipType('3')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('3') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType3} className='w-20 h-20 rounded-full mb-4' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>
                                         Male
                                         Friends
                                     </Text>
                                 </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('4')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('4') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                <Pressable onPress={() => chooseRelationshipType('4')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('4') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType4} className='w-20 h-20 rounded-full mb-4' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>
                                         Female
                                         Friends
                                     </Text>
                                 </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('5')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('5') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                <Pressable onPress={() => chooseRelationshipType('5')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('5') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType5} className='w-20 h-20 rounded-full mb-4' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Serious
-                                        Relationship
+                                        Marriage Only
                                     </Text>
                                 </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('6')} className={`h-52 w-[46.5%] border rounded-lg p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('6') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                                <Pressable onPress={() => chooseRelationshipType('6')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('6') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType6} className='w-20 h-20 rounded-full mb-4' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Serious
-                                        Relationship
+                                        Flirting Only
                                     </Text>
                                 </Pressable>
                             </XStack>
