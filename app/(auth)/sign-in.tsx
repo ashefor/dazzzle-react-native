@@ -65,7 +65,6 @@ const SignIn = () => {
         try {
             const response = await axiosRequest.post(API_URL + '/user/login-process', form);
             const authApiResponse = response.data as AuthApiResponse
-            console.log('authApiResponse', authApiResponse)
             const user = authApiResponse.data.auth_info;
             const token = authApiResponse.data.access_token;
             const isProfileComplete = authApiResponse.data.auth_info.isProfileComplete;

@@ -83,6 +83,7 @@ export default function TabLayout() {
         name="message"
         options={{
           title: 'Message',
+          href: null,
           tabBarIcon: ({ color, focused }) => <MessagesTabIcon focused={focused} />,
         }}
       />

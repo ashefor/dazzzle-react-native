@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import { useGlobalContext } from '@/context/GlobalProvider';
 import { router, ScreenProps, Stack } from 'expo-router';
 import { NativeStackNavigationEventMap, NativeStackNavigationOptions } from '@react-navigation/native-stack';
@@ -7,52 +7,32 @@ import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const NavigationStack = () => {
-    const { authState } = useGlobalContext();
+
     return (
         <Stack screenOptions={{
             headerShown: false
         }}>
-            {!authState ? (
-                <>
-                    <Stack.Screen name='index' options={{ headerShown: false }} />
-                    <Stack.Screen name='onboard' options={{ headerShown: false }} />
-                    <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-                </>
-            ) : authState && authState === 'incomplete' ? (
-                <>
-                    <Stack.Screen name='onboard' options={{ headerShown: false }} />
-                </>
-            ) : (
-                <>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="view-user/[id]"
-                        options={{
-                            headerTransparent: true,
-                            title: 'View User',
-                        }}
-                    />
-                    {/* <Stack.Screen name="my-profile"
-                        options={{
-                            headerTransparent: true,
-                            title: 'My Profile',
-
-                        }}
-                    /> */}
-                    <Stack.Screen name="user-filter"
-                        options={{
-                            presentation: 'modal',
-                            headerStyle: {
-                                backgroundColor: '#1A1A1A'
-                            },
-                            title: 'Filter Users',
-                            headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center'>
-                                <Ionicons name="close" size={24} color="white" />
-                            </TouchableOpacity>
-                        }}
-                    />
-                </>
-            )
-            }
+            <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+            <Stack.Screen name='onboard' options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="view-user/[userName]"
+                options={{
+                    headerTransparent: true,
+                    title: 'View User',
+                }}
+            />
+            <Stack.Screen name="user-filter"
+                options={{
+                    presentation: 'modal',
+                    headerStyle: {
+                        backgroundColor: '#1A1A1A'
+                    },
+                    title: 'Filter Users',
+                    headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center'>
+                        <Ionicons name="close" size={24} color="white" />
+                    </TouchableOpacity>
+                }}
+            />
             <Stack.Screen name="+not-found" />
         </Stack>
     )
@@ -78,7 +58,7 @@ const NavigationStack = () => {
     //       { name: '+not-found' },
     //     ];
     //   }
-    
+
     //   return (
     //     <Stack screenOptions={{ headerShown: false }}>
     //       {screens.map((screen) => (

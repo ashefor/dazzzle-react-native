@@ -56,20 +56,6 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         fetchUserAuthState();
-
-        // getCurrentUser().then((user) => {
-        //     if (user) {
-        //         setUser(user);
-        //         setIsLoggedIn(!!user)
-        //     } else {
-        //         setIsLoggedIn(false);
-        //         setUser(null);
-        //     }
-        // }).catch((error) => {
-        //     console.log(error);
-        // }).finally(() => {
-        //     setIsLoading(false);
-        // })
     }, [])
     return (
         <GlobalContext.Provider
