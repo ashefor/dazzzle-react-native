@@ -67,12 +67,12 @@ const SignIn = () => {
             const authApiResponse = response.data as AuthApiResponse
             const user = authApiResponse.data.auth_info;
             const token = authApiResponse.data.access_token;
-            const isProfileComplete = authApiResponse.data.auth_info.isProfileComplete;
+            const isProfileComplete = authApiResponse && authApiResponse.data && authApiResponse.data.auth_info? authApiResponse.data.auth_info.isProfileComplete : false;
             setItem('dazzzle-user', user);
             setItem('dazzzle-token', token);
             setUser(user);
             setToken(token);
-            if (!isProfileComplete) {
+            if (isProfileComplete) {
                 setAuthState('completed');
                 router.replace('/(tabs)');
             } else {

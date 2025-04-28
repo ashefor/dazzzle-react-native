@@ -26,7 +26,7 @@ export default function HomeScreen() {
       if (responseData.reaction != ReactionCodes.SUCCESS) {
         throw new Error('Failed to load basic settings')
       } else {
-        const generalConfigSettings = response.data;
+        const generalConfigSettings = response.data.data;
         setItem('generalConfigSettings', generalConfigSettings);
         setLoadedGeneralConfigSettings(true);
         setLoadingGeneralConfigSettings(false);
@@ -40,7 +40,7 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    // loadInitialSettings();
+    loadInitialSettings();
   }, [])
 
   if (isLoading || loadingGeneralConfigSettings) {

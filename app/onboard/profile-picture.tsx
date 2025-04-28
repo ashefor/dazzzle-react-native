@@ -18,19 +18,20 @@ const OnboardProfilePicture = () => {
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((1 / 5) * 100));
 
-    useEffect(() => {
-        setTimeout(() => {
-            setProgress(Math.ceil((2 / 5) * 100))
-        }, 500);
-    }, [])
+    // useEffect(() => {
+    //     setTimeout(() => {
+    //         setProgress(Math.ceil((2 / 5) * 100))
+    //     }, 500);
+    //     console.log('progress', progress);
+    // }, [])
+
 
     const fetchUserProfileUpdateStatus = async () => {
-            try {
-              const response = await axiosRequest.get('/profile/check-profile-updated');
-              const reaction = response.data.reaction;
-              const responseData = response.data.data;
-              console.log('responseData', responseData);
-              if (reaction === ReactionCodes.SUCCESS) {
+        try {
+            const response = await axiosRequest.get('/profile/check-profile-updated');
+            const reaction = response.data.reaction;
+            const responseData = response.data.data;
+            if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
                 console.log('profileData', profileData);
                 if (profileData) {
@@ -38,31 +39,32 @@ const OnboardProfilePicture = () => {
                         setProfilePictureUrl(profileData.profile_picture_url);
                     }
                 }
-              }
-            } catch (error) {
-              console.error('Error fetching data:', error);
             }
-          };
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
     useFocusEffect(
-            // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
-            useCallback(() => {
-                // Invoked whenever the route is focused.
-                fetchUserProfileUpdateStatus();
-    
-                // Return function is invoked whenever the route gets out of focus.
-                return () => {
-                    console.log('This route is now unfocused.');
-                };
-            }, [])
-        )
+        // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+        useCallback(() => {
+            setProgress(Math.ceil((2 / 5) * 100))
+            // Invoked whenever the route is focused.
+            fetchUserProfileUpdateStatus();
+
+            // Return function is invoked whenever the route gets out of focus.
+            return () => {
+                console.log('This route is now unfocused.');
+            };
+        }, [])
+    )
 
     const submit = async () => {
         try {
             const formData = new FormData();
             // const imageBlob = await convertToBlobWithBase64Only(image?.base64!);
-            formData.append('filepond', {uri: image?.uri!, type: 'image/jpeg', name: 'image.jpg'} as unknown as Blob);
-            const {data} = await axiosRequest.post('/upload-profile-image', formData, {headers: {enctype: 'multipart/form-data'}});
+            formData.append('filepond', { uri: image?.uri!, type: 'image/jpeg', name: 'image.jpg' } as unknown as Blob);
+            const { data } = await axiosRequest.post('/upload-profile-image', formData, { headers: { enctype: 'multipart/form-data' } });
             const response = data.data;
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
@@ -71,8 +73,7 @@ const OnboardProfilePicture = () => {
                 Alert.alert('Error', response.data.data.message ? response.data.data.message : 'Failed to log in')
             }
         } catch (error: any) {
-            console.log('error', error);
-            Alert.alert('Error', error.message ? error.message : 'Failed to log in')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
         }
     }
 
@@ -106,14 +107,14 @@ const OnboardProfilePicture = () => {
     return (
         <SafeAreaView className='bg-[#1A1A1A] h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-                <YStack gap="$5" className='px-4'>
+                <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
                     </Progress>
-                </YStack>
+                </View>
                 <ScrollView className='h-full'>
-                    <YStack className='p-4' gap="$5">
-                        <YStack>
+                    <View className='p-4 space-y-4'>
+                    <YStack>
                             <Text className='text-2xl text-white font-firabold'>Profile Picture</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
@@ -124,10 +125,10 @@ const OnboardProfilePicture = () => {
                                         {image ? (
                                             <Image source={{ uri: image.uri }} onError={() => setImage(undefined)} style={{ width: '100%', height: '100%', borderRadius: 200 }} />
                                         ) : (
-                                            <YStack gap="$2" className='w-full h-full rounded-full flex items-center justify-center items-center border border-dashed border-[#DD3FE5]'>
+                                            <View  className='w-full h-full rounded-full flex space-y-1 justify-center items-center border border-dashed border-[#DD3FE5]'>
                                                 <Feather name='image' size={32} color="#DD3FE5" />
                                                 <Text className='text-sm text-white font-firamedium'>Add Profile Picture</Text>
-                                            </YStack>
+                                            </View>
                                         )
                                         }
                                     </View>
@@ -141,7 +142,7 @@ const OnboardProfilePicture = () => {
                                 </View>
                             </YStack>
                         </YStack>
-                    </YStack>
+                    </View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>

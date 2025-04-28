@@ -59,7 +59,7 @@ const OnboardBioData = () => {
               last_name: profileData.last_name,
               mobile_number: profileData.mobile_number,
             //   date_of_birth: profileData.birthday,
-              gender: profileData.gender,
+              gender: profileData.gender.toString(),
               country_code: profileData.country_code
             })
             }
@@ -114,17 +114,22 @@ const OnboardBioData = () => {
             setShowGenderPicker(false);
     }
 
+    const getGenderName = (gender: string | number) => {
+        const genderData = userGenders?.find(g => g.id.toString() === gender);
+        return genderData?.value || '';
+    }
+
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
             <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                <YStack gap="$5" className='px-4'>
+                <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
                     </Progress>
-                </YStack>
+                </View>
                 <ScrollView>
-                    <YStack className='p-4' gap="$5">
-                        <YStack>
+                    <View className='p-4 space-y-5'>
+                    <YStack>
                             <Text className='text-2xl text-white font-firabold'>Complete your profile</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
@@ -148,8 +153,8 @@ const OnboardBioData = () => {
                                     <View className="space-y-2">
                                         <Text className='text-base text-white font-firamedium'>Phone Number</Text>
                                         <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
-                                            <XStack gap="$2"
-                                                className='flex-1 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
+                                            <View 
+                                                className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
                                                 <CountryCodePicker countryCode={form.country_code} onCountryCodeSelect={country => updateForm('country_code', country)} />
                                                 <TextInput
                                                     style={{ lineHeight: Platform.OS == 'ios' ? 0 : undefined }}
@@ -161,7 +166,7 @@ const OnboardBioData = () => {
                                                     placeholderTextColor={"#fbfbfb73"}
                                                     selectionColor={'#DD3FE5'}
                                                 />
-                                            </XStack>
+                                            </View>
                                         </View>
                                     </View>
                                     {/* <DateOfBirthPicker onDateOfBirthSelected={(params) => updateForm('date_of_birth', params)} /> */}
@@ -172,13 +177,13 @@ const OnboardBioData = () => {
                                      <View className="space-y-2">
                                                     <Text className='text-base text-white font-firamedium'>Gender</Text>
                                                     <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
-                                                        <XStack gap="$2"
-                                                            className='flex-1 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
+                                                        <View 
+                                                            className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
                                                             <TouchableOpacity className='flex-row items-center justify-between gap-0.5 flex-1 h-full' onPress={() => setShowGenderPicker(true)}>
-                                                                <Text className='text-base text-white font-firaregular'>{form.gender ? form.gender : 'Select gender'}</Text>
+                                                                <Text className='text-base text-white font-firaregular'>{form.gender ? getGenderName(form.gender): 'Select gender'}</Text>
                                                                 <Feather className='ml-auto' name="chevron-down" size={20} color="white" />
                                                             </TouchableOpacity>
-                                                        </XStack>
+                                                        </View>
                                                     </View>
                                                 </View>
 
@@ -192,7 +197,7 @@ const OnboardBioData = () => {
                                 <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
                             </View>
                         </YStack>
-                    </YStack>
+                    </View>
                 </ScrollView>
             </SafeAreaView>
             <Sheet

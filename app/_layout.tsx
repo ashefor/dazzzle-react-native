@@ -1,4 +1,6 @@
-import 'react-native-get-random-values'
+import 'react-native-get-random-values';
+
+import "../global.css"
 
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { FiraSans_100Thin, FiraSans_200ExtraLight, FiraSans_300Light, FiraSans_400Regular, FiraSans_500Medium, FiraSans_600SemiBold, FiraSans_700Bold, FiraSans_800ExtraBold, FiraSans_900Black, useFonts } from '@expo-google-fonts/fira-sans';

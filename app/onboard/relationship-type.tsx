@@ -37,7 +37,6 @@ const OnboardRelationshipType = () => {
             const reaction = response.data.reaction;
             const responseData = response.data.data;
             if (reaction === ReactionCodes.SUCCESS) {
-                console.log('responseData', responseData)
                 const profileData = responseData['profileInfo'];
                 if (profileData) {
 

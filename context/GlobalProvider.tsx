@@ -43,6 +43,7 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
                 setAuthState('completed');
             } else {
                 if (user) {
+                    setUser(user);
                     setAuthState('incomplete');
                 } else {
                     setAuthState(undefined);

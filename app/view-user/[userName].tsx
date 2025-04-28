@@ -222,18 +222,20 @@ const User = () => {
 
         return (
             <Tabs
-                className='bg-transparent mt-5'
+                // className='bg-transparent mt-5'
+                        backgroundColor={"$colorTransparent"}
                 value={currentTab}
                 onValueChange={setCurrentTab}
                 orientation="horizontal"
                 size="$4"
+                marginTop="$3"
                 flexDirection="column"
                 activationMode="manual"
                 borderRadius="$4"
                 position="relative"
             >
-                <YStack className='w-full bg-[#5B5B5B] rounded-[50px]' justifyContent="space-between">
-                    <AnimatePresence>
+                <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
+                <AnimatePresence>
                         {intentAt && (
                             <TabsRovingIndicator
                                 className='bg-black text-white rounded-[40px]'
@@ -315,7 +317,7 @@ const User = () => {
                                 className={`font-firamedium text-white`}>Interests</SizableText>
                         </Tabs.Tab>
                     </Tabs.List>
-                </YStack>
+                </View>
 
                 <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
                     <AnimatedYStack key={currentTab}>
@@ -446,31 +448,31 @@ const User = () => {
                         </View>
                     }}
                 />
-                <YStack className='bg-[#1A1A1A] h-full relative pb-24' flex={1}>
-                    <YStack className='h-[150px]'>
+                <View className='bg-[#1A1A1A] h-full relative pb-24 flex-1'>
+                    <View className='h-[150px]'>
                         <ImageBackground source={{ uri: userDetails?.userData.coverPicture }} className='w-full h-full' resizeMode='cover' >
                             <View className='h-full w-full bg-black/[0.8]'>
 
                             </View>
                         </ImageBackground>
-                    </YStack>
-                    {isLoading ? <YStack className='py-5 px-4' gap="$3">
+                    </View>
+                    {isLoading ? <View className='py-5 px-4 space-y-3'>
                         <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
                         <View style={{ width: 100, height: 100, backgroundColor: "#adadad", marginLeft: 'auto', marginRight: 'auto', borderRadius: 100 }} />
                     </SkeletonLoading>
                     <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
-                        <View >
+                        <View className='mt-2'>
                         <View style={{ backgroundColor: "#adadad", width: "40%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
                            <View style={{ backgroundColor: "#adadad", width: "60%", height: 10, marginTop: 16, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
                            <View style={{ backgroundColor: "#adadad", width: "75%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 16, borderRadius: 5 }} />
                         </View>
                     </SkeletonLoading>
                     <ActivityIndicator size="large" color="#fff" />
-                    </YStack> : (
+                    </View> : (
                         userDetails ? (
                             <YStack >
-                                <YStack className='py-5 px-4'>
-                                    <YStack gap="$3">
+                                <View className='py-5 px-4 space-y-2'>
+                                <YStack gap="$3">
                                         <XStack alignItems="center" gap="$4" justifyContent='center'>
                                             <View className='rounded-full relative'>
                                                 {userDetails.isPremiumUser && <Image source={icons.premium} className='w-6 h-6 z-[1000]' resizeMode='contain' style={{ position: 'absolute', right: 0, bottom: 0 }}/>}
@@ -493,7 +495,7 @@ const User = () => {
                                     {userDetails?.blockByMeUser ? <View className='mt-10 py-4'>
                                         <Text className='text-lg font-firasemibold text-center text-white'>@{userDetails?.userData.userName} is blocked</Text>
                                     </View> : <TabsAdvancedBackground />}
-                                </YStack>
+                                </View>
                             </YStack>
                         ) :
                             <View>
@@ -501,10 +503,10 @@ const User = () => {
                             </View>
                     )}
 
-                </YStack>
+                </View>
 
             </ScrollView>
-            {userDetails && !userDetails.blockByMeUser && <YStack className='absolute bottom-0 w-full py-7' alignItems='center' justifyContent='center'>
+            {userDetails && !userDetails.blockByMeUser && <View className='absolute bottom-0 w-full py-7 items-center justify-center'>
                 <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
                     <Button onPress={() => handleLikeOrDislikeUser('0')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <FontAwesome name="close" size={36} color={hasUserDisliked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
@@ -518,7 +520,7 @@ const User = () => {
                     </Button>
                 </XStack>
                 <SafeArea />
-            </YStack>}
+            </View>}
             <StatusBar style="light" />
         </View>
     )

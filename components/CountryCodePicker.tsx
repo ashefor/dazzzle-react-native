@@ -59,8 +59,8 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
     }, []);
     return (
         <>
-            <TouchableOpacity className='flex-row items-center gap-0.5 min-w-[50px]' onPress={() => setShowCountryPicker(true)}>
-                <Text className='text-base text-white font-firaregular'>{selectedCountryCode ? `(+${selectedCountryCode})` : ' '}</Text>
+            <TouchableOpacity className='flex-row items-center justify-end gap-0.5 min-w-[50px]' onPress={() => setShowCountryPicker(true)}>
+                <Text className='text-base text-white font-firaregular'>{selectedCountryCode ? `(+${selectedCountryCode})` : ''}</Text>
                 <Ionicons name="chevron-down" size={14} color="#A9A9A9" />
             </TouchableOpacity>
 

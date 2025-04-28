@@ -86,66 +86,66 @@ const BasicInfo = ({ editable, userSpecificationData, userProfileData, ...props 
                         <View className='p-4 rounded-lg bg-[#5B5B5B]'>
                             <YStack gap="$4">
                                 <XStack gap="$4">
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Gender </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.gender_text} </Text>
-                                    </YStack>
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    </View>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Preferred Language </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.formatted_preferred_language} </Text>
-                                    </YStack>
+                                    </View>
                                 </XStack>
                                 <XStack gap="$4">
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Relationship Status </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.formatted_relationship_status
                                         } </Text>
-                                    </YStack>
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    </View>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Work Status </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.formatted_work_status} </Text>
-                                    </YStack>
+                                    </View>
                                 </XStack>
                                 <XStack gap="$4">
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Education </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.formatted_education} </Text>
-                                    </YStack>
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    </View>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Birthday </Text>
                                         <Text className=' text-white font-firaregular'>{userProfileData?.birthday} </Text>
-                                    </YStack>
+                                    </View>
                                 </XStack>
                                 <XStack gap="$4">
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Relationship Type </Text>
-                                        <YStack className='pl-2' gap={"$1.5"}>
+                                        <View className='pl-2 space-y-1'>
                                             {userProfileData?.relationship_type.map((type, index) => {
                                                 return (
-                                                    <XStack className='flex-row flex-wrap' gap={"$2"} key={type}>
-                                                        <Text className=' text-white font-firaregular'>{index + 1}.</Text>
-                                                        <Text className=' flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
-                                                    </XStack>
+                                                    <View className='flex-row flex-wrap space-x-2' key={type}>
+                                                        <Text className='text-white font-firaregular'>{index + 1}.</Text>
+                                                        <Text className='flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
+                                                    </View>
                                                 )
                                             })}
-                                        </YStack>
-                                    </YStack>
-                                    <YStack gap="$3" className='flex-[0_0_45%]'>
+                                        </View>
+                                    </View>
+                                    <View className='flex-[0_0_45%] space-y-1'>
                                         <Text className='text-sm font-firamedium text-white'>Interests </Text>
-                                        <YStack className='pl-2' gap={"$1.5"}>
+                                        <View className='pl-2 space-y-1'>
                                             {userProfileData?.interest.map((type, index) => {
                                                 return (
-                                                    <XStack className='flex-row flex-wrap' gap={"$2"} key={type}>
-                                                        <Text className=' text-white font-firaregular'>{index + 1}.</Text>
-                                                        <Text className=' flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
-                                                    </XStack>
+                                                    <View className='flex-row flex-wrap space-x-2' key={type}>
+                                                        <Text className='text-white font-firaregular'>{index + 1}.</Text>
+                                                        <Text className='flex-1 text-white font-firaregular word-break text-wrap'>{type} </Text>
+                                                    </View>
                                                 )
                                             })}
-                                        </YStack>
-                                    </YStack>
+                                        </View>
+                                    </View>
                                 </XStack>
                                 <XStack gap="$4">
-                                    <YStack gap="$3" className='flex-1'>
+                                    <YStack gap="$3" flex={1}>
                                         <Text className='text-sm font-firamedium text-white'>Location </Text>
                                         <Text className='text-white font-firaregular'>{userProfileData?.city && userProfileData?.city}, {userProfileData?.country_name && userProfileData?.country_name} </Text>
                                     </YStack>
@@ -161,16 +161,17 @@ const BasicInfo = ({ editable, userSpecificationData, userProfileData, ...props 
                             <YStack gap="$3">
                                 <View className='p-4 rounded-lg bg-[#5B5B5B]'>
                                     <YStack gap="$4">
-                                        <XStack gap="$4" className='flex-wrap'>
-                                            {item.items.map((data, index) => {
+                                         <XStack gap="$4" flexWrap="wrap">
+
+                                    {item.items.map((data, index) => {
                                                 return (
-                                                    <YStack key={data.label} gap="$3" className='flex-[0_0_45%]'>
+                                                    <View key={data.label} className='flex-[0_0_45%] space-y-1'>
                                                         <Text className='text-sm font-firamedium text-white'>{data.label} </Text>
                                                         <Text className='text-white'>{data.value || "-"}</Text>
-                                                    </YStack>
+                                                    </View>
                                                 )
                                             })}
-                                        </XStack>
+                                </XStack>
                                     </YStack>
                                 </View>
                             </YStack>

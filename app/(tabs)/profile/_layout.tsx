@@ -29,38 +29,42 @@ const ProfileLayout = () => {
             fontFamily: "FiraSans_700Bold",
           },
         }} />
-        <Stack.Screen name='visitors' options={{
+        {/* <Stack.Screen name='visitors' options={{
           title: 'Visitors',
           headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
             <ArrowBackIcon />
           </TouchableOpacity>
-        }} />
+        }} /> */}
         <Stack.Screen name='blocked-users' options={{
           title: 'Blocked Users',
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
-        }} />
+          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+          //   <ArrowBackIcon />
+          // </TouchableOpacity>
+        }} 
+        />
         <Stack.Screen name='change-password' options={{
           title: 'Change Password',
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
-        }} />
+          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+          //   <ArrowBackIcon />
+          // </TouchableOpacity>
+        }} 
+        />
         <Stack.Screen name='change-email'  options={{
           title: 'Change Email',
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
+          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+          //   <ArrowBackIcon />
+          // </TouchableOpacity>
         
-        }} />
+        }} 
+        />
         <Stack.Screen name='settings' options={{
           title: 'Settings',
           presentation:'modal',
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
-        }} />
+          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+          //   <ArrowBackIcon />
+          // </TouchableOpacity>
+        }}
+        />
       </Stack>
       <StatusBar backgroundColor='#161622' style='light' />
     </>

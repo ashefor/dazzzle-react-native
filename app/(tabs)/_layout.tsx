@@ -1,6 +1,6 @@
 import { router, Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, View, Text, Button, TouchableHighlight, TouchableOpacity, Image } from 'react-native';
+import { Platform, View, Text, Button, TouchableHighlight, TouchableOpacity, Image, Alert } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -49,8 +49,8 @@ export default function TabLayout() {
           headerStyle: {
             backgroundColor: '#1A1A1A'
           },
-          headerRight: () => <XStack gap={'$4'} className='px-4'>
-            <TouchableOpacity className=' flex items-center justify-center rounded-full'>
+          headerRight: () => <XStack gap={'$4'} padding={'$4'}>
+            <TouchableOpacity onPress={() => Alert.alert('Coming Soon')} className='flex items-center justify-center rounded-full'>
               <Ionicons name="notifications-sharp" size={24} color="#ffffff" />
             </TouchableOpacity>
           </XStack>,

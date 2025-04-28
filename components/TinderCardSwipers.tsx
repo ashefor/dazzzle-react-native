@@ -2,8 +2,8 @@ import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, router } from 'expo-router';
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Link, router, useFocusEffect } from 'expo-router';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   Text,
   View,
@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 import TinderCard from './TinderCard';
-import SkeletonLoading from 'expo-skeleton-loading'
 import icons from '@/constants/icons';
 import { Foundation } from '@expo/vector-icons';
 
@@ -109,10 +108,13 @@ const TinderCardSwipers = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers(true);
-  }, [])
+  // useEffect(() => {
+  //   fetchUsers(true);
+  // }, [])
   
+  useFocusEffect(useCallback(() => {
+    fetchUsers(true);
+  }, []))
 
   const refreshUsers = async () => {
     try {
@@ -157,17 +159,16 @@ const TinderCardSwipers = () => {
             }}
             source={{ uri: item.profileImage }}
           >
-            <YStack className='flex-1 bg-black/[0.2]'>
-              <YStack justifyContent="flex-end" className='px-7 pt-7 pb-14' flex={1}>
-                <Link className='' style={{ pointerEvents: 'auto' }} asChild href={{
-                  pathname: '/view-user/[userName]',
+            <View className='flex-1 bg-black/[0.2]'>
+              <View className='px-7 pt-7 pb-14 flex-1 justify-end'>
+              <Pressable style={{ zIndex: 1000 , pointerEvents: 'auto'}} onPress={() => router.navigate({
+                    pathname: './view-user/[userName]',
                   params: { userName: item.username },
-                }}>
-                  <Pressable style={{ zIndex: 1000 }} onPress={() => router.push(`/view-user/${item.username}`)}>
-                    <XStack className='items-center justify-between'>
-                      <YStack className=''>
-                        <XStack alignItems='center' gap="$2" className=''>
-                          <Text className='font-firasemibold text-2xl text-white capitalize'>
+                  })}>
+                    <View className='flex-row items-center justify-between space-x-2'>
+                    <View className='flex-shrink'>
+                        <XStack alignItems='center' gap="$2" flexWrap="wrap">
+                          <Text numberOfLines={2} lineBreakMode='tail' className='font-firasemibold text-2xl text-white capitalize'>
                             {item.username}
                           </Text>
                           <Text className='text-white font-firaregular text-2xl text-white'>
@@ -180,13 +181,12 @@ const TinderCardSwipers = () => {
                         </Text>
                         {item.isPremiumUser && <Image source={icons.premium} className='w-5 h-5' resizeMode='contain'/>}
                         </XStack>
-                      </YStack>
+                      </View>
                       <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                    </XStack>
+                    </View>
                   </Pressable>
-                </Link>
-              </YStack>
-            </YStack>
+              </View>
+            </View>
           </ImageBackground>
         </View>
       </TinderCard>
@@ -224,7 +224,7 @@ const TinderCardSwipers = () => {
           renderUsers()
         )
         }</View>
-      <YStack className='absolute bottom-0 w-full py-6' alignItems='center' justifyContent='center'>
+      <View className='absolute bottom-0 w-full py-6 flex-row items-center justify-center'>
         <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
           <Button onPress={() => swipe('left')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
             <FontAwesome name="close" size={36} color="#aeb11a" />
@@ -237,7 +237,7 @@ const TinderCardSwipers = () => {
             <Ionicons name="heart" size={36} color="#EB4242" />
           </Button>
         </XStack>
-      </YStack>
+      </View>
     </View>
   );
 };

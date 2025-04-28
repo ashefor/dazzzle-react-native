@@ -22,14 +22,6 @@ const MyProfile = () => {
     const [loggedInUserProfile, setLoggedInUserProfile] = useState<LoggedInUserProfile | null>(null);
     const scrollY = useRef(new Animated.Value(0)).current;
 
-    // useEffect(() => {
-    //     getItem('dazzzle-user').then((user: LoggedInUser) => {
-    //         if (user) {
-    //             console.log('dazzle-user', user);
-    //         }
-    //     })
-    // }, [])
-
     const fetchUserDetails = async () => {
         try {
             setIsLoading(true);
@@ -121,8 +113,8 @@ const MyProfile = () => {
         })
 
         const setCurrentTab = (currentTab: string) => setTabState({ ...tabState, currentTab })
-        const setIntentIndicator = (intentAt) => setTabState({ ...tabState, intentAt })
-        const setActiveIndicator = (activeAt) =>
+        const setIntentIndicator = (intentAt: LayoutRectangle | null) => setTabState({ ...tabState, intentAt })
+        const setActiveIndicator = (activeAt: LayoutRectangle | null) =>
             setTabState({ ...tabState, prevActiveAt: tabState.activeAt, activeAt })
         const { activeAt, intentAt, prevActiveAt, currentTab } = tabState
 
@@ -144,21 +136,20 @@ const MyProfile = () => {
 
         return (
             <Tabs
-                className='bg-transparent mt-5'
+                // className='bg-transparent mt-5'
+                        backgroundColor={"$colorTransparent"}
                 value={currentTab}
                 onValueChange={setCurrentTab}
                 orientation="horizontal"
                 size="$4"
-                // padding="$2"
-                // height={150}
+                marginTop="$3"
                 flexDirection="column"
                 activationMode="manual"
-                backgroundColor="$background"
                 borderRadius="$4"
                 position="relative"
             >
-                <YStack className='w-full bg-[#5B5B5B] rounded-[50px]' justifyContent="space-between">
-                    <AnimatePresence>
+                <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
+                <AnimatePresence>
                         {intentAt && (
                             <TabsRovingIndicator
                                 className='bg-black text-white rounded-[40px]'
@@ -184,10 +175,11 @@ const MyProfile = () => {
                     </AnimatePresence>
 
                     <Tabs.List
+                        unstyled
                         disablePassBorderRadius
                         loop={false}
-                        aria-label="Manage your account"
                         gap="$2"
+                        backgroundColor={"$colorTransparent"}
                         justifyContent="space-between"
                     >
                         <Tabs.Tab
@@ -198,11 +190,13 @@ const MyProfile = () => {
                             marginHorizontal="$1.5"
                             value="profile"
                             flex={1}
-
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Profile</SizableText>
+                                className={`font-firamedium text-white`}>Profile</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -212,10 +206,13 @@ const MyProfile = () => {
                             marginHorizontal="$1.5"
                             value="photos"
                             flex={1}
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Photos</SizableText>
+                                className={`font-firamedium text-white`}>Photos</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -225,13 +222,16 @@ const MyProfile = () => {
                             marginHorizontal="$1.5"
                             value="interest"
                             flex={1}
+                            justifyContent='center'
+                            alignItems='center'
+                            borderRadius={50}
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className='text-white font-firamedium'>Interests</SizableText>
+                                className={`font-firamedium text-white`}>Interests</SizableText>
                         </Tabs.Tab>
                     </Tabs.List>
-                </YStack>
+                </View>
 
                 <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
                     <AnimatedYStack key={currentTab}>
@@ -272,10 +272,10 @@ const MyProfile = () => {
                         </TouchableOpacity>
                     }}
                 />
-                {loggedInUserProfile && <YStack className='bg-[#1A1A1A] h-full relative' flex={1}>
+                {loggedInUserProfile && <View className='bg-[#1A1A1A] h-full relative flex-1'>
                     <YStack >
-                        <YStack className='py-5 px-4'>
-                            <YStack gap="$5">
+                        <View className='py-5 px-4'>
+                        <YStack gap="$5">
                                 <XStack alignItems="center" gap="$4" justifyContent='center'>
                                     <View className='rounded-full'>
                                         <Avatar className='' gap="$2" circular size="$10">
@@ -297,10 +297,10 @@ const MyProfile = () => {
                                 </YStack>
                             </YStack>
                             <TabsAdvancedBackground />
-                        </YStack>
+                        </View>
 
                     </YStack>
-                </YStack>}
+                </View>}
 
             </ScrollView>
         </View>
