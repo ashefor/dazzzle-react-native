@@ -20,12 +20,13 @@ import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import { Feather } from '@expo/vector-icons'
 import Toast from '@/components/toast/toast'
+import { clear } from '@/utils/asyncStorage'
 
 type BioDataForm = {
     first_name: string;
     last_name: string;
     mobile_number: string;
-    // date_of_birth: string;
+    birthday: string;
     gender: string;
     country_code: string;
 };
@@ -41,7 +42,7 @@ const OnboardBioData = () => {
         first_name: '',
         last_name: '',
         mobile_number: '',
-        // date_of_birth: '',
+        birthday: '',
         gender: '',
         country_code: ''
     })
@@ -50,7 +51,7 @@ const OnboardBioData = () => {
         try {
           const response = await axiosRequest.get('/profile/check-profile-updated');
           const reaction = response.data.reaction;
-          const responseData = response.data.data;
+            const responseData = response.data.data;
           if (reaction === ReactionCodes.SUCCESS) {
             const profileData = responseData['profileInfo'];
             if (profileData) {
@@ -58,13 +59,15 @@ const OnboardBioData = () => {
               first_name: profileData.first_name,
               last_name: profileData.last_name,
               mobile_number: profileData.mobile_number,
-            //   date_of_birth: profileData.birthday,
+              birthday: profileData.birthday,
               gender: profileData.gender.toString(),
               country_code: profileData.country_code
             })
             }
+            
           }
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Error fetching data:', error.errorMessage);
           console.error('Error fetching data:', error);
         }
       };
@@ -104,7 +107,7 @@ const OnboardBioData = () => {
             }
         } catch (error: any) {
             console.log('error', error);
-            Alert.alert('Error', error.message ? error.message : 'Failed to log in')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
         }
     }
 
@@ -169,7 +172,7 @@ const OnboardBioData = () => {
                                             </View>
                                         </View>
                                     </View>
-                                    {/* <DateOfBirthPicker onDateOfBirthSelected={(params) => updateForm('date_of_birth', params)} /> */}
+                                    <DateOfBirthPicker dateOfBirth={form.birthday} onDateOfBirthSelected={(params) => updateForm('birthday', params)} />
                                     {/* <Dropdown title='Pet' data={userGenders || []}
                                         onChange={(item) => updateForm('gender', item.value)}
                                         placeholder="Select pet"
@@ -194,7 +197,7 @@ const OnboardBioData = () => {
                             </Form>
                             <View className='justify-center pt-5 flex-row gap-2'>
                                 <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
+                                <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
                             </View>
                         </YStack>
                     </View>

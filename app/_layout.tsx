@@ -1,7 +1,5 @@
 import 'react-native-get-random-values';
 
-import "../global.css"
-
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { FiraSans_100Thin, FiraSans_200ExtraLight, FiraSans_300Light, FiraSans_400Regular, FiraSans_500Medium, FiraSans_600SemiBold, FiraSans_700Bold, FiraSans_800ExtraBold, FiraSans_900Black, useFonts } from '@expo-google-fonts/fira-sans';
 import * as SplashScreen from 'expo-splash-screen';
@@ -17,6 +15,9 @@ import AxiosProvider from '@/context/AxiosProvider';
 import NavigationStack from '@/components/NavigationStack';
 import ToastWrapper from '@/components/toast/ToastWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PaystackProvider } from 'react-native-paystack-webview';
+import { Provider } from 'react-redux';
+import { store } from '@/redux/store';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,7 +40,8 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{
+    <Provider store={store}>
+      <GestureHandlerRootView style={{
       flex: 1,
     }}>
       <ToastWrapper />
@@ -48,11 +50,14 @@ export default function RootLayout() {
       <ThemeProvider value={DarkTheme}>
           <GlobalProvider>
             <AxiosProvider>
+              <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
               <NavigationStack />
+              </PaystackProvider>
             </AxiosProvider>
           </GlobalProvider>
       </ThemeProvider>
       </TamaguiProvider>
     </GestureHandlerRootView>
+    </Provider>
   );
 }

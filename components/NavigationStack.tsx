@@ -14,6 +14,7 @@ const NavigationStack = () => {
         }}>
             <Stack.Screen name='(auth)' options={{ headerShown: false }} />
             <Stack.Screen name='onboard' options={{ headerShown: false }} />
+            <Stack.Screen name='subscription' options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="view-user/[userName]"
                 options={{

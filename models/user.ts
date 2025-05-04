@@ -50,6 +50,7 @@ export interface AuthApiResponseData {
   auth_info: AuthInfo;
   access_token: string;
   incident: any | null;
+  userSubscription: any | null;
 }
 
 export interface AuthApiResponse extends ApiResponse {

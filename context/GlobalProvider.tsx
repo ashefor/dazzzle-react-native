@@ -38,13 +38,18 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
             setIsLoading(true);
             const token = await getItem('dazzzle-token');
             const user = await getItem('dazzzle-user');
-            if (token) {
-                setToken(token);
+            const profileCompletion = await getItem('profileCompletion');
+            setToken(token);
+            if (profileCompletion === 'completed') {
                 setAuthState('completed');
             } else {
                 if (user) {
                     setUser(user);
-                    setAuthState('incomplete');
+                    if (user.isProfileComplete) {
+                        setAuthState('completed');
+                    } else {
+                        setAuthState('incomplete');
+                    }
                 } else {
                     setAuthState(undefined);
                 }

@@ -6,6 +6,8 @@ import { Modal, Image, View } from "react-native";
 import {  YStack } from "tamagui";
 import Images from '@/constants/images'
 import { ReactionCodes } from "@/models/general";
+import { getItem } from "@/utils/asyncStorage";
+import { useAppSelector } from "@/hooks/reduxHooks";
 
 const AxiosContext = createContext({
     axiosRequest: {} as AxiosInstance
@@ -15,7 +17,8 @@ export const useAxiosContext = () => useContext(AxiosContext);
 
 const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(false);
-    const { authState, token } = useGlobalContext();
+    // const { authState, token } = useGlobalContext();
+      const { isProfileCompleted, userToken } = useAppSelector(state => state.users);
     const axiosRequest = axios.create({
         baseURL: API_URL,
         headers: {
@@ -26,20 +29,21 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Request interceptor
     axiosRequest.interceptors.request.use(
-        (config) => {
+        async (config) => {
             const shouldHideLoader = config.headers.get('hide-loader') === 'true';
             if (shouldHideLoader) {
                 setLoading(false);
             } else {
                 setLoading(true);
             }
-            if (authState) {
-                config.headers['Authorization'] = `Bearer ${token}`;
+            if (userToken) {
+                config.headers['Authorization'] = `Bearer ${userToken}`;
             }
 
             return config;
         },
         (error) => {
+            console.error('Request error:', error);
             setLoading(false);
             return Promise.reject(error);
         }
@@ -67,15 +71,15 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
             }
             return response;
         },
-        async (error) => {
+        (error) => {
         let errorMessage = ''
         const {response } = error;
         if (response) {
             const { status, data } = response;
             if (status === 401) {
                 errorMessage = 'Session expired. Please login again';
-            }  else {
-                errorMessage = data.message;
+            } else if([422, 500].includes(status)) {
+                errorMessage = data.message
             }
         }
         // if (errorMessage) {

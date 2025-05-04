@@ -14,35 +14,33 @@ import { getItem } from '@/utils/asyncStorage';
 import { LoggedInUser, LoggedInUserProfile, SingleUserDetails } from '@/models/user';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
+import { useAppSelector } from '@/hooks/reduxHooks';
 
 const MyProfile = () => {
+  const { shouldSignUserOut, userInfo } = useAppSelector(state => state.users);
     const { axiosRequest } = useAxiosContext();
-    const [isLoading, setIsLoading] = useState(true);
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [loggedInUserProfile, setLoggedInUserProfile] = useState<LoggedInUserProfile | null>(null);
     const scrollY = useRef(new Animated.Value(0)).current;
 
     const fetchUserDetails = async () => {
         try {
-            setIsLoading(true);
-            const {profile} = await getItem('dazzzle-user') as LoggedInUser;
-            setLoggedInUserProfile(profile);
-            const userName = profile.username;
+            const userName = userInfo?.username;
             const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                console.log('user details', data.data);
                 const user = data.data;
                 setUserDetails(user);
-                setIsLoading(false);
             }
         } catch (error) {
-            setIsLoading(false);
         }
     }
     
     useEffect(() => {
-        fetchUserDetails();
-    }, [])
+        if (userInfo) {
+            setLoggedInUserProfile(userInfo);
+            fetchUserDetails();
+        }
+    }, [userInfo])
 
     const AnimatedYStack = styled(YStack, {
         flex: 1,

@@ -1,58 +1,54 @@
 import CustomButton from '@/components/CustomButton';
 import Images from '@/constants/images';
-import { useGlobalContext } from '@/context/GlobalProvider';
-import { Redirect, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { View, Text, Image, ImageBackground, SafeAreaView, Alert } from 'react-native';
-import { Spinner } from 'tamagui';
-import axios from 'axios';
-import { API_URL } from '@/constants/constants';
-import { BasicAppInterfaceResponse, ReactionCodes } from '@/models/general';
-import { setItem } from '@/utils/asyncStorage';
+import { Redirect } from 'expo-router';
+import { useEffect } from 'react';
+import { View, Text, ImageBackground } from 'react-native';
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
+import { fetchAppConfig } from '@/redux/appActions';
 
 
 export default function HomeScreen() {
-  const { isLoading, authState } = useGlobalContext();
-  const [loadedGeneralConfigSettings, setLoadedGeneralConfigSettings] = useState<boolean>(true);
-  const [loadingGeneralConfigSettings, setLoadingGeneralConfigSettings] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const { loading, appConfig } = useAppSelector(state => state.app);
+  const { userInfo, userToken } = useAppSelector(state => state.users);
 
-  console.log('isLoading', isLoading);
-  const loadInitialSettings = async () => {
-    try {
-      setLoadingGeneralConfigSettings(true);
-      const response = await axios.get(API_URL + '/user/prepare-sign-up')
-      const responseData = response.data as BasicAppInterfaceResponse;
-      if (responseData.reaction != ReactionCodes.SUCCESS) {
-        throw new Error('Failed to load basic settings')
-      } else {
-        const generalConfigSettings = response.data.data;
-        setItem('generalConfigSettings', generalConfigSettings);
-        setLoadedGeneralConfigSettings(true);
-        setLoadingGeneralConfigSettings(false);
-      }
-    } catch (error: any) {
-      setLoadedGeneralConfigSettings(false);
-      setLoadingGeneralConfigSettings(false);
-      Alert.alert('Loaded error', error.message ? error.message : 'Failed to load basic settings')
+  // const loadInitialSettings = async () => {
+  //   try {
+  //     setLoadingGeneralConfigSettings(true);
+  //     const response = await axios.get(API_URL + '/user/prepare-sign-up')
+  //     const responseData = response.data as BasicAppInterfaceResponse;
+  //     if (responseData.reaction != ReactionCodes.SUCCESS) {
+  //       throw new Error('Failed to load basic settings')
+  //     } else {
+  //       const generalConfigSettings = response.data.data;
+  //       setItem('generalConfigSettings', generalConfigSettings);
+  //       setLoadedGeneralConfigSettings(true);
+  //       setLoadingGeneralConfigSettings(false);
+  //     }
+  //   } catch (error: any) {
+  //     setLoadedGeneralConfigSettings(false);
+  //     setLoadingGeneralConfigSettings(false);
+  //     Alert.alert('Loaded error', error.message ? error.message : 'Failed to load basic settings')
 
-    }
+  //   }
+  // }
+
+  const fetchAppConfigSettings = async () => {
+    dispatch(fetchAppConfig());
   }
 
   useEffect(() => {
-    loadInitialSettings();
+    // loadInitialSettings();
+    fetchAppConfigSettings()
   }, [])
 
-  if (isLoading || loadingGeneralConfigSettings) {
+  if (loading) {
     return <ImageBackground className='h-full w-full' source={Images.splash} >
     </ImageBackground>
   } else {
-    console.log('loadedGeneralConfigSettings', loadedGeneralConfigSettings);
-    if (loadedGeneralConfigSettings) {
-      if (authState === 'completed') {
-        return <Redirect href="./(tabs)" />;
-      } else if (authState === 'incomplete') {
-        return <Redirect href="./(auth)/sign-in" />
+    if (appConfig) {
+      if (userToken) {
+        return <Redirect href="./user-details" />;
       } else {
         return <Redirect href="./landing" />
       }
@@ -61,7 +57,7 @@ export default function HomeScreen() {
         <Text className='text-white'>
           Unable to load settings
         </Text>
-        <CustomButton title='Try again' handlePress={() => loadInitialSettings()} containerStyles='mt-7 w-full' />
+        <CustomButton title='Try again' handlePress={fetchAppConfigSettings} containerStyles='mt-7 w-full' />
       </View>
     }
   }

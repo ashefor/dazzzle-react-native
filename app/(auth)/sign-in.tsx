@@ -14,8 +14,12 @@ import { isValidUsernameOrEmail } from '@/utils/validators'
 import { API_URL } from '@/constants/constants'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import { setItem } from '@/utils/asyncStorage'
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
+import { userLogin } from '@/redux/authActions'
 
 const SignIn = () => {
+    const dispatch = useAppDispatch();
+    const { loading, isProfileCompleted, userInfo, shouldSignUserOut } = useAppSelector(state => state.users);
     const { setUser, setAuthState, setToken } = useGlobalContext();
     const { axiosRequest } = useAxiosContext();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -61,33 +65,57 @@ const SignIn = () => {
         if (!isFormValid) {
             return Alert.alert('Error', 'Please fill in all fields')
         }
-        setIsSubmitting(true);
-        try {
-            const response = await axiosRequest.post(API_URL + '/user/login-process', form);
-            const authApiResponse = response.data as AuthApiResponse
-            const user = authApiResponse.data.auth_info;
-            const token = authApiResponse.data.access_token;
-            const isProfileComplete = authApiResponse && authApiResponse.data && authApiResponse.data.auth_info? authApiResponse.data.auth_info.isProfileComplete : false;
-            setItem('dazzzle-user', user);
-            setItem('dazzzle-token', token);
-            setUser(user);
-            setToken(token);
-            if (isProfileComplete) {
-                setAuthState('completed');
-                router.replace('/(tabs)');
+        // setIsSubmitting(true);
+        // try {
+        //     const {data} = await axiosRequest.post(API_URL + '/user/login-process', form);
+        //     const authApiResponse = data as AuthApiResponse;
+        //     console.log('authApiResponse', authApiResponse);
+        //     const user = authApiResponse.data.auth_info;
+        //     const token = authApiResponse.data.access_token;
+        //     const isProfileComplete = authApiResponse && authApiResponse.data && authApiResponse.data.auth_info? authApiResponse.data.auth_info.isProfileComplete : false;
+        //     await setItem('dazzzle-user', user);
+        //     await setItem('dazzzle-token', token);
+        //     setUser(user);
+        //     setToken(token);
+        //     if (isProfileComplete) {
+        //         const isPremium = user.profile.is_premium;
+        //         const userSubscription = authApiResponse.data.userSubscription; 
+        //         if (isPremium || userSubscription) {
+        //             await setItem('profileCompletion', 'completed');
+        //             router.replace('/(tabs)');
+        //         } else {
+        //             router.replace('../subscription');
+        //         }
+        //     } else {
+        //         await setItem('profileCompletion', 'incomplete');
+        //         router.replace('/onboard/bio-data');
+        //     }
+        //     setIsSubmitting(false);
+        // } catch (error: any) {
+        //     setIsSubmitting(false);
+        //     Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');
+        // } finally {
+        //     setIsSubmitting(false);
+        // }
+
+        dispatch(userLogin(form));
+    }
+
+    useEffect(() => {
+        if (userInfo) {
+            console.log('signin userInfo', userInfo, isProfileCompleted, shouldSignUserOut);
+            if (isProfileCompleted) {
+                if (userInfo.is_premium) {
+                    router.replace('/(tabs)');
+                } else {
+                    router.replace('/subscription');
+                }
             } else {
-                setAuthState('incomplete');
                 router.replace('/onboard/bio-data');
             }
-            setIsSubmitting(false);
-        } catch (error: any) {
-            setIsSubmitting(false);
-            console.log('error', error);
-            Alert.alert('Error', error.message ? error.message : 'Failed to log in');
-        } finally {
-            setIsSubmitting(false);
         }
-    }
+    }, [userInfo, isProfileCompleted])
+
     return (
         <SafeAreaView className='bg-primary h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >

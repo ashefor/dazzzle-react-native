@@ -60,7 +60,7 @@ const OnboardRelationshipType = () => {
                 router.push('/onboard/choose-interests');
             }
         } catch (error: any) {
-            Alert.alert('Error', error.message ? error.message : 'Failed to update')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update')
         } finally {
             setIsSubmitting(false);
         }
@@ -77,20 +77,21 @@ const OnboardRelationshipType = () => {
     return (
         <SafeAreaView className='bg-[#1A1A1A] h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-                <YStack gap="$5" className='px-4'>
+                <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
                     </Progress>
-                </YStack>
+                </View>
                 <ScrollView className='h-full'>
-                    <YStack className='p-4' gap="$5">
-                        <YStack>
+                    <View className='p-4 space-y-4'>
+                    <YStack>
                             <Text className='text-2xl text-white font-firabold'>Relationship Type</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
                         <YStack>
-                            <XStack gap="$5" className='flex-wrap mb-6' justifyContent='space-between'>
-                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
+                            <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
+                            <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
+                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[48.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />
                                     <Text className='text-base text-white font-firasemibold mt-2 text-center'>Fun
                                         &
@@ -129,16 +130,16 @@ const OnboardRelationshipType = () => {
                                         Flirting Only
                                     </Text>
                                 </Pressable>
-                            </XStack>
+                            </View>
                             <YStack>
-                                <CustomButton title='Next' handlePress={submit} />
+                                <CustomButton disabled={selectedRelationshipTypes.length === 0} title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
                                     <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                    <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
+                                    <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
                                 </View>
                             </YStack>
                         </YStack>
-                    </YStack>
+                    </View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>

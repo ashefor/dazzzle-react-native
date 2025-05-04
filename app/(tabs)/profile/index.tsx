@@ -13,22 +13,37 @@ import { ReactionCodes } from '@/models/general';
 import { getItem, removeItem } from '@/utils/asyncStorage';
 import { useEffect, useState } from 'react';
 import { LoggedInUser, LoggedInUserProfile } from '@/models/user';
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
+import { signUserOut } from '@/redux/authActions';
+import { logUserOut } from '@/redux/slice/UserSlice';
 
 export default function ProfileScreen() {
+  const dispatch = useAppDispatch();
+  const { shouldSignUserOut, userInfo } = useAppSelector(state => state.users);
   const { setAuthState } = useGlobalContext();
   const { axiosRequest } = useAxiosContext();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<LoggedInUserProfile | null>(null);
 
   const handleLogOut = async () => {
-    const { data } = await axiosRequest.post('/user/logout');
-    if (data.reaction === ReactionCodes.SUCCESS) {
-      await removeItem('dazzzle-user');
-      await removeItem('dazzzle-token');
-      setAuthState(undefined);
+
+    // const { data } = await axiosRequest.post('/user/logout');
+    // if (data.reaction === ReactionCodes.SUCCESS) {
+    //   await removeItem('dazzzle-user');
+    //   await removeItem('dazzzle-token');
+    //   await removeItem('profileCompletion');
+    //   setAuthState(undefined);
+    //   router.replace('/(auth)/sign-in');
+    // }
+    dispatch(signUserOut());
+  }
+
+  useEffect(() => {
+    if (shouldSignUserOut) {
+      dispatch(logUserOut());
       router.replace('/(auth)/sign-in');
     }
-  }
+  }, [shouldSignUserOut])
 
   const fetchUserDetails = async () => {
     try {
@@ -54,12 +69,12 @@ export default function ProfileScreen() {
           <Avatar circular size="$5">
             <Avatar.Image
               accessibilityLabel="Nate Wienert"
-              src={user?.profile_picture_url}
+              src={userInfo?.profile_picture_url}
             />
             <Avatar.Fallback delayMs={600} backgroundColor="$blue10" />
           </Avatar>
           <View>
-            <Text className='text-xl text-white font-firasemibold'>{user?.first_name} {user?.last_name}</Text>
+            <Text className='text-xl text-white font-firasemibold'>{userInfo?.first_name} {userInfo?.last_name}</Text>
             <Link className='text-sm text-tertiary font-firaregular py-2' href='/profile/my-profile'>View Profile</Link>
           </View>
         </XStack>

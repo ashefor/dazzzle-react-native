@@ -101,7 +101,7 @@ const SignIn = () => {
                 setHasCreatedAccount(true);
             }
         } catch (error: any) {
-            Alert.alert('Error', error.message ? error.message : 'Failed to log in')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
         } finally {
             setIsSubmitting(false);
         }
@@ -109,6 +109,7 @@ const SignIn = () => {
 
     const handleResendEmail = async () => {
         try {
+            setHasCreatedAccount(false);
             const response = await axiosRequest.post('/user/process-resend-activation-mail', { email: form.email });
             if (response.data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Verification email sent successfully');
@@ -201,7 +202,7 @@ const SignIn = () => {
                             </Form>
                             <View className='justify-center pt-5 flex-row gap-2'>
                                 <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
+                                <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
                             </View>
                         </View>
                     </ScrollView>
@@ -224,23 +225,25 @@ const SignIn = () => {
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
-                <Sheet.Frame paddingBottom="$5" gap="$5" backgroundColor={'#1A1A1A'}>
-                    <XStack className='bg-[#1A1A1A] p-4 pb-0' gap="$2">
+                <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
+                    <View className='bg-[#1A1A1A] flex-row items-center p-4 pb-0 space-x-1' >
                         <TouchableOpacity onPress={() => setHasCreatedAccount(false)} className='z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />
                         </TouchableOpacity>
-                    </XStack>
-                    <YStack className='px-6 pt-4 pb-20' gap="$4">
+                    </View>
+                    <View className='px-6 pt-4 pb-10'>
+                        <View className='space-y-4 text-center mb-5'>
                         <Text className='text-white text-lg font-firabold text-center'>Account Created!</Text>
                         <Text className='text-white text-sm font-firaregular text-center'>Your account created successfully, to activate your account please check your email.</Text>
-                        <XStack gap="$2" className='items-center justify-center'>
+                        </View>
+                        <XStack gap="$2" alignItems="center" justifyContent="center" mb="$5">
                             <Text className='text-white text-sm font-firaregular text-center'>If you didn't receive the email,</Text>
                             <Pressable onPress={handleResendEmail}>
                                 <Text className='text-tertiary font-firaregular'>Resend Email</Text>
                             </Pressable>
                         </XStack>
                         <CustomButton title="Log In" handlePress={() => router.replace('/(auth)/sign-in')} />
-                    </YStack>
+                    </View>
                 </Sheet.Frame>
             </Sheet>
         </>

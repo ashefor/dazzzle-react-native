@@ -9,16 +9,18 @@ interface CustomButtonProps {
   containerStyles?: ViewStyle | string;
   textStyles?: TextStyle;
   isLoading?: boolean;
+  disabled?: boolean
 }
 
 const CustomButton = forwardRef<typeof TouchableOpacity, CustomButtonProps>((props, ref) => {
-  const { title, handlePress, containerStyles, textStyles, isLoading } = props
+  const { title, handlePress, containerStyles, textStyles, isLoading,disabled } = props
+  const isDisabled = disabled || isLoading
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      disabled={isLoading}
-      className={`h-[44px] bg-[#DD3FE5] w-full flex items-center justify-center rounded-lg ${containerStyles} ${isLoading ? 'opacity-50' : ''}`}>
+      disabled={isDisabled}
+      className={`h-[44px] w-full bg-[#DD3FE5] flex items-center justify-center rounded-lg ${containerStyles} ${isLoading ? 'opacity-50' : ''} ${isDisabled ? 'opacity-50' : ''}`}>
       {/* <LinearGradient
             colors={["#DD3FE5", "#3D58F1"]}
             start={{ x: 0.5, y: 0 }}

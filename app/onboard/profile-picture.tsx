@@ -1,4 +1,4 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, ImageBackground } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -18,12 +18,11 @@ const OnboardProfilePicture = () => {
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((1 / 5) * 100));
 
-    // useEffect(() => {
-    //     setTimeout(() => {
-    //         setProgress(Math.ceil((2 / 5) * 100))
-    //     }, 500);
-    //     console.log('progress', progress);
-    // }, [])
+    useEffect(() => {
+        setTimeout(() => {
+            setProgress(Math.ceil((2 / 5) * 100))
+        }, 500);
+    }, [])
 
 
     const fetchUserProfileUpdateStatus = async () => {
@@ -33,7 +32,6 @@ const OnboardProfilePicture = () => {
             const responseData = response.data.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
-                console.log('profileData', profileData);
                 if (profileData) {
                     if (profileData.profile_picture_url) {
                         setProfilePictureUrl(profileData.profile_picture_url);
@@ -61,26 +59,30 @@ const OnboardProfilePicture = () => {
 
     const submit = async () => {
         try {
-            const formData = new FormData();
-            // const imageBlob = await convertToBlobWithBase64Only(image?.base64!);
-            formData.append('filepond', { uri: image?.uri!, type: 'image/jpeg', name: 'image.jpg' } as unknown as Blob);
-            const { data } = await axiosRequest.post('/upload-profile-image', formData, { headers: { enctype: 'multipart/form-data' } });
-            const response = data.data;
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                Toast.success('Profile updated successfully');
+            if (profile_picture_url) {
                 router.push('/onboard/location');
             } else {
-                Alert.alert('Error', response.data.data.message ? response.data.data.message : 'Failed to log in')
+                if (!image) {
+                    return;
+                }
+                const formData = new FormData();
+                formData.append("filepond", {
+                    uri: image?.uri,
+                    name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
+                    type: image?.mimeType || "image/jpeg",
+                } as any);
+                const { data } = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
+                const response = data.data;
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    Toast.success('Profile updated successfully');
+                    router.push('/onboard/location');
+                } else {
+                    Alert.alert('Error', data.message ? data.message : 'Unable to proceed')
+                }
             }
         } catch (error: any) {
-            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to proceed with error')
         }
-    }
-
-    const convertToBlobWithBase64Only = async (base64Url: RequestInfo | URL | string) => {
-        const response = await fetch(base64Url);
-        const blob = await response.blob();
-        return blob
     }
 
     const pickImage = async () => {
@@ -114,7 +116,7 @@ const OnboardProfilePicture = () => {
                 </View>
                 <ScrollView className='h-full'>
                     <View className='p-4 space-y-4'>
-                    <YStack>
+                        <YStack>
                             <Text className='text-2xl text-white font-firabold'>Profile Picture</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
@@ -125,9 +127,12 @@ const OnboardProfilePicture = () => {
                                         {image ? (
                                             <Image source={{ uri: image.uri }} onError={() => setImage(undefined)} style={{ width: '100%', height: '100%', borderRadius: 200 }} />
                                         ) : (
-                                            <View  className='w-full h-full rounded-full flex space-y-1 justify-center items-center border border-dashed border-[#DD3FE5]'>
-                                                <Feather name='image' size={32} color="#DD3FE5" />
-                                                <Text className='text-sm text-white font-firamedium'>Add Profile Picture</Text>
+                                            <View className='w-full h-full overflow-hidden rounded-full flex space-y-1 justify-center items-center border border-dashed border-[#DD3FE5]'>
+                                                <ImageBackground source={{ uri: profile_picture_url }} style={{ width: '100%', height: '100%', borderRadius: 200 }} />
+                                                <View className='absolute space-x-1 items-center'>
+                                                    <Feather name='image' size={32} color="#DD3FE5" />
+                                                    <Text className='text-sm text-white font-firamedium'>Add Profile Picture</Text>
+                                                </View>
                                             </View>
                                         )
                                         }
@@ -138,7 +143,7 @@ const OnboardProfilePicture = () => {
                                 <CustomButton title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
                                     <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                    <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-in'>Sign In</Link>
+                                    <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
                                 </View>
                             </YStack>
                         </YStack>
