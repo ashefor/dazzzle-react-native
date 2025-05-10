@@ -6,21 +6,23 @@ import FormField from './FormField';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { CountryPhoneCode } from '@/models/general';
+import { useAppSelector } from '@/hooks/reduxHooks';
 
 const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
-    const country_phone_codes = useGeneralConfig()?.country_phone_codes;
+    // const country_phone_codes = useGeneralConfig()?.country_phone_codes;
+            const { loading, appConfig } = useAppSelector(state => state.app);
     const [country, setCountry] = React.useState('');
-    const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>(country_phone_codes || []);
+    const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>([]);
     const [selectedCountryCode, setSelectedCountryCode] = React.useState(countryCode);
     const [showCountryPicker, setShowCountryPicker] = React.useState(false)
     const [countrySheetPosition, setCountrySheetPosition] = React.useState(0);
     const [snapPoints, setSnapPoints] = useState([65, 85]);
 
     useEffect(() => {
-        if (country_phone_codes) {
-            setFilteredCountryCodes(country_phone_codes)
+        if (appConfig?.country_phone_codes) {
+            setFilteredCountryCodes(appConfig?.country_phone_codes)
         }
-    }, [country_phone_codes])
+    }, [appConfig?.country_phone_codes])
 
     useEffect(() => {
         setSelectedCountryCode(countryCode)
@@ -37,13 +39,13 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
     const filterCountries = (text: string) => {
         setCountry(text)
         if (text.length > 0) {
-            const filtered = country_phone_codes!.filter((country) => country!.name.toLowerCase().includes(text.toLowerCase()))
+            const filtered = appConfig?.country_phone_codes!.filter((country) => country!.name.toLowerCase().includes(text.toLowerCase()))
             setCountrySheetPosition(1)
             // setSnapPoints([65, 85, filtered.length * 50])
-            setFilteredCountryCodes(filtered)
+            setFilteredCountryCodes(filtered!)
         } else {
             setCountrySheetPosition(0)
-            setFilteredCountryCodes(country_phone_codes || [])
+            setFilteredCountryCodes(appConfig?.country_phone_codes || [])
             setSnapPoints([65, 85])
         }
     }
@@ -69,7 +71,6 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
                 modal={true}
                 open={showCountryPicker}
                 disableDrag={true}
-                onOpenChange={setShowCountryPicker}
                 snapPoints={snapPoints}
                 snapPointsMode={'percent'}
                 dismissOnSnapToBottom

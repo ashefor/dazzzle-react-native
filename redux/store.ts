@@ -1,21 +1,27 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import UserSlice, { setToken, setUser } from "./slice/UserSlice";
-import AppSlice from "./slice/AppSlice";
+import authSlice, { setToken, setUser } from "./slices/authSlice";
+import appSlice from "./slices/appSlice";
 import { getItem } from "@/utils/asyncStorage";
+import subscriptionSlice, { setActiveSubscription } from "./slices/subscriptionSlice";
+import usersSlice from "./slices/usersSlice";
 
 export const store = configureStore({
     reducer: {
-        users: UserSlice,
-        app: AppSlice
+        auth: authSlice,
+        app: appSlice,
+        subscription: subscriptionSlice,
+        users: usersSlice
     },
 });
 
 const initializeStore = async () => {
     const token = await getItem('dazzzle-token');
     const user = await getItem('dazzzle-user');
+    const userSubscription = await getItem('dazzzle-user-subscription');
     store.dispatch(setUser(user));
     store.dispatch(setToken(token));
+    store.dispatch(setActiveSubscription(userSubscription));
 };
 
 initializeStore();

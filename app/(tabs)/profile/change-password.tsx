@@ -77,7 +77,7 @@ const ChangePasswordScreen = () => {
             }
         } catch (error: any) {
             console.log('error', error);
-            Alert.alert('Error', error.message ? error.message : 'Unable to change password')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to change password')
         }
     }
 

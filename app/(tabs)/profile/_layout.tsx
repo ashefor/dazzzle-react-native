@@ -2,67 +2,53 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { router, Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import Ionicons from '@expo/vector-icons/Ionicons'
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import Header from '@/components/Header'
+import { getHeaderTitle } from '@react-navigation/elements'
 
 const ProfileLayout = () => {
   return (
     <>
       <Stack screenOptions={{
-        headerTitleAlign: 'left',
-        headerStyle: {
-          backgroundColor: '#1A1A1A',
-        },
-        headerShadowVisible: false,
-        headerTitleStyle: {
-          fontWeight: 500,
-          fontFamily: "FiraSans_500Medium",
-        },
-        headerBackButtonDisplayMode: 'minimal',
+        header: ({ navigation, route, options, back }) => {
+          const title = getHeaderTitle(options, route.name);
+          return (
+            <Header.Default
+              title={title}
+              leftButton={
+                back && <TouchableOpacity onPress={navigation.goBack} className='flex items-center justify-center' style={{zIndex: 99}}>
+                  <ArrowBackIcon />
+                </TouchableOpacity>
+              } />
+          )
+        }
       }}>
         <Stack.Screen name='index' options={{
           title: 'Profile',
-          headerShadowVisible: false,
-          headerTitleStyle: {
-            fontWeight: 700,
-            fontSize: 20,
-            fontFamily: "FiraSans_700Bold",
-          },
         }} />
-        {/* <Stack.Screen name='visitors' options={{
-          title: 'Visitors',
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
-        }} /> */}
         <Stack.Screen name='blocked-users' options={{
           title: 'Blocked Users',
-          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-          //   <ArrowBackIcon />
-          // </TouchableOpacity>
-        }} 
+        }}
         />
         <Stack.Screen name='change-password' options={{
           title: 'Change Password',
-          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-          //   <ArrowBackIcon />
-          // </TouchableOpacity>
-        }} 
+        }}
         />
-        <Stack.Screen name='change-email'  options={{
+        <Stack.Screen name='change-email' options={{
           title: 'Change Email',
-          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-          //   <ArrowBackIcon />
-          // </TouchableOpacity>
-        
-        }} 
+        }}
+        />
+        <Stack.Screen name='visitors' options={{
+          title: 'Visitors',
+        }}
         />
         <Stack.Screen name='settings' options={{
-          title: 'Settings',
-          presentation:'modal',
-          // headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-          //   <ArrowBackIcon />
-          // </TouchableOpacity>
+          title: 'Notification Preferences',
+          presentation: 'modal',
+        }}
+        />
+         <Stack.Screen name='wallet-transactions' options={{
+          title: 'Transactions',
         }}
         />
       </Stack>

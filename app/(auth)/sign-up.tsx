@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link, router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import Images from '@/constants/images'
-import {Form, YStack, Checkbox, XStack, Sheet, } from 'tamagui'
+import {Form, YStack, Checkbox as TamguiCheckbox, XStack, Sheet, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,6 +14,8 @@ import { isValidEmail } from '@/utils/validators'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
+import BouncyCheckbox from "react-native-bouncy-checkbox";
+import Checkbox from 'expo-checkbox';
 
 type SigUpForm = {
     username: string;
@@ -178,11 +180,23 @@ const SignIn = () => {
                                 </YStack>
                                 <YStack>
                                     <XStack alignItems="center" gap="$3">
-                                        <Checkbox checked={form.accepted_terms} onCheckedChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} size="$4" className='bg-primary border-2 border-white'>
+                                        {/* <Checkbox checked={form.accepted_terms} onCheckedChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} size="$4" className='bg-primary border-2 border-white'>
                                             <Checkbox.Indicator>
                                                 <MaterialCommunityIcons name="check-bold" size={18} color="#ffffff" />
                                             </Checkbox.Indicator>
-                                        </Checkbox>
+                                        </Checkbox> */}
+                                        <Checkbox value={form.accepted_terms} onValueChange={(checked: boolean) => handleInputChange('accepted_terms', checked)}/>
+
+                                        {/* <BouncyCheckbox
+                                        isChecked={form.accepted_terms}
+  size={25}
+  fillColor="#DD3FE5"
+  unFillColor="#1A1A1A"
+  text="Custom Checkbox"
+  iconStyle={{ borderColor: "white" }}
+  innerIconStyle={{ borderWidth: 2 }}
+  onPress={(checked: boolean) => handleInputChange('accepted_terms', checked)}
+/> */}
                                         <View className='flex flex-wrap flex-1 flex-row gap-1'>
                                             <Text className='text-base text-white font-firaregular'>I accept all</Text>
                                             <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>

@@ -18,7 +18,7 @@ export const useAxiosContext = () => useContext(AxiosContext);
 const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(false);
     // const { authState, token } = useGlobalContext();
-      const { isProfileCompleted, userToken } = useAppSelector(state => state.users);
+      const {  userToken } = useAppSelector(state => state.auth);
     const axiosRequest = axios.create({
         baseURL: API_URL,
         headers: {
@@ -43,7 +43,6 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
             return config;
         },
         (error) => {
-            console.error('Request error:', error);
             setLoading(false);
             return Promise.reject(error);
         }
@@ -53,21 +52,24 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
         (response) => {
             setLoading(false);
             const { reaction, message, data, redirect_to, auth_info } = response.data;
-            let errorMessage = message;
-            if (reaction === ReactionCodes.ERROR) {
-                if (auth_info) {
-                    const { reaction_code } = auth_info;
-                    if (reaction_code === ReactionCodes.NOT_AUTHENTICATED) {
-                        errorMessage = 'Session expired. Please login again';
+            let errorMessage = message as string;
+            if (reaction) {
+                if (reaction === ReactionCodes.ERROR) {
+                    if (auth_info) {
+                        const { reaction_code } = auth_info;
+                        if (reaction_code === ReactionCodes.NOT_AUTHENTICATED) {
+                            errorMessage = 'Session expired. Please login again';
+                        }
+                    } else if(data) {
+                        errorMessage = data.message;
                     }
-                } else if(data) {
-                    errorMessage = data.message;
+                } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
+                    errorMessage = message
                 }
-            } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
-                errorMessage = message
-            }
-            if (errorMessage) {
-                throw new Error(errorMessage); // This will stop further processing and reject the promise
+                if (errorMessage) {
+                    errorMessage =  errorMessage.replace(/<br\s*\/?>/gi, '\n');
+                    throw new Error(errorMessage); // This will stop further processing and reject the promise
+                }
             }
             return response;
         },
@@ -85,6 +87,7 @@ const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
         // if (errorMessage) {
         //     throw new Error(errorMessage); // This will stop further processing and reject the promise
         // }
+        errorMessage =  errorMessage.replace(/<br\s*\/?>/gi, '\n');
             setLoading(false);
             return Promise.reject({...error, errorMessage});
         }

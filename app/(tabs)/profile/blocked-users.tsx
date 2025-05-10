@@ -19,7 +19,6 @@ const BlockedUsers = () => {
              setLoading(true);
              const { data } = await axiosRequest.get(pageUrl, { headers: { 'hide-loader': hideLoader ? 'true' : 'false' } });
              if (data.reaction === ReactionCodes.SUCCESS) {
-                 console.log('blocked-users-list', data);
                  const { usersData, totalCount, nextPageUrl } = data.data;
                  setUsers(prevUsers => [...prevUsers, ...usersData]);
                  setPaginationDetails({ totalCount, nextPageUrl });
@@ -72,13 +71,13 @@ const BlockedUsers = () => {
                  onRefresh={() => refreshUsers()}
                  refreshing={refreshing}
                  onEndReachedThreshold={0.1}
-                 ListEmptyComponent={
-                     <View className='my-4 p-4'>
-                         <View className='p-4 text-center bg-[#ccc] justify-center items-center rounded-md'>
-                             <Text className='text-sm font-firamedium'>No users found</Text>
-                         </View>
-                     </View>
-                 }
+                //  ListEmptyComponent={
+                //      <View className='my-4 p-4'>
+                //          <View className='p-4 text-center bg-[#ccc] justify-center items-center rounded-md'>
+                //              <Text className='text-sm font-firamedium'>No users found</Text>
+                //          </View>
+                //      </View>
+                //  }
                  ListFooterComponent={loading ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
                  renderItem={
                      ({ item }) => (

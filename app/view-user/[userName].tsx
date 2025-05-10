@@ -16,6 +16,9 @@ import { ReactionCodes } from '@/models/general';
 import { SingleUserDetails } from '@/models/user';
 import SkeletonLoading from 'expo-skeleton-loading'
 import icons from '@/constants/icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
+import { useAppDispatch } from '@/hooks/reduxHooks';
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
@@ -24,6 +27,7 @@ const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeArea);
 
 const User = () => {
     const { userName } = useLocalSearchParams();
+      const dispatch = useAppDispatch();
     const { axiosRequest } = useAxiosContext();
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
@@ -71,7 +75,6 @@ const User = () => {
             setIsLoading(true);
             const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                console.log('user details', data.data);
                 const user = data.data;
                 setUserDetails(user);
                 setIsLoading(false);
@@ -85,6 +88,27 @@ const User = () => {
         fetchUserDetails();
     }, [])
 
+    const dislikeUser = async () => {
+        const userId = userDetails?.userData.userId;
+        if (userId) {
+            dispatch(swipeLeftAsync(userId.toString())).unwrap().then((result) => {
+                fetchUserDetails();
+            });;
+        } else {
+            console.error('user id not found');
+        }
+    }
+
+    const likeUser = async () => {
+        const userId = userDetails?.userData.userId;
+        if (userId) {
+            dispatch(swipeRightAsync(userId.toString())).unwrap().then((result) => {
+                fetchUserDetails();
+            });
+        } else {
+            console.error('user id not found');
+        }
+    }
 
     const handleLikeOrDislikeUser = async (likeOrDislike: string) => {
         try {
@@ -105,9 +129,7 @@ const User = () => {
             const params = {
                 block_user_id: userDetails?.userData.userId
             }
-            console.log(params);
             const { data } = await axiosRequest.post(`/block-user`, params);
-            console.log('user data from block', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 setUserDetails((prevUserDetails) => {
                     return {
@@ -127,7 +149,6 @@ const User = () => {
             const params = {
                 block_user_id: userDetails?.userData.userId
             }
-            console.log(params);
             const { data } = await axiosRequest.post(`${userId}/unblock-user-data`, {});
             console.log('user data from unblock', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
@@ -431,17 +452,17 @@ const User = () => {
             >
                 <Stack.Screen
                     options={{
-                        headerStyle: { backgroundColor: 'red' },
+                        headerStyle: { backgroundColor: 'transparent' },
                         headerShown: true,
                         headerTransparent: true,
                         header: (props) => <View>
                             <AnimatedSafeAreaView style={{ backgroundColor: headerBackgroundColor, }} />
                             <Animated.View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
-                                <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+                                <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center'>
                                     <ArrowBackIcon />
                                 </TouchableOpacity>
                                 <Animated.Text style={[styles.title, { opacity: headerOpacity }]} className='font-firabold text-center'>{userDetails?.userData.first_name} {userDetails?.userData.last_name}</Animated.Text>
-                                {userDetails && <UserMoreActionsPopover
+                                {userDetails && !userDetails.isBlockUser && <UserMoreActionsPopover
                                     placement="bottom"
                                 />}
                             </Animated.View>
@@ -475,7 +496,9 @@ const User = () => {
                                 <YStack gap="$3">
                                         <XStack alignItems="center" gap="$4" justifyContent='center'>
                                             <View className='rounded-full relative'>
-                                                {userDetails.isPremiumUser && <Image source={icons.premium} className='w-6 h-6 z-[1000]' resizeMode='contain' style={{ position: 'absolute', right: 0, bottom: 0 }}/>}
+                                                {userDetails.isPremiumUser && 
+                                                <MaterialCommunityIcons name="crown-circle-outline" size={24} color="#FFD700" style={{ position: 'absolute', right: 0, bottom: 5, zIndex: 5 }}/>
+                                                }
                                                 <Avatar className='' gap="$2" circular size="$10">
                                                     <Avatar.Image
                                                         accessibilityLabel="Nate Wienert"
@@ -493,7 +516,9 @@ const User = () => {
                                         </Text>}
                                     </YStack>
                                     {userDetails?.blockByMeUser ? <View className='mt-10 py-4'>
-                                        <Text className='text-lg font-firasemibold text-center text-white'>@{userDetails?.userData.userName} is blocked</Text>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} is blocked</Text>
+                                    </View> : userDetails.isBlockUser ? <View>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} has blocked you</Text>
                                     </View> : <TabsAdvancedBackground />}
                                 </View>
                             </YStack>
@@ -506,16 +531,16 @@ const User = () => {
                 </View>
 
             </ScrollView>
-            {userDetails && !userDetails.blockByMeUser && <View className='absolute bottom-0 w-full py-7 items-center justify-center'>
+            {userDetails && !(userDetails.blockByMeUser || userDetails?.isBlockUser) && <View className='absolute bottom-0 w-full py-7 items-center justify-center'>
                 <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
-                    <Button onPress={() => handleLikeOrDislikeUser('0')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+                    <Button onPress={dislikeUser} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <FontAwesome name="close" size={36} color={hasUserDisliked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                         {/* #EB4242 */}
                     </Button>
                     <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="chatbox-ellipses" size={24} color="#59C526" />
                     </Button>
-                    <Button onPress={() => handleLikeOrDislikeUser('1')} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+                    <Button onPress={likeUser} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="heart" size={36} color={hasUserLiked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                     </Button>
                 </XStack>
@@ -535,8 +560,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         // height: Platform.OS === 'android' ? 97 : 'auto',
         // height: 97,
+        minHeight: 44,
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 10,
         backgroundColor: 'transparent',
         borderBottomWidth: 0,
         borderBottomColor: '#ddd',

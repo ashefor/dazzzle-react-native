@@ -121,5 +121,16 @@ export interface SubscriptionResponse {
     currency: string
     order_id: string
   }
+
+  export interface WalletTransaction {
+    _id: number
+    _uid: string
+    created_at: string
+    credits: number
+    credit_type: any
+    transactionType: number
+    formattedTransactionType: string
+    financialTransactionDetail: any[]
+  }
   
   

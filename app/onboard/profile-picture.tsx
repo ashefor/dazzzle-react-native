@@ -11,8 +11,11 @@ import Feather from '@expo/vector-icons/Feather'
 import { ReactionCodes } from '@/models/general'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import Toast from '@/components/toast/toast'
+import { useAppDispatch } from '@/hooks/reduxHooks'
+import { signUserOut } from '@/redux/thunks/authActions'
 
 const OnboardProfilePicture = () => {
+    const dispatch = useAppDispatch();
     const { axiosRequest } = useAxiosContext();
     const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
@@ -56,6 +59,10 @@ const OnboardProfilePicture = () => {
             };
         }, [])
     )
+
+    const handleLogOut = async () => {
+        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+    }
 
     const submit = async () => {
         try {
@@ -142,8 +149,9 @@ const OnboardProfilePicture = () => {
                             <YStack>
                                 <CustomButton title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
-                                    <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                    <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
+                                     <TouchableOpacity onPress={() => handleLogOut()}>
+                                                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                                                    </TouchableOpacity>
                                 </View>
                             </YStack>
                         </YStack>

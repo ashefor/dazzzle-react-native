@@ -1,7 +1,7 @@
 // // authActions.js
 import axios, { AxiosHeaders, AxiosRequestConfig, HeadersDefaults, InternalAxiosRequestConfig, RawAxiosRequestHeaders } from 'axios'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getItem, removeItem, setItem } from '@/utils/asyncStorage'
+import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import { API_URL } from '@/constants/constants'
@@ -63,12 +63,15 @@ export const userLogin = createAsyncThunk(
             }
             const authInfo = authApiResponse.data.auth_info;
             const user = authApiResponse.data.auth_info.profile;
+            const userSubscription = authApiResponse.data.userSubscription;
             const token = authApiResponse.data.access_token;
             const isProfileComplete = authInfo.isProfileComplete;
-            // store user's token in local storage
+
             await setItem('dazzzle-token', token);
             await setItem('dazzzle-user', user);
-            return { user, token, isProfileComplete };
+            await setItem('dazzzle-user-subscription', userSubscription);
+
+            return { user, token, isProfileComplete, userSubscription };
         } catch (error: any) {
             // return custom error message from API if any
             if (error.response && error.response.data.message) {
@@ -101,6 +104,7 @@ export const fetchAuthenticatedUser = createAsyncThunk(
             const authInfo = authApiResponse.data.auth_info;
             const user = authInfo.profile;
             const isProfileComplete = authInfo.isProfileComplete;
+            const userSubscription = authApiResponse.data.userSubscription;
 
             const { reaction, message, data, redirect_to, auth_info } = response.data;
             let errorMessage = message;
@@ -118,7 +122,7 @@ export const fetchAuthenticatedUser = createAsyncThunk(
             if (user) {
                 await setItem('dazzzle-user', user);
             }
-            return { user, isProfileComplete };
+            return { user, isProfileComplete, userSubscription };
         } catch (error: any) {
             // return custom error message from API if any
             if (error.response && error.response.data.message) {
@@ -132,14 +136,15 @@ export const fetchAuthenticatedUser = createAsyncThunk(
 
 export const signUserOut = createAsyncThunk(
     '/user/logout',
-    async (_, { rejectWithValue }) => {
+    async (_, { rejectWithValue, getState }) => {
         try {
-            const token = await getItem('dazzzle-token');
+            // const token = await getItem('dazzzle-token');
+            const state = (getState() as any).auth;
             const config: AxiosRequestConfig = {
                 headers: {
                     "Accept": "*/*",
                     "Api-Request-Signature": "mobile-app-request",
-                    ...(token && { Authorization: `Bearer ${token}` })
+                    ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
                 }
             }
             const response = await axios.post(
@@ -162,6 +167,7 @@ export const signUserOut = createAsyncThunk(
             }
             await removeItem('dazzzle-token');
             await removeItem('dazzzle-user');
+            clear();
             return true;
         } catch (error: any) {
             // return custom error message from API if any

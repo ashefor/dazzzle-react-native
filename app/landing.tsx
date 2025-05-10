@@ -17,7 +17,7 @@ export default function HomeScreen() {
                             </Text>
                         </View>
                         <Text className='text-base font-firaregular text-gray-100 mt-7 text-center'> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </Text>
-                        <CustomButton title='Continue with Email' containerStyles='mt-7 w-full' handlePress={() => router.push('/sign-in')} />
+                        <CustomButton title='Continue with Email' containerStyles='mt-7 w-full' handlePress={() => router.replace('/sign-in')} />
                     </View>
                 </View>
             </ImageBackground>

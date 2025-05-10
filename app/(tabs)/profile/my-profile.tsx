@@ -1,23 +1,18 @@
-import { SafeAreaView, Text, Image, View, ScrollView, TouchableOpacity, Animated, Dimensions, StatusBar } from 'react-native';
-import Images from '@/constants/images';
+import {  Text, View, ScrollView, TouchableOpacity, Animated, } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, Avatar, Button, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Feather from '@expo/vector-icons/Feather';
 import UserPhotos from '../../../components/UserPhotos';
 import BasicInfo from '@/components/BasicInfo';
 import UserInterests from '@/components/UserInterests';
-import { getItem } from '@/utils/asyncStorage';
-import { LoggedInUser, LoggedInUserProfile, SingleUserDetails } from '@/models/user';
+import { LoggedInUserProfile, SingleUserDetails } from '@/models/user';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { useAppSelector } from '@/hooks/reduxHooks';
 
 const MyProfile = () => {
-  const { shouldSignUserOut, userInfo } = useAppSelector(state => state.users);
+  const { userInfo } = useAppSelector(state => state.auth);
     const { axiosRequest } = useAxiosContext();
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [loggedInUserProfile, setLoggedInUserProfile] = useState<LoggedInUserProfile | null>(null);

@@ -10,6 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user';
+import Header from '@/components/Header';
 
 const AnimatedYStack = styled(YStack, {
     flex: 1,
@@ -233,7 +234,8 @@ const FilterUsers = () => {
             const { data } = await axiosRequest.get(pageUrl, { headers: { 'hide-loader': hideLoader ? 'true' : 'false' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { getFeatureUserList } = data.data;
-                setUsers(prevUsers => [...prevUsers, ...getFeatureUserList]);
+                // setUsers(prevUsers => [...prevUsers, ...getFeatureUserList]);
+                setUsers(getFeatureUserList);
             }
             setLoading(false);
         } catch (error) {
@@ -290,7 +292,6 @@ const FilterUsers = () => {
             const { data } = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`, { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { filterData } = data.data;
-                console.log([...filterData]);
                 setUsers([...filterData]);
             }
         } catch (error) {
@@ -304,13 +305,16 @@ const FilterUsers = () => {
 
     return (
         <>
-            <Stack.Screen options={{
+            {/* <Stack.Screen options={{
                 headerRight: () => <XStack gap={'$4'} className='px-4'>
                     <TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
                         <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
                     </TouchableOpacity>
                 </XStack>,
-            }} />
+            }} /> */}
+            <Header.Default title='Search' rightContent={<TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
+                        <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
+                    </TouchableOpacity>}></Header.Default>
             <View className='bg-[#1A1A1A] h-full'>
                 {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
                 <Text className='text-white'>Showing filter</Text>
@@ -319,14 +323,22 @@ const FilterUsers = () => {
                                 <Ionicons name="close" size={24} color="#ffffff" />
                             </TouchableOpacity>
                 </XStack>}
+                <View style={{flexGrow: 1}} className='pb-[25%]'>
                 <FlatList
                     className='p-1'
                     data={users}
                     keyExtractor={(item, index) => `${item._id}-${index}`}
                     numColumns={width > 600 ? 3 : width > 991 ? 4 : 2}
-                    onEndReached={filterParams ? null : handleLoadMore}
+                    // onEndReached={filterParams ? null : handleLoadMore}
                     refreshing={refreshing}
                     onRefresh={() => refreshUsers()}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={refreshUsers}
+                            tintColor='#fff'
+                        />
+                    }
                     onEndReachedThreshold={0.5}
                     ListEmptyComponent={
                         <View className='my-4 p-4'>
@@ -356,6 +368,7 @@ const FilterUsers = () => {
                         )
                     }
                 />
+                </View>
             </View>
             <Modal
                 animationType="slide"

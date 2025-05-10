@@ -76,15 +76,17 @@ const ChangeEmailScreen = () => {
 
   const handleChangeEmail = async () => {
     try {
-      const { data } = await axiosRequest.post('/profile/update-email-process', form);
+
+        const { data } = await axiosRequest.post('/profile/update-email-process', form);
       if (data.reaction === ReactionCodes.SUCCESS) {
         const response = data.data;
         Toast.success(response.message || 'Email changed successfully', 2000)
         router.replace('/profile');
       }
+
     } catch (error: any) {
       console.log('error', error);
-      Alert.alert('Error', error.message ? error.message : 'Unable to change email')
+      Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to change email')
     }
   }
 

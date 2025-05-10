@@ -16,6 +16,7 @@ const FormField = ({title, value, secureTextEntry, handleChangeText, otherStyles
         value={value}
         inputMode={keyBoardType || 'text'}
         onChangeText={handleChangeText}
+        autoCapitalize='none'
         placeholder={placeholder}
         placeholderTextColor={"#fbfbfb73"}
         selectionColor={'#DD3FE5'}

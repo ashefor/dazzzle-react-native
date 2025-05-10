@@ -75,7 +75,7 @@ const BasicInfo = ({ editable, userSpecificationData, userProfileData, ...props 
                 <YStack gap="$3">
                     <XStack gap="$4" justifyContent='space-between' alignItems='center'>
                         <Text className='text-sm text-white font-firamedium'>Basic Info</Text>
-                        {editable && <TouchableOpacity onPress={toggleEditModalVisible} activeOpacity={0.8}>
+                        {editable && <TouchableOpacity onPress={() => alert('edit')} activeOpacity={0.8}>
                             <XStack>
                                 <Text className='text-sm text-[#DD3FE5] font-firaregular'>Edit</Text>
                                 <Feather name="edit-3" size={16} color="#DD3FE5" />

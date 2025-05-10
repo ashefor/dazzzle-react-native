@@ -11,13 +11,15 @@ import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { Feather } from '@expo/vector-icons';
 import Toast from '@/components/toast/toast'
+import { useAppDispatch } from '@/hooks/reduxHooks'
+import { signUserOut } from '@/redux/thunks/authActions'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
 const OnboardLocation = () => {
+    const dispatch = useAppDispatch();
     const { axiosRequest } = useAxiosContext();
     const [progress, setProgress] = React.useState(Math.ceil((2 / 5) * 100));
 
-    const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
     const [location, setLocation] = useState('');
     const [googleMapsLocation, setGoogleMapsLocation] = useState<{
         placeData: any;
@@ -34,38 +36,38 @@ const OnboardLocation = () => {
         }, 500);
     }, [])
 
-    
-        const fetchUserProfileUpdateStatus = async () => {
-            try {
-                const response = await axiosRequest.get('/profile/check-profile-updated');
-                const reaction = response.data.reaction;
-                const responseData = response.data.data;
-                if (reaction === ReactionCodes.SUCCESS) {
-                    const profileData = responseData['profileInfo'];
-                    if (profileData) {
-                        if (profileData.location_latitude && profileData.location_longitude) {
-                            fetchLocationFromLatLong(profileData.location_latitude, profileData.location_longitude);
-                        }
+
+    const fetchUserProfileUpdateStatus = async () => {
+        try {
+            const response = await axiosRequest.get('/profile/check-profile-updated');
+            const reaction = response.data.reaction;
+            const responseData = response.data.data;
+            if (reaction === ReactionCodes.SUCCESS) {
+                const profileData = responseData['profileInfo'];
+                if (profileData) {
+                    if (profileData.location_latitude && profileData.location_longitude) {
+                        fetchLocationFromLatLong(profileData.location_latitude, profileData.location_longitude);
                     }
                 }
-            } catch (error) {
-                console.error('Error fetching data:', error);
             }
-        };
-    
-        useFocusEffect(
-            // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
-            useCallback(() => {
-                setProgress(Math.ceil((2 / 5) * 100))
-                // Invoked whenever the route is focused.
-                fetchUserProfileUpdateStatus();
-    
-                // Return function is invoked whenever the route gets out of focus.
-                return () => {
-                    console.log('This route is now unfocused.');
-                };
-            }, [])
-        )
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useFocusEffect(
+        // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
+        useCallback(() => {
+            setProgress(Math.ceil((2 / 5) * 100))
+            // Invoked whenever the route is focused.
+            fetchUserProfileUpdateStatus();
+
+            // Return function is invoked whenever the route gets out of focus.
+            return () => {
+                console.log('This route is now unfocused.');
+            };
+        }, [])
+    )
 
     const fetchLocationFromLatLong = async (latitude: number, longitude: number) => {
         // https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=YOUR_API_KEY
@@ -98,6 +100,10 @@ const OnboardLocation = () => {
         setGoogleMapsLocation(params);
     }
 
+    const handleLogOut = async () => {
+        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+    }
+
     const submit = async () => {
         if (!googleMapsLocation) {
             return Alert.alert('Error', 'Please select a location')
@@ -128,13 +134,13 @@ const OnboardLocation = () => {
                 </View>
                 <View className='flex-1'>
                     <View className='p-4 flex-1 space-y-4'>
-                    <YStack>
+                        <YStack>
                             <Text className='text-2xl text-white font-firabold'>Choose location</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
                         <View className='flex-1 justify-between'>
 
-                        <GooglePlacesAutocomplete
+                            <GooglePlacesAutocomplete
                                 placeholder="Search"
                                 query={{
                                     key: GOOGLE_MAPS_API_KEY,
@@ -149,17 +155,18 @@ const OnboardLocation = () => {
                             // }} // this in only required for use on the web. See https://git.io/JflFv more for details.
                             />
 
-{location &&  <View className='mt-4 mb-8 space-y-2'>
-    <Text className='text-xs text-white font-firamedium'>Selected Location</Text>
-                                    <Text className='text-white font-firaregular'>{location}</Text>
-                                </View>
-}
+                            {location && <View className='mt-4 mb-8 space-y-2'>
+                                <Text className='text-xs text-white font-firamedium'>Selected Location</Text>
+                                <Text className='text-white font-firaregular'>{location}</Text>
+                            </View>
+                            }
 
                             <View className='mt-7 w-full'>
                                 <CustomButton title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
-                                    <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                    <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
+                                    <TouchableOpacity onPress={() => handleLogOut()}>
+                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         </View>

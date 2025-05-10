@@ -21,7 +21,7 @@ import { Foundation } from '@expo/vector-icons';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-interface User {
+export interface User {
   countryName: string
   coverImage: string
   detailString: string
@@ -127,7 +127,6 @@ const TinderCardSwipers = () => {
       setInitialLoading(false);
     } catch (error) {
       setInitialLoading(false);
-      console.error('Error fetching liked users:', error);
       // setUsers(prevUsers => [...prevUsers]);
     }
   }
@@ -138,7 +137,7 @@ const TinderCardSwipers = () => {
         <View
           key={`${item.id}-${index}`}
           style={{
-            height: SCREEN_HEIGHT - 225,
+            height: SCREEN_HEIGHT - 250,
             // width: '95%',
             // marginHorizontal: '2.5%',
             width: SCREEN_WIDTH,
@@ -159,7 +158,7 @@ const TinderCardSwipers = () => {
             }}
             source={{ uri: item.profileImage }}
           >
-            <View className='flex-1 bg-black/[0.2]'>
+            <View className='flex-1 bg-black/[0.5]'>
               <View className='px-7 pt-7 pb-14 flex-1 justify-end'>
               <Pressable style={{ zIndex: 1000 , pointerEvents: 'auto'}} onPress={() => router.navigate({
                     pathname: './view-user/[userName]',
@@ -171,7 +170,7 @@ const TinderCardSwipers = () => {
                           <Text numberOfLines={2} lineBreakMode='tail' className='font-firasemibold text-2xl text-white capitalize'>
                             {item.username}
                           </Text>
-                          <Text className='text-white font-firaregular text-2xl text-white'>
+                          <Text className='text-white font-firaregular text-2xl'>
                             {item.userAge}
                           </Text>
                         </XStack>
@@ -196,7 +195,7 @@ const TinderCardSwipers = () => {
   return (
     <View className='flex-1'>
       <View>{initialLoading ? ( <View style={{
-        height: SCREEN_HEIGHT - 225,
+        height: SCREEN_HEIGHT - 250,
         width: SCREEN_WIDTH,
         paddingHorizontal: 16,
         paddingVertical: 20,
@@ -209,7 +208,7 @@ const TinderCardSwipers = () => {
         </View>):  
         users.length === 0 ? (
           <View style={{
-            height: SCREEN_HEIGHT - 225,
+            height: SCREEN_HEIGHT - 250,
             width: SCREEN_WIDTH,
             paddingHorizontal: 16,
             paddingVertical: 20,

@@ -4,13 +4,13 @@ import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
 import { View, Text, ImageBackground } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
-import { fetchAppConfig } from '@/redux/appActions';
+import { fetchAppConfig } from '@/redux/thunks/appActions';
 
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const { loading, appConfig } = useAppSelector(state => state.app);
-  const { userInfo, userToken } = useAppSelector(state => state.users);
+  const { userInfo, userToken } = useAppSelector(state => state.auth);
 
   // const loadInitialSettings = async () => {
   //   try {

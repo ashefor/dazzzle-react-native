@@ -10,10 +10,13 @@ import { useAxiosContext } from '@/context/AxiosProvider'
 import Toast from '@/components/toast/toast'
 import { setItem } from '@/utils/asyncStorage';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { signUserOut } from '@/redux/thunks/authActions'
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 
 const OnboardChooseInterests = () => {
+    const dispatch = useAppDispatch();
+        const { loading, appConfig } = useAppSelector(state => state.app);
     const { axiosRequest } = useAxiosContext();
-    const userInterests = useGeneralConfig()?.interests;
     const { setAuthState } = useGlobalContext();
     const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
     const [interests, setInterests] = useState<Interest[]>([]);
@@ -28,30 +31,10 @@ const OnboardChooseInterests = () => {
     }, [])
 
     useEffect(() => {
-        setInterests(userInterests!)
-    }, [userInterests])
+        setInterests(appConfig?.interests || [])
+    }, [appConfig])
 
     const [isSubmitting, setIsSubmitting] = useState(false)
-
-    const fetchUserProfileUpdateStatus = async () => {
-        try {
-            const response = await axiosRequest.get('/profile/check-profile-updated');
-            const reaction = response.data.reaction;
-            const responseData = response.data.data;
-            if (reaction === ReactionCodes.SUCCESS) {
-                const profileData = responseData['profileInfo'];
-                if (profileData) {
-
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchUserProfileUpdateStatus()
-    }, [])
 
     const chooseSelectedInterests = (interest: number) => {
         if (selectedInterests.includes(interest)) {
@@ -70,7 +53,7 @@ const OnboardChooseInterests = () => {
                 setHasFinished(true)
                 // setAuthState('completed');
                 // await setItem('profileCompletion', 'completed');
-                // router.replace('/(tabs)');
+                // router.replace('/(tabs)/discover');
             }
         } catch (error: any) {
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
@@ -79,16 +62,20 @@ const OnboardChooseInterests = () => {
         }
     }
 
+    const handleLogOut = async () => {
+        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+    }
+
     const finishAndSkip = async () => {
         try {
-            const { data } = await axiosRequest.post('/get-user-auth-info');
-            console.log(data);
+            // const { data } = await axiosRequest.post('/get-user-auth-info');
             // if (data.reaction === ReactionCodes.SUCCESS) {
             //     Toast.success('Profile updated successfully');
             //     // setAuthState('completed');
             //     await setItem('profileCompletion', 'completed');
-            //     router.replace('/(tabs)');
+            //     router.replace('/(tabs)/discover');
             // }
+            router.replace('/paywall');
         } catch (error) {
 
         }

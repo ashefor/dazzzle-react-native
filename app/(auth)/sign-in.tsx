@@ -15,11 +15,11 @@ import { API_URL } from '@/constants/constants'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import { setItem } from '@/utils/asyncStorage'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
-import { userLogin } from '@/redux/authActions'
+import { userLogin } from '@/redux/thunks/authActions'
 
 const SignIn = () => {
     const dispatch = useAppDispatch();
-    const { loading, isProfileCompleted, userInfo, shouldSignUserOut } = useAppSelector(state => state.users);
+    const { loading, isProfileCompleted, userInfo } = useAppSelector(state => state.auth);
     const { setUser, setAuthState, setToken } = useGlobalContext();
     const { axiosRequest } = useAxiosContext();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -82,7 +82,7 @@ const SignIn = () => {
         //         const userSubscription = authApiResponse.data.userSubscription; 
         //         if (isPremium || userSubscription) {
         //             await setItem('profileCompletion', 'completed');
-        //             router.replace('/(tabs)');
+        //             router.replace('/(tabs)/discover');
         //         } else {
         //             router.replace('../subscription');
         //         }
@@ -103,12 +103,11 @@ const SignIn = () => {
 
     useEffect(() => {
         if (userInfo) {
-            console.log('signin userInfo', userInfo, isProfileCompleted, shouldSignUserOut);
             if (isProfileCompleted) {
                 if (userInfo.is_premium) {
-                    router.replace('/(tabs)');
+                    router.replace('/(tabs)/discover');
                 } else {
-                    router.replace('/subscription');
+                    router.replace('/paywall');
                 }
             } else {
                 router.replace('/onboard/bio-data');
@@ -151,7 +150,7 @@ const SignIn = () => {
 
                             </YStack>
                             <Form.Trigger asChild disabled={status !== 'off'}>
-                                <CustomButton title='Sign In' handlePress={submit} />
+                                <CustomButton disabled={loading} title={loading ? 'Loading...' : 'Sign In'} handlePress={submit} />
                             </Form.Trigger>
                         </Form>
                         <View className='justify-center pt-5 flex-row gap-2'>

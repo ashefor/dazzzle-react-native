@@ -19,6 +19,7 @@ import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 

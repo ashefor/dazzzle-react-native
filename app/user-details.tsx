@@ -1,31 +1,52 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { fetchAuthenticatedUser, signUserOut } from "@/redux/authActions";
-import { logUserOut } from "@/redux/slice/UserSlice";
+import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
+import { logUserOut } from "@/redux/slices/authSlice";
 import { clear } from "@/utils/asyncStorage";
 import { Redirect, router } from "expo-router";
-import { useEffect } from "react";
-import { SafeAreaView, ActivityIndicator } from "react-native"
-import { Spinner } from "tamagui";
+import { useEffect, useState } from "react";
+import { SafeAreaView, ActivityIndicator, View, Image } from "react-native"
+import { Spinner, YStack } from "tamagui";
+import Images from '@/constants/images';
+import dayjs, { Dayjs } from 'dayjs'
 
 const UserDetails = () => {
     const dispatch = useAppDispatch();
-    const { userInfo, loadingUser, userToken, error, shouldSignUserOut, isProfileCompleted } = useAppSelector(state => state.users);
+    const { userInfo, loadingUser, userToken, error, isProfileCompleted } = useAppSelector(state => state.auth);
+    const { currentSubscription,  } = useAppSelector(state => state.subscription);
+    const [hasExpired, setHasExpired] = useState(false);
 
     useEffect(() => {
         dispatch(fetchAuthenticatedUser())
     }, [])
 
     useEffect(() => {
+        checkForExpiration();
+    }, [currentSubscription])
+
+
+    const checkForExpiration = () => {
+        if (currentSubscription) {
+            if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
+                setHasExpired(true);
+            } else {
+                setHasExpired(false);
+            }
+        }
+    }
+
+    useEffect(() => {
         if (error) {
-            clear();
-            dispatch(signUserOut())
+            dispatch(signUserOut()).unwrap().then(() => router.replace('./(auth)/sign-in'))
         } else if (userInfo) {
-            console.log('userInfo', userInfo);
             if (isProfileCompleted) {
                 if (userInfo.is_premium) {
-                    router.replace('./(tabs)');
+                    if (!hasExpired) {
+                        router.replace('./(tabs)/discover');
+                    } else {
+                        router.replace('/paywall');
+                    }
                 } else {
-                    router.replace('./subscription');
+                    router.replace('/paywall');
                 }
             } else {
                 router.replace('./onboard/bio-data');
@@ -33,24 +54,22 @@ const UserDetails = () => {
         }
     }, [error, userInfo, isProfileCompleted])
 
-    useEffect(() => {
-        if (shouldSignUserOut) {
-            router.replace('./(auth)/sign-in');
-        }
-    }, [shouldSignUserOut])
 
     if (loadingUser) {
         return (
-            <SafeAreaView className="flex-1 items-center justify-center bg-red-200">
-                <Spinner color={'#023c69'} size="large" />
-            </SafeAreaView>
+            <View className="h-full w-full items-center justify-center bg-primary">
+                {/* <Spinner color={'#023c69'} size="large" /> */}
+                <YStack flex={1} width="100%" alignItems="center" justifyContent="center" backgroundColor={"$black075"}>
+                    <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
+                </YStack>
+            </View>
         )
     } else {
         if (error) {
             return <Redirect href={'/(auth)/sign-in'} />
         } else {
             if (isProfileCompleted) {
-                return <Redirect href="./(tabs)" />;
+                return <Redirect href="./(tabs)/discover" />;
             } else {
                 return <Redirect href="./onboard/bio-data" />
             }

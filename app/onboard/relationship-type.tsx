@@ -1,11 +1,11 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Pressable } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Link, router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import Images from '@/constants/images'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView } from 'tamagui'
+import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather'
@@ -13,17 +13,18 @@ import { useGeneralConfig } from '@/hooks/useGeneralConfig'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
+import { useAppDispatch } from '@/hooks/reduxHooks'
+import { signUserOut } from '@/redux/thunks/authActions'
 
 const OnboardRelationshipType = () => {
+    const dispatch = useAppDispatch();
     const { axiosRequest } = useAxiosContext();
-    const relationshipTypes = useGeneralConfig()?.relationship_types;
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
     // const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
 
     useEffect(() => {
-        console.log('relationshipTypes', relationshipTypes);
         setTimeout(() => {
             setProgress(Math.ceil((4 / 5) * 100))
         }, 500);
@@ -50,6 +51,10 @@ const OnboardRelationshipType = () => {
     useEffect(() => {
         fetchUserProfileUpdateStatus()
     }, [])
+
+    const handleLogOut = async () => {
+        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+    }
 
     const submit = async () => {
         setIsSubmitting(true);
@@ -82,14 +87,14 @@ const OnboardRelationshipType = () => {
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
                     </Progress>
                 </View>
-                <ScrollView className='h-full'>
-                    <View className='p-4 space-y-4'>
-                    <YStack>
+                <View className='flex-1'>
+                    <View className='p-4 flex-1 space-y-4'>
+                        <YStack>
                             <Text className='text-2xl text-white font-firabold'>Relationship Type</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
-                        <YStack>
-                            <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
+                        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }} >
+                        <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
                             <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
                                 <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[48.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />
@@ -134,13 +139,14 @@ const OnboardRelationshipType = () => {
                             <YStack>
                                 <CustomButton disabled={selectedRelationshipTypes.length === 0} title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
-                                    <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                    <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
+                                    <TouchableOpacity onPress={handleLogOut}>
+                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </YStack>
-                        </YStack>
+                        </ScrollView>
                     </View>
-                </ScrollView>
+                </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
     )

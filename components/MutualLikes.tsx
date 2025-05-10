@@ -65,9 +65,9 @@ const MutualLikes = () => {
                 onPress: () => console.log('Cancel Pressed'),
                 style: 'cancel',
             },
-            { 
-                text: 'Unlike', 
-                onPress: () => unlikeUser(userId) 
+            {
+                text: 'Unlike',
+                onPress: () => unlikeUser(userId)
             },
         ]);
 
@@ -78,7 +78,6 @@ const MutualLikes = () => {
     const unlikeUser = async (userId: string | number) => {
         try {
             const { data } = await axiosRequest.post(`/${userId.toString()}/0/user-like-dislike`);
-            console.log('liked data', data);
 
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const response = data.data;
@@ -100,14 +99,13 @@ const MutualLikes = () => {
                 onEndReached={handleLoadMore}
                 refreshing={refreshing}
                 onRefresh={() => refreshUsers()}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={refreshUsers}
+                        tintColor={'#fff'}
+                    />}
                 onEndReachedThreshold={0.5}
-                ListEmptyComponent={
-                    <View className='my-4 p-4'>
-                        <View className='p-4 text-center bg-[#ccc] justify-center items-center rounded-md'>
-                            <Text className='text-sm font-firamedium'>No users found</Text>
-                        </View>
-                    </View>
-                }
                 ListFooterComponent={loading ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
                 renderItem={
                     ({ item }) => (

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { userLogin } from '../authActions';
+import { userLogin } from '../thunks/authActions';
 import { BasicAppInterface } from '@/models/general';
-import { fetchAppConfig } from '../appActions';
+import { fetchAppConfig } from '../thunks/appActions';
 
 type AppState = {
     loading: boolean,
@@ -15,13 +15,16 @@ const initialState: AppState = {
     error: undefined
 }
 
-export const AppSlice = createSlice({
+export const appSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
-        getAppConfig: (state) => {
-            state.appConfig
-        }
+       showLoading: (state) => {
+           state.loading = true
+       },
+       hideLoading: (state) => {
+           state.loading = false
+       },
     },
     extraReducers: (builder) => {
         builder.addCase(fetchAppConfig.pending, (state) => {
@@ -38,6 +41,6 @@ export const AppSlice = createSlice({
     },
 });
 
-export const { getAppConfig } = AppSlice.actions;
+export const { showLoading, hideLoading } = appSlice.actions;
 
-export default AppSlice.reducer;
+export default appSlice.reducer;

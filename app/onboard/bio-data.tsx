@@ -21,6 +21,8 @@ import { ReactionCodes } from '@/models/general'
 import { Feather } from '@expo/vector-icons'
 import Toast from '@/components/toast/toast'
 import { clear } from '@/utils/asyncStorage'
+import { signUserOut } from '@/redux/thunks/authActions'
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 
 type BioDataForm = {
     first_name: string;
@@ -31,11 +33,13 @@ type BioDataForm = {
     country_code: string;
 };
 const OnboardBioData = () => {
-    const {axiosRequest} = useAxiosContext();
-    const userGenders = useGeneralConfig()?.genders;
+    const dispatch = useAppDispatch();
+    const { axiosRequest } = useAxiosContext();
+    const { loading, appConfig } = useAppSelector(state => state.app);
     const [progress, setProgress] = React.useState(0);
     const [showGenderPicker, setShowGenderPicker] = useState(false);
     const [snapPoints, setSnapPoints] = useState(['200', 35]);
+
 
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
     const [form, setForm] = useState<BioDataForm>({
@@ -49,28 +53,32 @@ const OnboardBioData = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-          const response = await axiosRequest.get('/profile/check-profile-updated');
-          const reaction = response.data.reaction;
+            const response = await axiosRequest.get('/profile/check-profile-updated');
+            const reaction = response.data.reaction;
             const responseData = response.data.data;
-          if (reaction === ReactionCodes.SUCCESS) {
-            const profileData = responseData['profileInfo'];
-            if (profileData) {
-                setForm({
-              first_name: profileData.first_name,
-              last_name: profileData.last_name,
-              mobile_number: profileData.mobile_number,
-              birthday: profileData.birthday,
-              gender: profileData.gender.toString(),
-              country_code: profileData.country_code
-            })
+            if (reaction === ReactionCodes.SUCCESS) {
+                const profileData = responseData['profileInfo'];
+                if (profileData) {
+                    setForm({
+                        first_name: profileData.first_name,
+                        last_name: profileData.last_name,
+                        mobile_number: profileData.mobile_number,
+                        birthday: profileData.birthday || dayjs().subtract(18, 'year').format('YYYY-MM-DD'),
+                        gender: profileData.gender?.toString(),
+                        country_code: profileData.country_code
+                    })
+                }
+
             }
-            
-          }
         } catch (error: any) {
             console.error('Error fetching data:', error.errorMessage);
-          console.error('Error fetching data:', error);
+            console.error('Error fetching data:', error);
         }
-      };
+    };
+
+    const handleLogOut = async () => {
+        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -100,7 +108,7 @@ const OnboardBioData = () => {
 
     const submit = async () => {
         try {
-            const {data} = await axiosRequest.post('/update-basic-settings', form);
+            const { data } = await axiosRequest.post('/update-basic-settings', form);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/profile-picture');
@@ -112,13 +120,13 @@ const OnboardBioData = () => {
     }
 
     const setSelectGender = (gender: number) => {
-            Keyboard.dismiss();
-            updateForm('gender', String(gender));
-            setShowGenderPicker(false);
+        Keyboard.dismiss();
+        updateForm('gender', String(gender));
+        setShowGenderPicker(false);
     }
 
     const getGenderName = (gender: string | number) => {
-        const genderData = userGenders?.find(g => g.id.toString() === gender);
+        const genderData = appConfig?.genders?.find(g => g.id.toString() === gender);
         return genderData?.value || '';
     }
 
@@ -132,7 +140,7 @@ const OnboardBioData = () => {
                 </View>
                 <ScrollView>
                     <View className='p-4 space-y-5'>
-                    <YStack>
+                        <YStack>
                             <Text className='text-2xl text-white font-firabold'>Complete your profile</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
@@ -156,7 +164,7 @@ const OnboardBioData = () => {
                                     <View className="space-y-2">
                                         <Text className='text-base text-white font-firamedium'>Phone Number</Text>
                                         <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
-                                            <View 
+                                            <View
                                                 className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
                                                 <CountryCodePicker countryCode={form.country_code} onCountryCodeSelect={country => updateForm('country_code', country)} />
                                                 <TextInput
@@ -173,22 +181,22 @@ const OnboardBioData = () => {
                                         </View>
                                     </View>
                                     <DateOfBirthPicker dateOfBirth={form.birthday} onDateOfBirthSelected={(params) => updateForm('birthday', params)} />
-                                    {/* <Dropdown title='Pet' data={userGenders || []}
+                                    {/* <Dropdown title='Pet' data={appConfig?.genders || []}
                                         onChange={(item) => updateForm('gender', item.value)}
                                         placeholder="Select pet"
                                     /> */}
-                                     <View className="space-y-2">
-                                                    <Text className='text-base text-white font-firamedium'>Gender</Text>
-                                                    <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
-                                                        <View 
-                                                            className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
-                                                            <TouchableOpacity className='flex-row items-center justify-between gap-0.5 flex-1 h-full' onPress={() => setShowGenderPicker(true)}>
-                                                                <Text className='text-base text-white font-firaregular'>{form.gender ? getGenderName(form.gender): 'Select gender'}</Text>
-                                                                <Feather className='ml-auto' name="chevron-down" size={20} color="white" />
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    </View>
-                                                </View>
+                                    <View className="space-y-2">
+                                        <Text className='text-base text-white font-firamedium'>Gender</Text>
+                                        <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
+                                            <View
+                                                className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
+                                                <TouchableOpacity className='flex-row items-center justify-between gap-0.5 flex-1 h-full' onPress={() => setShowGenderPicker(true)}>
+                                                    <Text className='text-base text-white font-firaregular'>{form.gender ? getGenderName(form.gender) : 'Select gender'}</Text>
+                                                    <Feather className='ml-auto' name="chevron-down" size={20} color="white" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </View>
 
                                 </YStack>
                                 <Form.Trigger asChild disabled={status !== 'off'}>
@@ -196,8 +204,10 @@ const OnboardBioData = () => {
                                 </Form.Trigger>
                             </Form>
                             <View className='justify-center pt-5 flex-row gap-2'>
-                                <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
+                                <TouchableOpacity onPress={() => handleLogOut()}>
+                                    <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                </TouchableOpacity>
+
                             </View>
                         </YStack>
                     </View>
@@ -215,7 +225,7 @@ const OnboardBioData = () => {
                 animation="quicker"
             >
                 <Sheet.Overlay
-                onPress={() => setShowGenderPicker(false)}
+                    onPress={() => setShowGenderPicker(false)}
                     animation="quicker"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
@@ -230,7 +240,7 @@ const OnboardBioData = () => {
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                         <YStack className='p-4' style={{ flexGrow: 1 }}>
                             <YStack gap="$2">
-                                {userGenders?.map((gender, index) => (
+                                {appConfig?.genders?.map((gender, index) => (
                                     <ListItem onPress={() => setSelectGender(gender.id)} key={index} className={`bg-gray-800 rounded-lg ${form.gender == gender.id.toString() ? 'bg-secondary' : ''}`}>
                                         <XStack gap="$3" alignItems='center'>
                                             <Text className={`text-lg ${form.gender == gender.id.toString() ? 'text-black' : 'text-white'}`}>{gender.value}</Text>
