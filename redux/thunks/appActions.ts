@@ -19,7 +19,6 @@ export const fetchAppConfig = createAsyncThunk(
                 `${API_URL}/user/prepare-sign-up`,
                 config
             )
-            console.log('app response', response);
             const responseData = response.data;
             const generalConfigSettings = responseData.data as BasicAppInterface;
             const { reaction, message, data } = responseData;
