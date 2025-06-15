@@ -144,7 +144,6 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
 
       <Image
         source={{ uri: profile.profileImage }}
-        resizeMode="cover"
         style={styles.image}
       />
 
@@ -175,11 +174,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
         <Text style={styles.distanceText}>{profile.gender}</Text>
         {profile.isPremiumUser && <MaterialCommunityIcons name="crown-circle-outline" size={24} color="#FFD700" />}
         </View>
-        
-        
-        <Text style={styles.distanceText}>{profile.countryName}</Text>
-        
-        {/* <Text style={styles.bioText}>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Fuga, autem asperiores officia quibusdam itaque, culpa tempora nostrum, quas sapiente vel qui vero. Et quibusdam maiores ea nostrum dolorum. Iste, eos?</Text> */}
+        <Text style={styles.distanceText}>{profile.countryName}</Text>        
       </View>
 
       <View style={styles.actionsContainer}>
@@ -230,7 +225,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: SCREEN_WIDTH - 32,
+    // width: SCREEN_WIDTH - 32,
+    width: "90%",
     height: "80%",
     borderRadius: 20,
     // backgroundColor: "#FFFFFF",
@@ -245,9 +241,15 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: "70%",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    height: "100%",
+    // borderTopLeftRadius: 20,
+    // borderTopRightRadius: 20,
+    borderRadius: 20,
+    // backgroundPosition: "center",
+    // position: "absolute",
+    // top: 0,
+    // left: 0
+    
   },
   leftImageNav: {
     position: "absolute",
@@ -279,6 +281,12 @@ const styles = StyleSheet.create({
   infoContainer: {
     padding: 16,
     height: "30%",
+    position: "absolute",
+    bottom: 0,
+    backgroundColor: "#5B5B5B",
+    width: "100%",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   nameAgeContainer: {
     flexDirection: "row",

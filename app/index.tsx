@@ -43,6 +43,7 @@ export default function HomeScreen() {
   }, [])
 
   if (loading) {
+    console.log('loading');
     return <ImageBackground className='h-full w-full' source={Images.splash} >
     </ImageBackground>
   } else {

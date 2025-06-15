@@ -49,6 +49,7 @@ export const userLogin = createAsyncThunk(
                 config
             )
             const authApiResponse = response.data as AuthApiResponse;
+            console.log('authApiResponse', authApiResponse);
             const { reaction, message, data } = response.data;
             let errorMessage = message;
             if (reaction === ReactionCodes.ERROR) {
@@ -74,11 +75,17 @@ export const userLogin = createAsyncThunk(
             return { user, token, isProfileComplete, userSubscription };
         } catch (error: any) {
             // return custom error message from API if any
+            let errorMessage = ''
             if (error.response && error.response.data.message) {
-                return rejectWithValue(error.response.data.message)
+                errorMessage = error.response.data.message
             } else {
-                return rejectWithValue(error.message)
+                if ([500, 501, 504].includes(error.status)) {
+                    errorMessage = 'Unable to complete'
+                } else {
+                    errorMessage = error.message
+                }
             }
+            return rejectWithValue(errorMessage)
         }
     }
 )
@@ -139,6 +146,7 @@ export const signUserOut = createAsyncThunk(
     async (_, { rejectWithValue, getState }) => {
         try {
             // const token = await getItem('dazzzle-token');
+            console.log('sign out')
             const state = (getState() as any).auth;
             const config: AxiosRequestConfig = {
                 headers: {

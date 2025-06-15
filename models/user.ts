@@ -241,11 +241,13 @@ export interface UserSpecificationsData {
   // looks: Looks
   // personality: Personality
   // lifestyle: Lifestyle
-  [key: string]: {
-    title: string
+  [key: string]: UserSpecification
+}
+
+export interface UserSpecification {
+  title: string
   icon: string
   items: Item[]
-  }
 }
 
 export interface Looks {

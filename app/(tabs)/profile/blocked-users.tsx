@@ -1,9 +1,10 @@
-import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground, ActivityIndicator, RefreshControl, useWindowDimensions } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground, ActivityIndicator, RefreshControl, useWindowDimensions, TouchableOpacity } from 'react-native'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 
 const BlockedUsers = () => {
   const { axiosRequest } = useAxiosContext();
@@ -61,6 +62,15 @@ const BlockedUsers = () => {
      }, []);
  
      return (
+        <Fragment>
+            <Stack.Screen
+                    options={{
+                        headerStyle: { backgroundColor: '#1A1A1A' },
+                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+                            <ArrowBackIcon />
+                        </TouchableOpacity>
+                    }}
+                />
          <View className='bg-[#1A1A1A] h-full'>
              <FlatList
                  className='p-1'
@@ -101,6 +111,7 @@ const BlockedUsers = () => {
                  }
              />
          </View>
+        </Fragment>
  
      )
 }

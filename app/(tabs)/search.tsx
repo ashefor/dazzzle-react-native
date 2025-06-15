@@ -312,9 +312,9 @@ const FilterUsers = () => {
                     </TouchableOpacity>
                 </XStack>,
             }} /> */}
-            <Header.Default title='Search' rightContent={<TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
+            {/* <Header.Default title='Search' rightContent={<TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
                         <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
-                    </TouchableOpacity>}></Header.Default>
+                    </TouchableOpacity>}></Header.Default> */}
             <View className='bg-[#1A1A1A] h-full'>
                 {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
                 <Text className='text-white'>Showing filter</Text>
@@ -323,9 +323,9 @@ const FilterUsers = () => {
                                 <Ionicons name="close" size={24} color="#ffffff" />
                             </TouchableOpacity>
                 </XStack>}
-                <View style={{flexGrow: 1}} className='pb-[25%]'>
+                <View style={{flexGrow: 1}} className='h-full flex-1'>
                 <FlatList
-                    className='p-1'
+                    className='p-1 flex-1 h-full'
                     data={users}
                     keyExtractor={(item, index) => `${item._id}-${index}`}
                     numColumns={width > 600 ? 3 : width > 991 ? 4 : 2}

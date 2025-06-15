@@ -47,7 +47,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                 snapPoints={[62]}
                 snapPointsMode={'percent'}
                 dismissOnSnapToBottom
-                zIndex={100_000}
+                zIndex={100_000_000}
                 animation="medium"
             >
                 <Sheet.Overlay

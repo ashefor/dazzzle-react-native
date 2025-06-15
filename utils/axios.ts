@@ -78,6 +78,7 @@ axiosInstance.interceptors.response.use(
                 errorMessage = message
             }
             if (errorMessage) {
+            errorMessage =  errorMessage.replace(/<br\s*\/?>/gi, '\n');
                 throw new Error(errorMessage); // This will stop further processing and reject the promise
             }
         }
@@ -90,8 +91,12 @@ axiosInstance.interceptors.response.use(
         }
 
         console.log('parent error', error)
-        const message = error.response?.data?.message || "An error occurred";
-        return Promise.reject(new Error(message));
+        let message = error.response?.data?.message || "An error occurred";
+        if (message) {
+            message = message.replace(/<br\s*\/?>/gi, '\n');
+        }
+        // return Promise.reject(new Error(message));
+        return Promise.reject({...error, errorMessage: message});
     }
 );
 
@@ -108,47 +113,47 @@ const buildConfig = (options: CustomAxiosRequestConfig = {}) => ({
 });
 
 const axiosRequest = {
-    get: (endpoint: string, options?: RequestOptions) =>
+    get: (endpoint: string, options?: CustomAxiosRequestConfig) =>
         axiosInstance.get(endpoint, buildConfig(options)),
 
-    post: (endpoint: string, data: any, options?: RequestOptions) =>
+    post: (endpoint: string, data: any, options?: CustomAxiosRequestConfig) =>
         axiosInstance.post(endpoint, data, buildConfig(options)),
 
-    put: (endpoint: string, data: any, options?: RequestOptions) =>
+    put: (endpoint: string, data: any, options?: CustomAxiosRequestConfig) =>
         axiosInstance.put(endpoint, data, buildConfig(options)),
 
-    delete: (endpoint: string, options?: RequestOptions) =>
+    delete: (endpoint: string, options?: CustomAxiosRequestConfig) =>
         axiosInstance.delete(endpoint, buildConfig(options)),
 
     // Endpoint groups
     swipes: {
-        like: (userId: string, options?: RequestOptions) =>
+        like: (userId: string, options?: CustomAxiosRequestConfig) =>
             axiosRequest.post(`/${userId}/1/user-like-dislike`, {}, options),
-        dislike: (userId: string, options?: RequestOptions) =>
+        dislike: (userId: string, options?: CustomAxiosRequestConfig) =>
             axiosRequest.post(`/${userId}/0/user-like-dislike`, {}, options),
     },
 
     subscriptions: {
-        check: (options?: RequestOptions) =>
+        check: (options?: CustomAxiosRequestConfig) =>
             axiosRequest.get("/subscriptions/status", { showGlobalLoader: false, ...options }),
-        create: (planId: string, options?: RequestOptions) =>
+        create: (planId: string, options?: CustomAxiosRequestConfig) =>
             axiosRequest.post("/subscriptions", { planId }, options),
-        cancel: (subscriptionId: string, options?: RequestOptions) =>
+        cancel: (subscriptionId: string, options?: CustomAxiosRequestConfig) =>
             axiosRequest.put(`/subscriptions/${subscriptionId}/cancel`, {}, options),
     },
 
     profiles: {
-        get: (options?: RequestOptions) => axiosRequest.get("/random-user", options),
-        update: (profileData: any, options?: RequestOptions) =>
+        get: (options?: CustomAxiosRequestConfig) => axiosRequest.get("/random-user", options),
+        update: (profileData: any, options?: CustomAxiosRequestConfig) =>
             axiosRequest.put("/random-user", profileData, options),
     },
 
     auth: {
-        login: (email: string, password: string, options?: RequestOptions) =>
+        login: (email: string, password: string, options?: CustomAxiosRequestConfig) =>
             axiosRequest.post("/auth/login", { email, password }, options),
-        register: (userData: any, options?: RequestOptions) =>
+        register: (userData: any, options?: CustomAxiosRequestConfig) =>
             axiosRequest.post("/auth/register", userData, options),
-        logout: (options?: RequestOptions) => axiosRequest.post("/auth/logout", {}, options),
+        logout: (options?: CustomAxiosRequestConfig) => axiosRequest.post("/auth/logout", {}, options),
     },
 };
 

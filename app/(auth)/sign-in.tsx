@@ -16,10 +16,11 @@ import { useAxiosContext } from '@/context/AxiosProvider'
 import { setItem } from '@/utils/asyncStorage'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
+import { Loader } from '@/components/loader/LoaderWrapper'
 
 const SignIn = () => {
     const dispatch = useAppDispatch();
-    const { loading, isProfileCompleted, userInfo } = useAppSelector(state => state.auth);
+    const { loading, isProfileCompleted, userInfo, error } = useAppSelector(state => state.auth);
     const { setUser, setAuthState, setToken } = useGlobalContext();
     const { axiosRequest } = useAxiosContext();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -97,15 +98,21 @@ const SignIn = () => {
         // } finally {
         //     setIsSubmitting(false);
         // }
-
         dispatch(userLogin(form));
     }
+
+    useEffect(() => {
+        if (error) {
+            Alert.alert('Error', error ? error : 'Failed to log in');
+        }
+    },[error])
 
     useEffect(() => {
         if (userInfo) {
             if (isProfileCompleted) {
                 if (userInfo.is_premium) {
-                    router.replace('/(tabs)/discover');
+                    // router.replace('/(tabs)/discover');
+                    router.replace('/user-details')
                 } else {
                     router.replace('/paywall');
                 }

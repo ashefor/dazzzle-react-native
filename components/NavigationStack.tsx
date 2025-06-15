@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptionChecker } from '@/hooks/useSubscriptionChecker';
 
 const NavigationStack = () => {
-    useSubscriptionChecker()
+    // useSubscriptionChecker()
 
     return (
         <Stack screenOptions={{

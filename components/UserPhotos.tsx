@@ -1,6 +1,6 @@
-import { Image, TouchableOpacity, Text, Pressable } from 'react-native'
+import { Image, TouchableOpacity, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { YStack, XStack, View } from 'tamagui'
+import { YStack, XStack } from 'tamagui'
 import Images from '@/constants/images';
 import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,7 +19,7 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
     // }, [userPhotos]);
 
     useEffect(() => {
-        if (userPhotos.length > 0) {
+        if (userPhotos && userPhotos.length > 0) {
             setInitialPhotos(userPhotos);
             // Convert userPhotos to ImagePicker.ImagePickerAsset format
             const convertedImages = userPhotos.map(photo => ({
@@ -104,7 +104,7 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
             {images.length > 0 ? (
                 <XStack flexWrap="wrap" columnGap="$3" rowGap="$3">
                     {images && images.map((image, index) => (
-                        <View className='flex-[0_0_30%] w-[30%] h-40 rounded-2xl relative' key={index}>
+                        <View className='w-[30%] h-40 rounded-2xl relative' key={index}>
                             {isEditing && <TouchableOpacity className='absolute -bottom-2 -right-2 p-2 bg-white z-10 w-8 h-8 rounded-full flex items-center justify-center' onPress={() => image ? openActionSheet(index) : pickImage(index)}>
                                 <Feather name={image ? 'edit-3' : 'image'} size={16} color="#DD3FE5" />
                             </TouchableOpacity>}

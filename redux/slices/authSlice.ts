@@ -5,6 +5,7 @@ import { clear, getItem, setItem } from '@/utils/asyncStorage';
 import { LoggedInUser, LoggedInUserProfile } from '@/models/user';
 import { store } from '../store';
 import { subscriptionSlice } from './subscriptionSlice';
+import { fetchUserProfileData } from '../thunks/userActions';
 
 type UserState = {
     loading: boolean,
@@ -13,6 +14,8 @@ type UserState = {
     userToken: string,
     isProfileCompleted: boolean,
     error: any,
+    userProfileData: {[key: string]: any} | null,
+    loadingUserProfileData: boolean
     // shouldSignUserOut: boolean,
 }
 
@@ -23,6 +26,8 @@ const initialState: UserState = {
     userToken: '',
     isProfileCompleted: false,
     error: null,
+    userProfileData: null,
+    loadingUserProfileData: false
     // shouldSignUserOut: false
 }
 
@@ -30,6 +35,12 @@ export const userSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
+        /**
+         * Set the user state by providing a partial UserState object.
+         * @param action.payload A partial UserState object containing the new values for the user state.
+         * @returns The new state with the updated user state.
+         */
+
         setUser: (state: UserState, action: PayloadAction<UserState>) => {
             return { ...state, ...action.payload };
         },
@@ -39,13 +50,21 @@ export const userSlice = createSlice({
         logUserOut: () => {
             return initialState;
         },
+        updateUserInfo: (state: UserState, action) => {
+            console.log('action', action);
+            const oldUser = state.userInfo;
+            const newUser = {...oldUser, ...action.payload}
+            state.userInfo = newUser;
+        }
     },
     extraReducers: (builder) => {
         builder.addCase(userLogin.pending, (state) => {
+            state.error = null
             state.loading = true
         })
         builder.addCase(userLogin.fulfilled, (state, action) => {
             state.loading = false;
+            state.error = null
             state.userInfo = action.payload.user;
             state.userToken = action.payload.token;
             state.isProfileCompleted = action.payload.isProfileComplete;
@@ -85,6 +104,18 @@ export const userSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         })
+        builder.addCase(fetchUserProfileData.pending, (state) => {
+            state.userProfileData = null
+            state.loadingUserProfileData = true
+        })
+        builder.addCase(fetchUserProfileData.fulfilled, (state, action) => {
+            state.loadingUserProfileData = false
+            state.userProfileData = action.payload
+        })
+        builder.addCase(fetchUserProfileData.rejected, (state, action) => {
+            state.loadingUserProfileData = false
+            state.error = action.payload
+        })
     },
 });
 
@@ -99,6 +130,6 @@ export const userSlice = createSlice({
 
 // initializeStore();
 
-export const { setUser, setToken, logUserOut } = userSlice.actions;
+export const { setUser, setToken, logUserOut, updateUserInfo } = userSlice.actions;
 
 export default userSlice.reducer;

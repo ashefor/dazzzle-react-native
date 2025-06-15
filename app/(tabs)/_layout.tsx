@@ -65,7 +65,7 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          headerShown: false,
+          headerShown: true,
           tabBarIcon: ({ color, focused }) => <SearchTabIcon focused={focused} />,
         }}
       />
@@ -77,10 +77,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="message"
+        name="chats"
         options={{
-          title: 'Message',
-          href: null,
+          title: 'Chats',
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => <MessagesTabIcon focused={focused} />,
         }}
       />

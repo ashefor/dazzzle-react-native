@@ -1,6 +1,6 @@
-import {  Text, View, ScrollView, TouchableOpacity, Animated, } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, Avatar, Button, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YStack } from 'tamagui';
+import { Text, View, ScrollView, TouchableOpacity, Animated, Alert, Dimensions, } from 'react-native';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, Avatar, Button, SizableText, StackProps, styled, TabLayout, Tabs as TabsTamagui, TabsTabProps, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import UserPhotos from '../../../components/UserPhotos';
@@ -9,34 +9,275 @@ import UserInterests from '@/components/UserInterests';
 import { LoggedInUserProfile, SingleUserDetails } from '@/models/user';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
-import { useAppSelector } from '@/hooks/reduxHooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
+import axiosRequest from '@/utils/axios';
+import SkeletonPlaceholder from '@/components/SkeletonLoader';
+import * as ImagePicker from 'expo-image-picker';
+import Toast from '@/components/toast/toast';
+import { Feather } from '@expo/vector-icons';
+import { Loader } from '@/components/loader/LoaderWrapper';
+import { getItem, setItem } from '@/utils/asyncStorage';
+import { updateUserInfo } from '@/redux/slices/authSlice';
+import { fetchUserProfileData } from '@/redux/thunks/userActions';
+// import { TabView, SceneMap, NavigationState, Route, SceneRendererProps, TabBar, TabDescriptor } from 'react-native-tab-view';
+import { Tabs, MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
+
 
 const MyProfile = () => {
-  const { userInfo } = useAppSelector(state => state.auth);
-    const { axiosRequest } = useAxiosContext();
+    const { userInfo, userProfileData, loadingUserProfileData } = useAppSelector(state => state.auth);
+    const dispatch = useAppDispatch();
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
-    const [loggedInUserProfile, setLoggedInUserProfile] = useState<LoggedInUserProfile | null>(null);
-    const scrollY = useRef(new Animated.Value(0)).current;
+    const [loading, setLoading] = useState<boolean>(false);
+    const [ profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
+    const [editMode, setEditMode] = useState<boolean>(false)
+    const [index, setIndex] = useState(0);
+    const [routes] = useState([
+            { key: 'first', title: 'Likes' },
+            // { key: 'second', title: 'Mutual' },
+            // { key: 'third', title: 'Likes Me' },
+            // { key: 'fourth', title: 'Dislikes' },
+        ]);
 
     const fetchUserDetails = async () => {
         try {
             const userName = userInfo?.username;
-            const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const user = data.data;
-                setUserDetails(user);
+            setProfilePictureUrl(userInfo?.profile_picture_url);
+            setLoading(true);
+            const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`);
+            const userData = data.userData;
+            setUserDetails(data);
+            const profilePicture = userData?.profilePicture;
+            const {first_name, last_name } = userData;
+            // const newUser = {...oldUser, first_name, last_name, profile_picture_url: profilePicture}
+            if (userData && profilePicture) {
+                setProfilePictureUrl(profilePicture);
             }
-        } catch (error) {
+            setLoading(false);
+            dispatch(updateUserInfo({first_name, last_name, profile_picture_url: profilePicture}));
+            // await setItem('dazzzle-user', newUser);
+        } catch (error: any) {
+            setLoading(false);
+            console.log(error)
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch user details')
         }
     }
-    
-    useEffect(() => {
-        if (userInfo) {
-            setLoggedInUserProfile(userInfo);
-            fetchUserDetails();
-        }
-    }, [userInfo])
 
+    useEffect(() => {
+            // fetchUserDetails();
+            setProfilePictureUrl(userInfo?.profile_picture_url);
+            dispatch(fetchUserProfileData());
+    }, [])
+
+    const handleEditDone = () => {
+            dispatch(fetchUserProfileData());
+    }
+
+    const pickImage = async () => {
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                allowsMultipleSelection: false,
+                cameraType: ImagePicker.CameraType.front,
+                aspect: [4, 3],
+                quality: 1,
+                base64: true
+            });
+
+            if (!result.canceled) {
+                const image = result.assets[0];
+                 const formData = new FormData();
+                formData.append("filepond", {
+                    uri: image?.uri,
+                    name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
+                    type: image?.mimeType || "image/jpeg",
+                } as any);
+                Loader.show();
+                const data:any = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
+                const response = data.data
+                const image_url = response.image_url;
+                if (image_url) {
+                    setProfilePictureUrl(image_url);
+                    dispatch(updateUserInfo({profile_picture_url: image_url}));
+                }
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    Toast.success('Profile picture updated successfully');
+                } else {
+                    Alert.alert('Error', data.message ? data.message : 'Unable to proceed')
+                }
+                Loader.hide();
+            }
+        } catch (error) {
+                Loader.hide();
+            console.error('Error picking image:', error);
+        }
+    };
+
+    const renderScene = ({ route }) => {
+  switch (route.key) {
+    case 'first':
+      return (
+        <BasicInfo userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData}/>
+      );
+    default:
+      return null;
+  }
+};
+
+const HeaderComponent = () => {
+    return (
+        userInfo ? <View className='bg-[#1A1A1A] h-full relative' style={{pointerEvents: 'box-none'}}>
+                    <YStack >
+                        <View className='py-5 px-4'>
+                            <YStack gap="$5">
+                                <YStack alignItems="center" gap="$4" justifyContent='center'>
+                                    <View className='rounded-full relative'>
+                                        <Avatar className='' gap="$2" circular size="$10">
+                                            <Avatar.Image
+                                                accessibilityLabel="Nate Wienert"
+                                                src={profile_picture_url ? profile_picture_url : undefined}
+                                            />
+                                            <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
+                                        </Avatar>
+                                    </View>
+                                    <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                                        <XStack>
+                                            <Text className='text-sm text-white font-firaregular'>Change Photo</Text>
+                                            <Feather name="edit-3" size={16} color="white" />
+                                        </XStack>
+                                    </TouchableOpacity>
+                                </YStack>
+                                <YStack>
+                                    <Text className='text-lg font-firasemibold text-center text-white'>
+                                        {userInfo.first_name} {userInfo.last_name}
+                                    </Text>
+                                    {userProfileData?.userProfileData.aboutMe && <Text className='text-sm font-firaregular text-center text-white'>
+                                        {userProfileData?.userProfileData.aboutMe}
+                                    </Text>}
+                                </YStack>
+                            </YStack>
+                            {/* {loading ? <SectionSkeletonLoader/> : <TabsAdvancedBackground/>} */}
+                        </View>
+
+                    </YStack>
+                </View>: 
+                null
+    )
+}
+
+const renderTabBar = (props: MaterialTabBarProps<any>) => {
+
+    return (
+        <MaterialTabBar
+        {...props}
+        indicatorStyle={{ backgroundColor: '#fff' }}
+        style={{ backgroundColor: '#5B5B5B', borderBottomWidth: 0, borderBottomColor: '#E4E4E7' }}
+        activeColor='#fff'
+        inactiveColor='#000'
+    />
+    )
+};
+
+    const toggleEditModalVisible = useCallback(() => setEditMode(!editMode), [editMode]);
+    return (
+        <Fragment>
+            <Stack.Screen
+                    options={{
+                        headerTitle: 'My Profile',
+                        headerStyle: { backgroundColor: '#1A1A1A' },
+                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+                            <ArrowBackIcon />
+                        </TouchableOpacity>,
+                        headerRight: () => <TouchableOpacity onPress={toggleEditModalVisible}>
+                            <Text className='text-white font-firamedium text-sm'>
+                                {editMode ? 'Cancel': 'Edit'}
+                            </Text>
+                        </TouchableOpacity>
+                    }}
+                />
+                <Tabs.Container
+                containerStyle={{ backgroundColor: '#1A1A1A', }}
+                onIndexChange={setIndex}
+                renderTabBar={renderTabBar}
+      renderHeader={HeaderComponent}
+    >
+      <Tabs.Tab name="A" label={'Profile'}>
+        <Tabs.ScrollView className='py-5 px-4 bg-primary'>
+          {loadingUserProfileData? <SectionSkeletonLoader/> : <BasicInfo onEditDone={handleEditDone} editable={editMode} userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData}/>}
+        </Tabs.ScrollView>
+      </Tabs.Tab>
+      <Tabs.Tab name="B" label={'Photos'}>
+        <Tabs.ScrollView className='py-5 px-4'>
+            <UserPhotos editable={true} userPhotos={userProfileData?.photosData} />
+        </Tabs.ScrollView>
+      </Tabs.Tab>
+    </Tabs.Container>
+
+            {/* <View className='flex-1 bg-primary h-full'>
+            <ScrollView className='h-full flex-1 bg-primary relative'>
+                {userInfo && <View className='bg-[#1A1A1A] h-full relative'>
+                    <YStack >
+                        <View className='py-5 px-4'>
+                            <YStack gap="$5">
+                                <YStack alignItems="center" gap="$4" justifyContent='center'>
+                                    <View className='rounded-full relative'>
+                                        <Avatar className='' gap="$2" circular size="$10">
+                                            <Avatar.Image
+                                                accessibilityLabel="Nate Wienert"
+                                                src={profile_picture_url ? profile_picture_url : undefined}
+                                            />
+                                            <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
+                                        </Avatar>
+                                    </View>
+                                    <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                                        <XStack>
+                                            <Text className='text-sm text-white font-firaregular'>Change Photo</Text>
+                                            <Feather name="edit-3" size={16} color="white" />
+                                        </XStack>
+                                    </TouchableOpacity>
+                                </YStack>
+                                <YStack>
+                                    <Text className='text-lg font-firasemibold text-center text-white'>
+                                        {userInfo.first_name} {userInfo.last_name}
+                                    </Text>
+                                    {userDetails?.userProfileData.aboutMe && <Text className='text-sm font-firaregular text-center text-white'>
+                                        {userDetails?.userProfileData.aboutMe}
+                                    </Text>}
+                                </YStack>
+                            </YStack>
+                            {loading ? <SectionSkeletonLoader/> : <TabsAdvancedBackground/>}
+                        </View>
+
+                    </YStack>
+                </View>}
+
+            </ScrollView>
+        </View> */}
+        </Fragment>
+    )
+}
+
+const SectionSkeletonLoader = () => {
+    return (
+        <View className='space-y-5'>
+                        <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
+                            <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+
+                        </View>
+
+                        <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
+                            <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+                        </View>
+
+                        <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
+                            <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+                        </View>
+                    </View>
+    )
+}
+
+const TabsAdvancedBackground = () => {
+    const { userProfileData } = useAppSelector(state => state.auth);
     const AnimatedYStack = styled(YStack, {
         flex: 1,
         x: 0,
@@ -60,31 +301,7 @@ const MyProfile = () => {
             },
         } as const,
     })
-
-    const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
-        return (
-            <YStack
-                position="absolute"
-                backgroundColor="$color5"
-                opacity={0.7}
-                animation="100ms"
-                enterStyle={{
-                    opacity: 0,
-                }}
-                exitStyle={{
-                    opacity: 0,
-                }}
-                {...(active && {
-                    backgroundColor: '$color8',
-                    opacity: 0.6,
-                })}
-                {...props}
-            />
-        )
-    }
-
-    const TabsAdvancedBackground = () => {
-        const [tabState, setTabState] = React.useState<{
+    const [tabState, setTabState] = React.useState<{
             currentTab: string
             /**
              * Layout of the Tab user might intend to select (hovering / focusing)
@@ -127,10 +344,36 @@ const MyProfile = () => {
             }
         }
 
+        useEffect(() => {
+            console.log({userProfileData})
+        }, [userProfileData])
+
+        const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
         return (
-            <Tabs
+            <YStack
+                position="absolute"
+                backgroundColor="$color5"
+                opacity={0.7}
+                animation="100ms"
+                enterStyle={{
+                    opacity: 0,
+                }}
+                exitStyle={{
+                    opacity: 0,
+                }}
+                {...(active && {
+                    backgroundColor: '$color8',
+                    opacity: 0.6,
+                })}
+                {...props}
+            />
+        )
+    }
+
+        return (
+            <TabsTamagui
                 // className='bg-transparent mt-5'
-                        backgroundColor={"$colorTransparent"}
+                backgroundColor={"$colorTransparent"}
                 value={currentTab}
                 onValueChange={setCurrentTab}
                 orientation="horizontal"
@@ -142,7 +385,7 @@ const MyProfile = () => {
                 position="relative"
             >
                 <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
-                <AnimatePresence>
+                    <AnimatePresence>
                         {intentAt && (
                             <TabsRovingIndicator
                                 className='bg-black text-white rounded-[40px]'
@@ -167,7 +410,7 @@ const MyProfile = () => {
                         )}
                     </AnimatePresence>
 
-                    <Tabs.List
+                    <TabsTamagui.List
                         unstyled
                         disablePassBorderRadius
                         loop={false}
@@ -175,7 +418,7 @@ const MyProfile = () => {
                         backgroundColor={"$colorTransparent"}
                         justifyContent="space-between"
                     >
-                        <Tabs.Tab
+                        <TabsTamagui.Tab
                             unstyled
                             paddingVertical="$2"
                             paddingHorizontal="$3"
@@ -190,8 +433,8 @@ const MyProfile = () => {
                         >
                             <SizableText
                                 className={`font-firamedium text-white`}>Profile</SizableText>
-                        </Tabs.Tab>
-                        <Tabs.Tab
+                        </TabsTamagui.Tab>
+                        <TabsTamagui.Tab
                             unstyled
                             paddingVertical="$2"
                             paddingHorizontal="$3"
@@ -206,8 +449,8 @@ const MyProfile = () => {
                         >
                             <SizableText
                                 className={`font-firamedium text-white`}>Photos</SizableText>
-                        </Tabs.Tab>
-                        <Tabs.Tab
+                        </TabsTamagui.Tab>
+                        <TabsTamagui.Tab
                             unstyled
                             paddingVertical="$2"
                             paddingHorizontal="$3"
@@ -222,82 +465,20 @@ const MyProfile = () => {
                         >
                             <SizableText
                                 className={`font-firamedium text-white`}>Interests</SizableText>
-                        </Tabs.Tab>
-                    </Tabs.List>
+                        </TabsTamagui.Tab>
+                    </TabsTamagui.List>
                 </View>
-
-                <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
-                    <AnimatedYStack key={currentTab}>
-                        <Tabs.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
-                            {currentTab === 'profile' && <BasicInfo editable={true} userProfileData={userDetails?.userProfileData} userSpecificationData={userDetails?.userSpecificationData}/>}
-                            {currentTab === 'photos' && <UserPhotos editable={true} userPhotos={userDetails!.photosData} />}
-                            {currentTab === 'interest' && <UserInterests interests={userDetails!.userProfileData.interest}/>}
-                        </Tabs.Content>
-                    </AnimatedYStack>
-                </AnimatePresence>
-            </Tabs>
+                    <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
+                        <AnimatedYStack key={currentTab}>
+                            <TabsTamagui.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
+                                {currentTab === 'profile' && <BasicInfo editable={true} userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData} />}
+                                {currentTab === 'photos' && <UserPhotos editable={true} userPhotos={userProfileData!.photosData} />}
+                                {currentTab === 'interest' && <UserInterests interests={userProfileData!.userProfileData.interest} />}
+                            </TabsTamagui.Content>
+                        </AnimatedYStack>
+                    </AnimatePresence>
+            </TabsTamagui>
         )
     }
-
-    return (
-        <View className='flex-1 bg-primary h-full'>
-            <ScrollView className='h-full bg-primary relative'
-                onScroll={
-                    Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false } // For color interpolation, native driver must be false
-                    )
-                }
-                scrollEventThrottle={16}
-
-            >
-                <Stack.Screen
-                    options={{
-                        headerTitle: 'My Profile',
-                        headerStyle: { backgroundColor: '#1A1A1A' },
-                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-                            <ArrowBackIcon />
-                        </TouchableOpacity>,
-                        headerRight: () => <TouchableOpacity>
-                            <Text className='text-white font-firamedium text-sm'>
-                                Edit 
-                            </Text>
-                        </TouchableOpacity>
-                    }}
-                />
-                {loggedInUserProfile && <View className='bg-[#1A1A1A] h-full relative flex-1'>
-                    <YStack >
-                        <View className='py-5 px-4'>
-                        <YStack gap="$5">
-                                <XStack alignItems="center" gap="$4" justifyContent='center'>
-                                    <View className='rounded-full'>
-                                        <Avatar className='' gap="$2" circular size="$10">
-                                            <Avatar.Image
-                                                accessibilityLabel="Nate Wienert"
-                                                src={loggedInUserProfile.profile_picture_url ? loggedInUserProfile.profile_picture_url : 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?&w=100&h=100&dpr=2&q=80'}
-                                            />
-                                            <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
-                                        </Avatar>
-                                    </View>
-                                </XStack>
-                                <YStack>
-                                    <Text className='text-lg font-firasemibold text-center text-white'>
-                                        {loggedInUserProfile.first_name} {loggedInUserProfile.last_name}
-                                    </Text>
-                                    {loggedInUserProfile.about_me && <Text className='text-sm font-firaregular text-center text-white'>
-                                    {loggedInUserProfile.about_me}
-                                    </Text>}
-                                </YStack>
-                            </YStack>
-                            <TabsAdvancedBackground />
-                        </View>
-
-                    </YStack>
-                </View>}
-
-            </ScrollView>
-        </View>
-    )
-}
 
 export default MyProfile;

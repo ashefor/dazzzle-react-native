@@ -19,6 +19,7 @@ import icons from '@/constants/icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
+import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
@@ -359,7 +360,7 @@ const User = () => {
         ...props
     }: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean }) => {
         return (
-            <Popover size="$2" allowFlip {...props}>
+            <Popover size="$2" allowFlip {...props} placement="bottom-end">
                 <Popover.Trigger asChild>
                     <Button unstyled>
                         <Ionicons name="ellipsis-vertical-sharp" size={24} color="#ffffff" />
@@ -380,7 +381,7 @@ const User = () => {
                         },
                     ]}
                 >
-                    <YStack gap="$3">
+                    <YStack>
                         <Popover.Close asChild>
                             <YGroup alignSelf="center" width={240} size="$4" separator={<Separator />}>
                                 {userDetails && !userDetails.blockByMeUser && <YGroup.Item>
@@ -408,14 +409,29 @@ const User = () => {
         )
     }
 
-    // const hasUserLikedOrDisliked = (likeData: {like: number, _id: number}[] | {like: number, _id: number}) => {
-    //     if (likeData && Array.isArray(likeData)) {
-    //         return likeData.some((like) => like.like == 1)
-    //     } else if (likeData && typeof likeData === 'object') {
-    //         return likeData.like == 0
-    //     } else {
-    //         return false
-    //     }
+    const hasUserLikedOrDisliked = (likeData: {like: number, _id: number}[] | {like: number, _id: number}) => {
+        if (likeData && Array.isArray(likeData)) {
+            return likeData.some((like) => like.like == 1)
+        } else if (likeData && typeof likeData === 'object') {
+            return likeData.like == 0
+        } else {
+            return false
+        }
+    }
+
+    // const UserMoreActionsPopover = () => {
+    //     return (
+    //         <Menu>
+    //   <MenuTrigger text='Select action' />
+    //   <MenuOptions>
+    //     <MenuOption onSelect={() => alert(`Save`)} text='Save' />
+    //     <MenuOption onSelect={() => alert(`Delete`)} >
+    //       <Text style={{color: 'red'}}>Delete</Text>
+    //     </MenuOption>
+    //     <MenuOption onSelect={() => alert(`Not called`)} disabled={true} text='Disabled' />
+    //   </MenuOptions>
+    // </Menu>
+    //     )
     // }
 
     const hasUserLiked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
@@ -537,14 +553,17 @@ const User = () => {
                         <FontAwesome name="close" size={36} color={hasUserDisliked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                         {/* #EB4242 */}
                     </Button>
-                    <Button className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
+                    <Button onPress={() => router.navigate({
+                        pathname: '/(tabs)/chats/[userId]',
+                        params: { userId: userDetails?.userData.userId }
+                    })} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="chatbox-ellipses" size={24} color="#59C526" />
                     </Button>
                     <Button onPress={likeUser} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="heart" size={36} color={hasUserLiked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                     </Button>
                 </XStack>
-                <SafeArea />
+                {/* <SafeArea /> */}
             </View>}
             <StatusBar style="light" />
         </View>

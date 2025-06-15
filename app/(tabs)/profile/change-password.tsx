@@ -1,5 +1,5 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import { Form, YStack } from 'tamagui'
@@ -9,7 +9,8 @@ import { ReactionCodes } from '@/models/general'
 import { LoggedInUser } from '@/models/user'
 import { getItem } from '@/utils/asyncStorage'
 import { isValidEmail } from '@/utils/validators'
-import { router } from 'expo-router'
+import { router, Stack } from 'expo-router'
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
 
 type ChangePasswordForm = {
     current_password: string;
@@ -82,7 +83,16 @@ const ChangePasswordScreen = () => {
     }
 
     return (
-        <View className='bg-[#1A1A1A] h-full'>
+        <Fragment>
+            <Stack.Screen
+                    options={{
+                        headerStyle: { backgroundColor: '#1A1A1A' },
+                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+                            <ArrowBackIcon />
+                        </TouchableOpacity>
+                    }}
+                />
+                 <View className='bg-[#1A1A1A] h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
                 <ScrollView>
                     <View className='px-4 py-5'>
@@ -127,6 +137,7 @@ const ChangePasswordScreen = () => {
                 </ScrollView>
             </KeyboardAvoidingView>
         </View>
+        </Fragment>
     )
 }
 

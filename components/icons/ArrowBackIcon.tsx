@@ -32,7 +32,7 @@ const ArrowBackIcon = (props: any) => (
   //   />
   // </Svg>
 
-  <FontAwesome6 name="angle-left" size={20} color="white" />
+  <FontAwesome6 name="angle-left" size={24} color="white" />
 )
 export default ArrowBackIcon
 

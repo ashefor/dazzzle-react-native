@@ -41,7 +41,7 @@ const UserDetails = () => {
             if (isProfileCompleted) {
                 if (userInfo.is_premium) {
                     if (!hasExpired) {
-                        router.replace('./(tabs)/discover');
+                        router.replace('/(tabs)/discover');
                     } else {
                         router.replace('/paywall');
                     }

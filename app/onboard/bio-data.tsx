@@ -72,7 +72,7 @@ const OnboardBioData = () => {
             }
         } catch (error: any) {
             console.error('Error fetching data:', error.errorMessage);
-            console.error('Error fetching data:', error);
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch data')
         }
     };
 
@@ -115,7 +115,7 @@ const OnboardBioData = () => {
             }
         } catch (error: any) {
             console.log('error', error);
-            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to submit')
         }
     }
 

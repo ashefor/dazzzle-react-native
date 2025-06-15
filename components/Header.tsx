@@ -19,7 +19,7 @@ const Default = (props: CustomHeaderProps) => {
             <SafeArea />
             <View style={{ paddingHorizontal: 16, }}>
                 <View style={[styles.header]}>
-                    <View>
+                    <View style={{zIndex: 99}}>
                     {leftButton}
                     </View>
                     {title && <Text style={{ pointerEvents: 'none' }} className='z-0 absolute px-16 left-0 top-0 w-full h-full  py-2 text-white text-lg font-firamedium flex items-center justify-center flex-1 text-center'>{title}</Text>}

@@ -1,4 +1,5 @@
 import CustomButton from "@/components/CustomButton";
+import Toast from "@/components/toast/toast";
 import { API_URL } from "@/constants/constants";
 import { useAxiosContext } from "@/context/AxiosProvider";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
@@ -52,12 +53,12 @@ const PayWallScreen = () => {
                 const creditPlans = premiumPlanData.creditPlans;
                 const premiumFeatureStrings = convertObjectToArrayOfStrings(premiumFeature);
                 setPremiumFeatures(premiumFeatureStrings);
-                if (currentSubscription) {
-                    setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0));
-                } else {
-                    console.log('none');
-                    setCreditPlans(creditPlans);
-                }
+                // if (currentSubscription) {
+                //     setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0));
+                // } else {
+                //     setCreditPlans(creditPlans);
+                // }
+                setCreditPlans(creditPlans)
 
             }
         } catch (error: any) {
@@ -84,7 +85,8 @@ const PayWallScreen = () => {
             }
             const { data } = await axiosRequest.post(API_URL + '/premium-plan/buy-plans', params);
             if (data.reaction === ReactionCodes.SUCCESS) {
-                router.replace('/user-details');
+                Toast.success('Subscription successful');
+                router.replace('/(tabs)/discover');
             }
         } catch (error: any) {
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to buy plan');
@@ -104,7 +106,6 @@ const PayWallScreen = () => {
                     select_payment_method: "paystack-checkout"
                 }
                 const { data } = await axiosRequest.post(API_URL + '/premium-plan/capture-paystack-order', params);
-                console.log(data);
                 const responseData = data.data as CreatePaystackOrderResponse;
                 if (responseData && responseData.reference) {
                     processPaystackPayment(responseData);
@@ -119,7 +120,8 @@ const PayWallScreen = () => {
         try {
             const { data } = await axiosRequest.post(API_URL + '/premium-plan/paystack-order-submit', { response });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                router.replace('/user-details');
+                Toast.success('Subscription successful');
+                router.replace('/(tabs)/discover');
             }
         } catch (error: any) {
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');

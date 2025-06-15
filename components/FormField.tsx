@@ -8,12 +8,12 @@ const FormField = ({title, value, secureTextEntry, handleChangeText, otherStyles
 
   return (
     <View className={`space-y-2 ${otherStyles}`}>
-      {title && <Text className='text-base text-white font-firamedium'>{title}</Text>}
+      {title && <Text className='text-base text-white font-firamedium capitalize'>{title}</Text>}
       <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
         <TextInput
         style={{lineHeight: Platform.OS == 'ios' ? 0 : undefined}}
         className='flex-1 h-12 font-firaregular text-white text-base'
-        value={value}
+        defaultValue={value}
         inputMode={keyBoardType || 'text'}
         onChangeText={handleChangeText}
         autoCapitalize='none'

@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity, ScrollView, View, Alert } from 'react-native';
 import { XStack, Avatar, Sheet, } from 'tamagui';
-import { Link, router } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AccessIcon from '@/components/icons/AccessIcon';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -10,33 +10,47 @@ import { signUserOut } from '@/redux/thunks/authActions';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Feather, Octicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
+import * as WebBrowser from 'expo-web-browser';
+import { Linking } from 'react-native';
 
 export default function ProfileScreen() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [openContactUsModal, setOpenContactUsModal] = useState(false);
   const dispatch = useAppDispatch();
   const { userInfo } = useAppSelector(state => state.auth);
   const { currentSubscription, isActive } = useAppSelector(state => state.subscription);
 
+  useEffect(() => {
+    console.log('userInfo', userInfo)
+  }, [userInfo])
   const handleLogOut = async () => {
     dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
   }
 
   const getSubscriptionPlanNameFromPlanId = (planId?: string) => {
-    // switch (planId) {
-    //   case 'one_week':
-    //     return 'One Week';
-    //   case 'one_month':
-    //     return '';
-    //   case 'half_year':
-    //     return 'Half Year';
-    //   default:
-    //     return 'Unknown';
-    // }
     return planId ? planId.split('_').join(' ') : 'Unknown';
   }
 
+  const openPrivacyPolicy = async () => {
+    await WebBrowser.openBrowserAsync('https://dazzzle.org/privacy-policy');
+  };
+
+  const openInstagram = async () => {
+    await WebBrowser.openBrowserAsync('https://www.instagram.com/dazzzledating/');
+  };
+
+  const openContactUsPage = async () => {
+    await WebBrowser.openBrowserAsync('https://dazzzle.org/contact');
+  };
+
   return (
     <Fragment>
+      <Stack.Screen
+        options={{
+          headerTitle: 'Profile',
+          headerStyle: { backgroundColor: '#1A1A1A' }
+        }}
+      />
       <ScrollView className='h-full bg-[#1A1A1A]'>
         <View className='h-full p-4'>
           <XStack alignItems="center" gap="$4">
@@ -126,7 +140,7 @@ export default function ProfileScreen() {
             </View>
             <View>
               <Text className='text-white my-3 font-firamedium text-sm'>Legal</Text>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
+              {/* <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
                 <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
                   <View className='flex-row items-center space-x-2'>
                     <Feather name="file-text" size={20} color="#E2E3DD" />
@@ -134,9 +148,9 @@ export default function ProfileScreen() {
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-b-xl'>
+              </TouchableOpacity> */}
+              <TouchableOpacity activeOpacity={0.8} onPress={openPrivacyPolicy}>
+                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-xl'>
                   <View className='flex-row items-center space-x-2'>
                     <MaterialCommunityIcons name="shield-key-outline" size={20} color="#E2E3DD" />
                     <Text className='text-white text-base font-firamedium'>Privacy Policy</Text>
@@ -148,8 +162,8 @@ export default function ProfileScreen() {
 
             <View>
               <Text className='text-white my-3 font-firamedium text-sm'>More</Text>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
+              <TouchableOpacity activeOpacity={0.8} onPress={openInstagram}>
+                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-xl'>
                   <View className='flex-row items-center space-x-2'>
                     <Ionicons name="logo-instagram" size={20} color="#E2E3DD" />
                     <Text className='text-white text-base font-firamedium'>Follow us on instagram</Text>
@@ -157,7 +171,7 @@ export default function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
+              {/* <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
                 <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-b-xl'>
                   <View className='flex-row items-center space-x-2'>
                     <Ionicons name="logo-tiktok" size={20} color="#E2E3DD" />
@@ -165,11 +179,11 @@ export default function ProfileScreen() {
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View className='mt-4'>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
+              <TouchableOpacity activeOpacity={0.8} onPress={openContactUsPage}>
                 <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
                   <View className='flex-row items-center space-x-2'>
                     <Ionicons name="help-circle-outline" size={20} color="#E2E3DD" />
@@ -215,10 +229,10 @@ export default function ProfileScreen() {
         />
         <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
           <View className='bg-[#1A1A1A] flex-row items-center  h-12 relative' >
-            <View className='px-4' style={{zIndex: 10}}>
-            <TouchableOpacity onPress={() => setIsSubscriptionModalOpen(false)} className='z-10 flex items-center  pr-4'>
-              <Ionicons name="close-circle" size={24} color="#ffffff" />
-            </TouchableOpacity>
+            <View className='px-4' style={{ zIndex: 10 }}>
+              <TouchableOpacity onPress={() => setIsSubscriptionModalOpen(false)} className='z-10 flex items-center  pr-4'>
+                <Ionicons name="close-circle" size={24} color="#ffffff" />
+              </TouchableOpacity>
             </View>
 
             <Text className='absolute  text-white text-base font-firamedium flex w-full flex-row text-center justify-center items-center'>Current Subscription</Text>
