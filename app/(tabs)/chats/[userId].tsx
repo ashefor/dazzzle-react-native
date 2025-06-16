@@ -11,6 +11,7 @@ import { SingleChatResponse, UserConversation } from '@/models/chat';
 import SkeletonPlaceholder from '@/components/SkeletonLoader';
 import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import EmojiPicker from 'rn-emoji-keyboard';
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
@@ -26,6 +27,7 @@ const ViewSingleChat = () => {
     const [chats, setChats] = useState<UserConversation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string>('');
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
     const flatListRef = React.useRef<FlatList>(null);
 
@@ -86,6 +88,10 @@ const ViewSingleChat = () => {
         } catch (error) {
 
         }
+    }
+
+    const handlePickEmoji = (emoji: any) => {
+        setMessage(prev => prev + emoji.emoji);
     }
 
     const pickImage = async () => {
@@ -199,9 +205,9 @@ const ViewSingleChat = () => {
                     }}>
                         <View style={{ flexShrink: 1, flexDirection: "row" }} className="items-center gap-x-3 px-4 py-3">
                             <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[40px] px-3 py-1">
-                                <TouchableOpacity className="rounded-md  items-center justify-center">
+                                {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
                                     <MaterialIcons name="emoji-emotions" size={24} color="white" />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                                 <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} multiline style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
                                     className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
                             </View>
@@ -218,6 +224,8 @@ const ViewSingleChat = () => {
 
                     </View>
                     {/* <View style={{ height: bottom }} /> */}
+                                <EmojiPicker onEmojiSelected={handlePickEmoji} open={isEmojiPickerOpen} onClose={() => setIsEmojiPickerOpen(false)} />
+
                 </KeyboardAvoidingView>
             )}
         </View>
