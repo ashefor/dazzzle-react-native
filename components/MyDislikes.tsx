@@ -1,40 +1,59 @@
 import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, useWindowDimensions } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { router } from 'expo-router'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
+import axiosRequest from '@/utils/axios'
+import { Loader } from './loader/LoaderWrapper'
 
 const MyDislikes = () => {
-    const { axiosRequest } = useAxiosContext();
     const { width } = useWindowDimensions();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
-    const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [paginationDetails, setPaginationDetails] = useState<{ totalCount: number, nextPageUrl: string } | null>(null);
 
     const fetchLikedUsers = async (pageUrl = '/disliked', hideLoader = true) => {
         try {
-            setLoading(true);
-            const { data } = await axiosRequest.get(pageUrl, { headers: { 'hide-loader': hideLoader ? 'true' : 'false' } });
+            Loader.show();
+            const data: any = await axiosRequest.get(pageUrl);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
-                setUsers(prevUsers => [...prevUsers, ...usersData]);
+                setUsers(usersData);
                 setPaginationDetails({ totalCount, nextPageUrl });
             }
-            setLoading(false);
+            Loader.hide();
         } catch (error) {
-            setLoading(false);
-            console.error('Error fetching liked users:', error);
+            Loader.hide();
+            console.error('Error fetching disliked users:', error);
             setPaginationDetails(null);
+        }
+    };
+
+    const fetchMoreUsers = async () => {
+        try {
+            if (paginationDetails?.nextPageUrl) {
+                const url = paginationDetails.nextPageUrl;
+                setIsLoadingMore(true);
+                const data: any = await axiosRequest.get(url);
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    const { usersData, totalCount, nextPageUrl } = data.data;
+                    const newUsers = [users, usersData];
+                    setUsers(newUsers.flat());
+                    setPaginationDetails({ totalCount, nextPageUrl });
+                }
+                setIsLoadingMore(false);
+            }
+        } catch (error) {
+            setIsLoadingMore(false);
         }
     };
 
     const refreshUsers = async () => {
         try {
             setRefreshing(true);
-            const { data } = await axiosRequest.get('/disliked', { headers: { 'hide-loader': 'true' } });
+            const data: any = await axiosRequest.get('/disliked', { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
                 setUsers(usersData);
@@ -43,17 +62,29 @@ const MyDislikes = () => {
             setRefreshing(false);
         } catch (error) {
             setRefreshing(false);
-            console.error('Error fetching liked users:', error);
-            // setUsers(prevUsers => [...prevUsers]);
+            console.error('Error refreshing disliked users:', error);
             setPaginationDetails(null);
         }
     }
 
-    const handleLoadMore = async () => {
-        if (paginationDetails?.nextPageUrl) {
-            fetchLikedUsers(paginationDetails.nextPageUrl);
-        }
-    };
+
+    const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => {
+        return (
+            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
+                <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+                    <View className='w-full h-full rounded-xl overflow-hidden'>
+                        <ImageBackground resizeMode='cover' className='h-full w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
+                            <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
+                                <Text className='text-sm font-firabold text-white'>{item.userFullName}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
+                            </View>
+                        </ImageBackground>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        )
+    }, [])
 
 
     useEffect(() => {
@@ -65,9 +96,11 @@ const MyDislikes = () => {
             <FlatList
                 className='p-1'
                 data={users}
-                keyExtractor={(item, index) => `${item._uid}-${index}`}
-                numColumns={width > 600 ? 3 : width > 991 ? 4 : 2}
-                onEndReached={handleLoadMore}
+                horizontal={false}
+                numColumns={numColumns}
+                keyExtractor={(item, index) => `${item.username}-${item._uid}-${index}`}
+                onEndReachedThreshold={0.5}
+                onEndReached={() => fetchMoreUsers()}
                 refreshing={refreshing}
                 onRefresh={() => refreshUsers()}
                 refreshControl={
@@ -76,28 +109,8 @@ const MyDislikes = () => {
                         onRefresh={refreshUsers}
                         tintColor={'#fff'}
                     />}
-                onEndReachedThreshold={0.5}
-                ListFooterComponent={loading ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
-                renderItem={
-                    ({ item }) => (
-                        <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
-                            <View className='m-2' style={{
-                                flex: 1 / numColumns,
-                                flexDirection: "row",
-                            }}>
-                                <View className='w-full h-full rounded-xl overflow-hidden'>
-                                    <ImageBackground resizeMode='cover' className='h-52 w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
-                                        <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
-                                            <Text className='text-sm font-firabold text-white'>{item.userFullName}</Text>
-                                            <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
-                                            <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
-                                        </View>
-                                    </ImageBackground>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    )
-                }
+                ListFooterComponent={() => isLoadingMore && <View className='p-3'><ActivityIndicator size={'small'} color={'#fff'} /></View>}
+                renderItem={renderItem}
             />
         </View>
 

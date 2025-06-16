@@ -1,34 +1,34 @@
 import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, RefreshControl, ActivityIndicator, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import images from '@/constants/images'
 import { router } from 'expo-router'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
 import Toast from './toast/toast'
+import axiosRequest from '@/utils/axios'
+import { Loader } from './loader/LoaderWrapper'
 
 const MutualLikes = () => {
-    const { axiosRequest } = useAxiosContext();
     const { width } = useWindowDimensions();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
-    const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [paginationDetails, setPaginationDetails] = useState<{ totalCount: number, nextPageUrl: string } | null>(null);
 
     const fetchLikedUsers = async (pageUrl = '/mutual-likes', hideLoader = true) => {
         try {
-            setLoading(true);
-            const { data } = await axiosRequest.get(pageUrl, { headers: { 'hide-loader': hideLoader ? 'true' : 'false' } });
+            Loader.show();
+            const data: any = await axiosRequest.get(pageUrl);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
-                setUsers(prevUsers => [...prevUsers, ...usersData]);
+                setUsers(usersData);
                 setPaginationDetails({ totalCount, nextPageUrl });
             }
-            setLoading(false);
+            Loader.hide();
         } catch (error) {
-            setLoading(false);
+            Loader.hide();
             console.error('Error fetching liked users:', error);
             setPaginationDetails(null);
         }
@@ -37,7 +37,7 @@ const MutualLikes = () => {
     const refreshUsers = async () => {
         try {
             setRefreshing(true);
-            const { data } = await axiosRequest.get('/mutual-likes', { headers: { 'hide-loader': 'true' } });
+            const data: any = await axiosRequest.get('/mutual-likes', { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
                 setUsers(usersData);
@@ -47,14 +47,26 @@ const MutualLikes = () => {
         } catch (error) {
             setRefreshing(false);
             console.error('Error fetching liked users:', error);
-            // setUsers(prevUsers => [...prevUsers]);
             setPaginationDetails(null);
         }
     }
 
-    const handleLoadMore = async () => {
-        if (paginationDetails?.nextPageUrl) {
-            fetchLikedUsers(paginationDetails.nextPageUrl);
+    const fetchMoreUsers = async () => {
+        try {
+            if (paginationDetails?.nextPageUrl) {
+                const url = paginationDetails.nextPageUrl;
+                setIsLoadingMore(true);
+                const data: any = await axiosRequest.get(url);
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    const { usersData, totalCount, nextPageUrl } = data.data;
+                    const newUsers = [users, usersData];
+                    setUsers(newUsers.flat());
+                    setPaginationDetails({ totalCount, nextPageUrl });
+                }
+                setIsLoadingMore(false);
+            }
+        } catch (error) {
+            setIsLoadingMore(false);
         }
     };
 
@@ -71,14 +83,36 @@ const MutualLikes = () => {
             },
         ]);
 
+    const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => {
+        return (
+            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
+                <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+                    <View className='absolute top-4 right-4 z-10'>
+                        <TouchableOpacity onPress={() => createUnlikeUserAlert(item._id)} className='p-2 bg-white rounded-full'>
+                            <Ionicons name="heart" size={20} color="red" />
+                        </TouchableOpacity>
+                    </View>
+                    <View className='w-full h-full rounded-xl overflow-hidden'>
+                        <ImageBackground resizeMode='cover' className='h-full w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
+                            <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
+                                <Text className='text-sm font-firabold text-white'>{item.userFullName}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
+                            </View>
+                        </ImageBackground>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        )
+    }, [])
+
     useEffect(() => {
         fetchLikedUsers('/mutual-likes', false);
     }, []);
 
     const unlikeUser = async (userId: string | number) => {
         try {
-            const { data } = await axiosRequest.post(`/${userId.toString()}/0/user-like-dislike`);
-
+            const data: any = await axiosRequest.post(`/${userId.toString()}/0/user-like-dislike`, {});
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const response = data.data;
                 Toast.success(response.message || 'User Disliked successfully', 2000)
@@ -95,8 +129,9 @@ const MutualLikes = () => {
                 className='p-1'
                 data={users}
                 keyExtractor={(item, index) => `${item._uid}-${index}`}
-                numColumns={width > 600 ? 3 : width > 991 ? 4 : 2}
-                onEndReached={handleLoadMore}
+                numColumns={numColumns}
+                onEndReachedThreshold={0.5}
+                onEndReached={() => fetchMoreUsers()}
                 refreshing={refreshing}
                 onRefresh={() => refreshUsers()}
                 refreshControl={
@@ -105,34 +140,8 @@ const MutualLikes = () => {
                         onRefresh={refreshUsers}
                         tintColor={'#fff'}
                     />}
-                onEndReachedThreshold={0.5}
-                ListFooterComponent={loading ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
-                renderItem={
-                    ({ item }) => (
-                        <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
-                            <View className='m-2' style={{
-                                flex: 1 / numColumns,
-                                flexDirection: "row",
-                            }}>
-                                {/* <UnlikeUserButton userId={item._id}/> */}
-                                <View className='absolute top-4 right-4 z-10'>
-                                    <TouchableOpacity onPress={() => createUnlikeUserAlert(item._id)} className='p-2 bg-white rounded-full'>
-                                        <Ionicons name="heart" size={20} color="red" />
-                                    </TouchableOpacity>
-                                </View>
-                                <View className='w-full h-full rounded-xl overflow-hidden'>
-                                    <ImageBackground resizeMode='cover' className='h-52 w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
-                                        <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
-                                            <Text className='text-sm font-firabold text-white'>{item.userFullName}</Text>
-                                            <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
-                                            <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
-                                        </View>
-                                    </ImageBackground>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    )
-                }
+                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
+                renderItem={renderItem}
             />
         </View>
 
