@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Alert, } from 'react-native';
+import { Text, View, TouchableOpacity, Alert, Button, Pressable } from 'react-native';
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Avatar, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
@@ -52,7 +52,6 @@ const MyProfile = () => {
     }
 
     useEffect(() => {
-        // fetchUserDetails();
         setProfilePictureUrl(userInfo?.profile_picture_url);
         dispatch(fetchUserProfileData());
     }, [])
@@ -142,7 +141,6 @@ const MyProfile = () => {
     }
 
     const renderTabBar = (props: MaterialTabBarProps<any>) => {
-
         return (
             <MaterialTabBar
                 {...props}
@@ -164,11 +162,9 @@ const MyProfile = () => {
                     headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
                         <ArrowBackIcon />
                     </TouchableOpacity>,
-                    headerRight: () => <TouchableOpacity onPress={toggleEditModalVisible}>
-                        <Text className='text-white font-firamedium text-sm'>
-                            {editMode ? 'Cancel' : 'Edit'}
-                        </Text>
-                    </TouchableOpacity>
+                    headerRight: () => <Pressable onPress={toggleEditModalVisible} className='flex  items-center justify-center'>
+                        <Text className='text-sm text-[#DD3FE5] font-firaregular'>{editMode ? 'Done' : 'Edit'}</Text>
+                    </Pressable>
                 }}
             />
             <Tabs.Container

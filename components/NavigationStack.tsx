@@ -15,9 +15,15 @@ const NavigationStack = () => {
             <Stack.Screen name='onboard' />
             <Stack.Screen name='subscription' />
             <Stack.Screen name="(tabs)" /> */}
-            <Stack.Screen name="view-user/[userName]"
+            {/* <Stack.Screen name="view-user/[userName]"
 
             />
+            <Stack.Screen
+                      name="[userId]"
+                      options={{
+                        title: 'User Id',
+                        headerShown: false,
+                      }} /> */}
             <Stack.Screen name="user-filter"
                 options={{
                     presentation: 'modal',

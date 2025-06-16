@@ -6,29 +6,26 @@ import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import { Avatar, XStack, YStack } from 'tamagui';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import axiosRequest from '@/utils/axios';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { SingleChatResponse, UserConversation } from '@/models/chat';
 import SkeletonPlaceholder from '@/components/SkeletonLoader';
 import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import EmojiPicker from 'rn-emoji-keyboard';
+import { CONNECTION_STATE_HEIGHT, INPUT_MAX_HEIGHT } from '@/constants/constants';
+import { ReactionCodes } from '@/models/general';
+import { Loader } from '@/components/loader/LoaderWrapper';
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
-export const INPUT_MAX_HEIGHT = 80;
-export const CONNECTION_STATE_HEIGHT = 24;
+
 const KEYBOARD_AVOID_BEHAVIOR = Platform.select({ ios: 'padding' as const, default: undefined });
 
 const ViewSingleChat = () => {
-    const height = 10;
-    const { bottom } = useSafeAreaInsets();
     const { userId } = useLocalSearchParams();
     const [chatDetails, setChatDetails] = useState<SingleChatResponse>();
     const [chats, setChats] = useState<UserConversation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string>('');
-    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-
     const flatListRef = React.useRef<FlatList>(null);
 
     const fetchMessages = async () => {
@@ -39,9 +36,11 @@ const ViewSingleChat = () => {
             const chats = data.userConversations;
             setChats(chats);
             setIsLoading(false);
-            setTimeout(() => {
-                flatListRef.current?.scrollToIndex({ index: chats.length - 1, animated: true });
-            }, 200);
+            if (chats.length > 0) {
+                setTimeout(() => {
+                    flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
+                }, 200);
+            }
         } catch (error) {
             setIsLoading(false);
         }
@@ -55,6 +54,22 @@ const ViewSingleChat = () => {
     useEffect(() => {
         fetchMessages();
     }, [])
+
+    const acceptOrDeclineMessageRequest = async (message_request_status: '1' | '2') => {
+        try {
+            const params = {
+                message_request_status,
+            }
+            Loader.show();
+            const data: any = await axiosRequest.post(`/messenger/${userId}/process-accept-decline-message-request`, params);
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                fetchMessages();
+            }
+            Loader.hide();
+        } catch (error) {
+            Loader.hide();
+        }
+    }
 
     const sendMessage = async () => {
         try {
@@ -82,16 +97,12 @@ const ViewSingleChat = () => {
                 })
                 setMessage('');
                 setTimeout(() => {
-                flatListRef.current?.scrollToIndex({ index: chats.length - 1, animated: true });
-            }, 200);
+                    flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
+                }, 200);
             }
         } catch (error) {
 
         }
-    }
-
-    const handlePickEmoji = (emoji: any) => {
-        setMessage(prev => prev + emoji.emoji);
     }
 
     const pickImage = async () => {
@@ -127,8 +138,8 @@ const ViewSingleChat = () => {
                 })
                 setMessage('');
                 setTimeout(() => {
-                flatListRef.current?.scrollToIndex({ index: chats.length - 1, animated: true });
-            }, 200);
+                    flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
+                }, 200);
             }
         } catch (error) {
             console.error('Error picking image:', error);
@@ -138,17 +149,13 @@ const ViewSingleChat = () => {
 
     return (
         <View style={[
-            //   {
-            //     paddingTop: Platform.OS == 'android' ? insets.top : 0,
-            //     paddingBottom: insets.bottom,
-            //   },
         ]} className="flex-1 bg-primary">
             <View style={{
                 flex: 1, marginTop: 0,
                 zIndex: 1,
             }}>
                 <SafeArea />
-                <View style={{ paddingHorizontal: 16, }}>
+                <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
                     <View style={[styles.header]}>
                         <View style={{ zIndex: 99 }}>
                             <TouchableOpacity onPress={() => router.back()} className='flex justify-center w-7 h-7' style={{ zIndex: 99 }}>
@@ -182,7 +189,7 @@ const ViewSingleChat = () => {
                         data={chats}
                         keyExtractor={(item, index) => index.toString()}
                         ItemSeparatorComponent={() => <View className='h-2' />}
-                        ListEmptyComponent={() => <View className=" items-center justify-center p-4 bg-gray-300 rounded-lg">
+                        ListEmptyComponent={() => <View className="mt-6 items-center justify-center p-4 bg-gray-300 rounded-lg">
                             <Text className=" text-sm font-firamedium">No messages yet</Text>
                         </View>}
                         renderItem={({ item }) =>
@@ -196,39 +203,68 @@ const ViewSingleChat = () => {
                 )}
             </View>
 
-            {!isLoading && (
-                <KeyboardAvoidingView keyboardVerticalOffset={-bottom + height + CONNECTION_STATE_HEIGHT} behavior={KEYBOARD_AVOID_BEHAVIOR}>
-                    <View style={{
-                        width: '100%',
-                        borderTopWidth: 0.2,
-                        borderColor: '#f2f2f2',
-                    }}>
-                        <View style={{ flexShrink: 1, flexDirection: "row" }} className="items-center gap-x-3 px-4 py-3">
-                            <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[40px] px-3 py-1">
-                                {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
+            {!isLoading && <Fragment>
+                {chatDetails ? <Fragment>
+                    {(chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_ACCEPTED' || chatDetails.userData.messageRequestStatus === 'SEND_NEW_MESSAGE' || chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_SENT') && <SendInput message={message} setMessage={setMessage} pickImage={pickImage} sendMessage={sendMessage} />}
+                    {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_RECEIVED' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} full_name={chatDetails.userData.full_name} showDeclineButton />}
+                    {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE_BY_USER' && <View className='bg-red-500 p-3 justify-center items-center rounded-md m-4'>
+                        <Text className='text-white text-sm'> {chatDetails.userData.full_name} declined your request</Text>
+                        </View>}
+                        {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} />}
+                </Fragment> : null}
+                </Fragment>}
+
+                <SafeArea />
+        </View>
+    )
+}
+
+const SendInput = ({ message, setMessage, pickImage, sendMessage }: { message: string, setMessage: (message: string) => void, pickImage: () => void, sendMessage: () => void }) => {
+    const height = 10;
+    const { bottom } = useSafeAreaInsets();
+    return (
+        <KeyboardAvoidingView keyboardVerticalOffset={-bottom + height + CONNECTION_STATE_HEIGHT} behavior={KEYBOARD_AVOID_BEHAVIOR}>
+            <View style={{
+                width: '100%',
+                borderTopWidth: 0.2,
+                borderColor: '#f2f2f2',
+            }}>
+                <View style={{ flexShrink: 1, flexDirection: "row" }} className="items-center gap-x-3 px-4 py-3">
+                    <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[40px] px-3 py-1">
+                        {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
                                     <MaterialIcons name="emoji-emotions" size={24} color="white" />
                                 </TouchableOpacity> */}
-                                <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} multiline style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
-                                    className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
-                            </View>
-                            <View style={{ flexDirection: "row" }} className="items-center">
-                                <TouchableOpacity onPress={pickImage} className="mr-5 items-center justify-center">
-                                    {/* <Feather name="plus-circle" size={24} color="white" /> */}
-                                    <Entypo name="attachment" size={24} color="white" />
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={sendMessage} className="items-center justify-center">
-                                    <Ionicons name="send" size={24} color="white" />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
+                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} multiline style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
+                            className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
                     </View>
-                    {/* <View style={{ height: bottom }} /> */}
-                                <EmojiPicker onEmojiSelected={handlePickEmoji} open={isEmojiPickerOpen} onClose={() => setIsEmojiPickerOpen(false)} />
+                    <View style={{ flexDirection: "row" }} className="items-center">
+                        <TouchableOpacity onPress={pickImage} className="mr-5 items-center justify-center">
+                            {/* <Feather name="plus-circle" size={24} color="white" /> */}
+                            <Entypo name="attachment" size={24} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={sendMessage} className="items-center justify-center">
+                            <Ionicons name="send" size={24} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </KeyboardAvoidingView>
+    )
+}
 
-                </KeyboardAvoidingView>
-            )}
-        </View>
+const ActionComponent = ({full_name, showDeclineButton, acceptOrDeclineMessageRequest }: { acceptOrDeclineMessageRequest: (status: '1' | '2') => void, showDeclineButton?: boolean, full_name?: string, }) => {
+    return (
+       <View className='p-4'>
+        {full_name && <Text className='text-white text-base text-center'> {full_name} wants to send you a message</Text>}
+         <View className='flex-row justify-between items-center space-x-3 mt-2'>
+                     {showDeclineButton && <TouchableOpacity onPress={() => acceptOrDeclineMessageRequest('2')} className='bg-red-500 flex-1 p-3 justify-center items-center rounded-md'>
+                        <Text className='text-white'>Reject</Text>
+                    </TouchableOpacity>}
+                    <TouchableOpacity onPress={() => acceptOrDeclineMessageRequest('1')} className=' bg-[#DD3FE5] flex-1 p-3 justify-center items-center rounded-md'>
+                        <Text className='text-white'>Accept</Text>
+                    </TouchableOpacity>
+                        </View>
+       </View>
     )
 }
 

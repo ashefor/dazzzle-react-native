@@ -75,3 +75,6 @@ export const preferredLanguageOptions: Item[] = [
     { id: 21, value: "Indonesian" },
     { id: 22, value: "Panjabi" }
 ];
+
+export const INPUT_MAX_HEIGHT = 80;
+export const CONNECTION_STATE_HEIGHT = 24;

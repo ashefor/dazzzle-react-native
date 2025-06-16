@@ -1,6 +1,6 @@
 import { SafeAreaView as SafeAreaViewIOS, StyleSheet, Text, Image, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform, Alert, ActivityIndicator } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertDialog, AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, TabLayout, Tabs, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
+import { AlertDialog, AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, Tabs, TabLayout, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -20,6 +20,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
+import {  MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
@@ -111,19 +112,6 @@ const User = () => {
         }
     }
 
-    const handleLikeOrDislikeUser = async (likeOrDislike: string) => {
-        try {
-            const userId = userDetails?.userData.userId;
-        const url = `/${userId}/${likeOrDislike}/user-like-dislike`;
-        const {data} = await axiosRequest.post(url, {}, { headers: { 'hide-loader': 'true' } });
-        if (data.reaction === ReactionCodes.SUCCESS) {
-            fetchUserDetails();
-        }
-        } catch (error) {
-            
-        }
-      };
-
 
     const handleBlockUser = async () => {
         try {
@@ -164,6 +152,57 @@ const User = () => {
             console.log(error);
         }
     }
+
+    const HeaderComponent = () => {
+        return (
+            userDetails ? (
+                            <YStack >
+                                <View className='py-5 px-4 space-y-2'>
+                                <YStack gap="$3">
+                                        <XStack alignItems="center" gap="$4" justifyContent='center'>
+                                            <View className='rounded-full relative'>
+                                                {userDetails.isPremiumUser && 
+                                                <MaterialCommunityIcons name="crown-circle-outline" size={24} color="#FFD700" style={{ position: 'absolute', right: 0, bottom: 5, zIndex: 5 }}/>
+                                                }
+                                                <Avatar className='' gap="$2" circular size="$10">
+                                                    <Avatar.Image
+                                                        accessibilityLabel="Nate Wienert"
+                                                        src={userDetails?.userData.profilePicture}
+                                                    />
+                                                    <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
+                                                </Avatar>
+                                            </View>
+                                        </XStack>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>
+                                            {userDetails?.userData.first_name} {userDetails?.userData.last_name} {userDetails?.userData.userAge && `(${userDetails?.userData.userAge})`}
+                                        </Text>
+                                        {userDetails?.userProfileData.aboutMe && <Text className='text-sm font-firaregular text-center text-white'>
+                                            {userDetails?.userProfileData.aboutMe}
+                                        </Text>}
+                                    </YStack>
+                                    {userDetails?.blockByMeUser ? <View className='mt-10 py-4'>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} is blocked</Text>
+                                    </View> : userDetails.isBlockUser ? <View>
+                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} has blocked you</Text>
+                                    </View> : <TabsAdvancedBackground />}
+                                </View>
+                            </YStack>
+                        ) :
+                null
+        )
+    }
+
+    const renderTabBar = (props: MaterialTabBarProps<any>) => {
+        return (
+            <MaterialTabBar
+                {...props}
+                indicatorStyle={{ backgroundColor: '#DD3FE5' }}
+                style={{ backgroundColor: '#1A1A1A', borderBottomWidth: 0, borderBottomColor: '#E4E4E7' }}
+                activeColor='#DD3FE5'
+                inactiveColor='#fff'
+            />
+        )
+    };
 
 
     const createBlockNotificationAlert = () =>
@@ -244,8 +283,8 @@ const User = () => {
 
         return (
             <Tabs
-                // className='bg-transparent mt-5'
-                        backgroundColor={"$colorTransparent"}
+                className='bg-transparent mt-5'
+                backgroundColor={"$colorTransparent"}
                 value={currentTab}
                 onValueChange={setCurrentTab}
                 orientation="horizontal"
@@ -257,7 +296,7 @@ const User = () => {
                 position="relative"
             >
                 <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
-                <AnimatePresence>
+                {/* <AnimatePresence>
                         {intentAt && (
                             <TabsRovingIndicator
                                 className='bg-black text-white rounded-[40px]'
@@ -280,7 +319,7 @@ const User = () => {
                                 y={activeAt.y}
                             />
                         )}
-                    </AnimatePresence>
+                    </AnimatePresence> */}
 
                     <Tabs.List
                         unstyled
@@ -304,7 +343,7 @@ const User = () => {
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className={`font-firamedium text-white`}>Profile</SizableText>
+                                className={`font-firamedium text-black`}>Profile</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -320,7 +359,7 @@ const User = () => {
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className={`font-firamedium text-white`}>Photos</SizableText>
+                                className={`font-firamedium text-black`}>Photos</SizableText>
                         </Tabs.Tab>
                         <Tabs.Tab
                             unstyled
@@ -336,7 +375,7 @@ const User = () => {
                             onInteraction={handleOnInteraction}
                         >
                             <SizableText
-                                className={`font-firamedium text-white`}>Interests</SizableText>
+                                className={`font-firamedium text-black`}>Interests</SizableText>
                         </Tabs.Tab>
                     </Tabs.List>
                 </View>
@@ -554,7 +593,7 @@ const User = () => {
                         {/* #EB4242 */}
                     </Button>
                     <Button onPress={() => router.navigate({
-                        pathname: '/(tabs)/chats/[userId]',
+                        pathname: '/single-chat/[userId]',
                         params: { userId: userDetails?.userData.userId }
                     })} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <Ionicons name="chatbox-ellipses" size={24} color="#59C526" />

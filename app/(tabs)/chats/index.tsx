@@ -52,7 +52,10 @@ const Chats = () => {
                         <Text className=" text-sm font-firamedium">No messages yet</Text>
                     </View>}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => router.push(`/chats/${item.user_id}`)}>
+                        <TouchableOpacity onPress={() => router.navigate({
+                                                pathname: '/single-chat/[userId]',
+                                                params: { userId: item.user_id}
+                                            })}>
                             <XStack alignItems="center" gap="$4">
                                 <Avatar gap="$2" circular size="$5">
                                     <Avatar.Image

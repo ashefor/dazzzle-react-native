@@ -29,12 +29,6 @@ const ProfileLayout = () => {
             title: 'Chats',
             // headerShown: false
           }} />
-        <Stack.Screen
-          name="[userId]"
-          options={{
-            title: 'User Id',
-            headerShown: false,
-          }} />
       </Stack>
       <StatusBar backgroundColor='#161622' style='light' />
     </>

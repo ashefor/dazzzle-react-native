@@ -87,7 +87,7 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 onOpenChange={setOpenPicker}
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
-                zIndex={100_000}
+                zIndex={100_000_000}
                 animation="quicker"
             >
                 <Sheet.Overlay

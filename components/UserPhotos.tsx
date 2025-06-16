@@ -106,9 +106,9 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
             });
             if (result.assets && result.assets.length > 0) {
                 setNewImages(result.assets);
-                setImages(prevImages => {
-                    return [...prevImages, ...result.assets];
-                });
+                // setImages(prevImages => {
+                //     return [...prevImages, ...result.assets];
+                // });
             }
         } catch (error) {
             console.error('Error picking multiple images:', error);
@@ -181,6 +181,20 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
             {images.length > 0 ? (
                 <XStack flexWrap="wrap" columnGap="$3" rowGap="$3">
                     {images && images.map((image, index) => (
+                        <View className='w-[30%] h-40 rounded-2xl relative' key={index}>
+                            {isEditing && <TouchableOpacity className='absolute -bottom-2 -right-2 p-2 bg-white z-10 w-8 h-8 rounded-full flex items-center justify-center' onPress={() => image ? openActionSheet(index) : pickImage(index)}>
+                                <Feather name={image ? 'edit-3' : 'image'} size={16} color="#DD3FE5" />
+                            </TouchableOpacity>}
+
+                            {image?.uri ? (
+                                <Image className="w-full h-full border border-[#DD3FE5] rounded-lg" source={{ uri: image.uri }} />
+                            ) : (
+                                <Image className="w-full h-full rounded-lg" source={Images.imagePlaceholder} />
+                            )}
+
+                        </View>
+                    ))}
+                    {newImages && newImages.map((image, index) => (
                         <View className='w-[30%] h-40 rounded-2xl relative' key={index}>
                             {isEditing && <TouchableOpacity className='absolute -bottom-2 -right-2 p-2 bg-white z-10 w-8 h-8 rounded-full flex items-center justify-center' onPress={() => image ? openActionSheet(index) : pickImage(index)}>
                                 <Feather name={image ? 'edit-3' : 'image'} size={16} color="#DD3FE5" />

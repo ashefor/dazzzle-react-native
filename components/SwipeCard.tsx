@@ -294,7 +294,8 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     padding: 16,
-    height: "30%",
+    // height: "30%",
+    height: 150,
     position: "absolute",
     bottom: 0,
     backgroundColor: "#5B5B5B",
