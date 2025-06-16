@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, Animated, Dimensions } from 'react-native';
-import { YStack } from 'tamagui';
 import Images from '@/constants/images';
 
 let showLoader: () => void;
@@ -55,18 +54,15 @@ export const LoaderWrapper = () => {
                 opacity: fadeAnim,
             }}
         >
-            <YStack
-                flex={1}
-                alignItems="center"
-                justifyContent="center"
-                backgroundColor="$black075"
+            <View
+                className='h-full w-full items-center justify-center flex-1 bg-black/[0.6]'
             >
                 <Image
                     source={Images.logo}
                     style={{ width: 80, height: 80 }}
                     resizeMode="contain"
                 />
-            </YStack>
+            </View>
         </Animated.View>
     );
 };

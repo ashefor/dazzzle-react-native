@@ -305,16 +305,13 @@ const FilterUsers = () => {
 
     return (
         <>
-            {/* <Stack.Screen options={{
-                headerRight: () => <XStack gap={'$4'} className='px-4'>
-                    <TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
+            <Stack.Screen options={{
+                        headerStyle: { backgroundColor: '#1A1A1A' },
+                        headerShadowVisible: false,
+                headerRight: () => <TouchableOpacity onPress={() => setModalVisible(true)} className='flex items-center justify-center pr-4 w-9 h-8'>
                         <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
                     </TouchableOpacity>
-                </XStack>,
-            }} /> */}
-            {/* <Header.Default title='Search' rightContent={<TouchableOpacity onPress={() => setModalVisible(true)} className=' flex items-center justify-center rounded-full'>
-                        <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
-                    </TouchableOpacity>}></Header.Default> */}
+            }} />
             <View className='bg-[#1A1A1A] h-full'>
                 {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
                 <Text className='text-white'>Showing filter</Text>

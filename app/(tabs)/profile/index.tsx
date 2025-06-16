@@ -62,7 +62,7 @@ export default function ProfileScreen() {
               <Avatar.Fallback delayMs={600} backgroundColor="$blue10" />
             </Avatar>
             <View>
-              <Text className='text-xl text-white font-firasemibold'>{userInfo?.first_name} {userInfo?.last_name}</Text>
+              <Text className='text-xl text-white font-firasemibold'>{userInfo?.username}</Text>
               <Link className='text-sm text-tertiary font-firaregular py-2' href='/profile/my-profile'>View Profile</Link>
             </View>
           </XStack>

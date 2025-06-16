@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { User } from "./TinderCardSwipers";
+
 import { AntDesign, FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import icons from "@/constants/icons";
 import { router } from "expo-router";
@@ -18,6 +18,20 @@ import { router } from "expo-router";
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 
+interface User {
+  countryName: string
+  coverImage: string
+  detailString: string
+  dob: string
+  fullName: string
+  gender: string
+  id: number
+  isPremiumUser: boolean
+  profileImage: string
+  userAge: number
+  userOnlineStatus: number
+  username: string
+}
 interface SwipeCardProps {
   profile: User;
   onSwipeLeft: () => void;

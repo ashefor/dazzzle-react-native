@@ -47,7 +47,7 @@ const Chats = () => {
                     contentContainerStyle={{ paddingBottom: 100, padding: 20 }}
                     data={chats}
                     keyExtractor={(item, index) => item.user_id.toString()}
-                ItemSeparatorComponent={() => <View className='h-4' />}
+                ItemSeparatorComponent={() => <View className='h-6' />}
                     ListEmptyComponent={() => <View className="flex-1 items-center justify-center p-4 bg-gray-300 rounded-lg">
                         <Text className=" text-sm font-firamedium">No messages yet</Text>
                     </View>}
@@ -62,8 +62,8 @@ const Chats = () => {
                                     <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
                                 </Avatar>
                                 <YStack>
-                                    <Text className="text-white text-sm font-firamedium">{item.user_full_name}</Text>
-                                    <Text className="text-gray-400 text-xs font-firasemibold">{item.username}</Text>
+                                    <Text className="text-white text-sm font-firamedium">{item.user_full_name} <Text className="text-gray-400 text-xs font-firasemibold">{item.username}</Text></Text>
+                                    {/* <Text className="text-gray-400 text-xs font-firasemibold">{item.username}</Text> */}
                                     <XStack gap="$2">
                                         <Text className="text-white text-[10px]">Last seen:</Text>
                                         <Text className="text-gray-300 text-[10px]">{item.last_seen_at_time_ago_format}</Text>

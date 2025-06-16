@@ -14,7 +14,7 @@ import UserInterests from '../../components/UserInterests';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { SingleUserDetails } from '@/models/user';
-import SkeletonLoading from 'expo-skeleton-loading'
+// import SkeletonLoading from 'expo-skeleton-loading'
 import icons from '@/constants/icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
@@ -494,7 +494,7 @@ const User = () => {
                         </ImageBackground>
                     </View>
                     {isLoading ? <View className='py-5 px-4 space-y-3'>
-                        <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
+                        {/* <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
                         <View style={{ width: 100, height: 100, backgroundColor: "#adadad", marginLeft: 'auto', marginRight: 'auto', borderRadius: 100 }} />
                     </SkeletonLoading>
                     <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
@@ -503,7 +503,7 @@ const User = () => {
                            <View style={{ backgroundColor: "#adadad", width: "60%", height: 10, marginTop: 16, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
                            <View style={{ backgroundColor: "#adadad", width: "75%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 16, borderRadius: 5 }} />
                         </View>
-                    </SkeletonLoading>
+                    </SkeletonLoading> */}
                     <ActivityIndicator size="large" color="#fff" />
                     </View> : (
                         userDetails ? (

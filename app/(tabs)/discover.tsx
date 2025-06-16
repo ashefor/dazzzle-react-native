@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, Text, ActivityIndicator, Alert } from "react-native";
+import React, { Fragment, useEffect } from "react";
+import { StyleSheet, View, Text, ActivityIndicator, Alert, TouchableOpacity, Image } from "react-native";
 import SwipeCard from "@/components/SwipeCard";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import CustomButton from "@/components/CustomButton";
 import { clearSwipeError } from "@/redux/slices/usersSlice";
 import { fetchProfilesAsync, swipeLeftAsync, swipeRightAsync } from "@/redux/thunks/swipeActions";
+import { Stack } from "expo-router";
+import icons from "@/constants/icons";
 
 export default function DiscoverScreen() {
   const dispatch = useAppDispatch();
@@ -34,7 +36,7 @@ export default function DiscoverScreen() {
   const handleSwipeRight = () => {
     if (currentIndex < profiles.length) {
       const userId = profiles[currentIndex].id;
-      
+
       // Dispatch the async action to record the like
       dispatch(swipeRightAsync(userId.toString()))
         .unwrap()
@@ -81,18 +83,27 @@ export default function DiscoverScreen() {
   }
 
   return (
-    <View className="flex-1 items-center bg-primary justify-center">
-      {currentIndex < profiles.length ? (
-        <SwipeCard
-          profile={profiles[currentIndex]}
-          onSwipeLeft={handleSwipeLeft}
-          onSwipeRight={handleSwipeRight}
-          isLoading={swipeLoading}
-        />
-      ) : (
-        renderNoMoreProfiles()
-      )}
-    </View>
+    <Fragment>
+      <Stack.Screen options={{
+        headerStyle: { backgroundColor: '#1A1A1A' },
+        headerShadowVisible: false,
+        // headerRight: () => <TouchableOpacity className='flex items-center justify-center pr-4 w-9 h-8'>
+        //         <Image source={icons.menu} className='w-6 h-6' resizeMode='contain' />
+        //     </TouchableOpacity>
+      }} />
+      <View className="flex-1 items-center bg-primary justify-center">
+        {currentIndex < profiles.length ? (
+          <SwipeCard
+            profile={profiles[currentIndex]}
+            onSwipeLeft={handleSwipeLeft}
+            onSwipeRight={handleSwipeRight}
+            isLoading={swipeLoading}
+          />
+        ) : (
+          renderNoMoreProfiles()
+        )}
+      </View>
+    </Fragment>
   );
 }
 

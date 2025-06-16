@@ -12,10 +12,6 @@ import Header from '@/components/Header';
 
 export default function TabLayout() {
 
-  useEffect(() => {
-    console.log('TabLayout initiated')
-  }, [])
-
   return (
     <Tabs
     initialRouteName='discover'
@@ -26,14 +22,14 @@ export default function TabLayout() {
         },
         // headerShown: false,
         tabBarButton: HapticTab,
-        header: ({ navigation, route, options }) => {
-          const title = getHeaderTitle(options, route.name);
-          return (
-            <Header.Default
-              title={title} 
-              />
-          )
-        }
+        // header: ({ navigation, route, options }) => {
+        //   const title = getHeaderTitle(options, route.name);
+        //   return (
+        //     <Header.Default
+        //       title={title} 
+        //       />
+        //   )
+        // }
       }}
     >
       <Tabs.Screen

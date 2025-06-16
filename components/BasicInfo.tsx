@@ -266,7 +266,7 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                         //         </View>
                         //     </YStack>
                         // </YStack>
-                        <SpecificationData item={item} editable={true} key={item.title} onEditDone={onEditDone} />
+                        <SpecificationData item={item} editable={editable || false} key={item.title} onEditDone={onEditDone} />
                     )
                 })}
             </YStack>
