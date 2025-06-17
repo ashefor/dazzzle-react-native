@@ -11,11 +11,11 @@ import { getItem } from "@/utils/asyncStorage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { usePaystack } from 'react-native-paystack-webview';
+// import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const PayWallScreen = () => {
-    const { popup } = usePaystack();
+    // const { popup } = usePaystack();
     const dispatch = useAppDispatch();
     const { currentSubscription,  } = useAppSelector(state => state.subscription);
     const { axiosRequest } = useAxiosContext();
@@ -24,18 +24,18 @@ const PayWallScreen = () => {
     const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
 
     const processPaystackPayment = (response: CreatePaystackOrderResponse) => {
-        popup.checkout({
-            email: response.email || '',
-            amount: Number(response.amount) / 100,
-            reference: response.reference,
-            metadata: {
-                custom_fields: response
-            },
-            onSuccess: (res) => verifyPaystackPayment(res),
-            onCancel: () => console.log('User cancelled'),
-            onLoad: (res) => console.log('WebView Loaded:', res),
-            onError: (err) => console.log('WebView Error:', err)
-        });
+        // popup.checkout({
+        //     email: response.email || '',
+        //     amount: Number(response.amount) / 100,
+        //     reference: response.reference,
+        //     metadata: {
+        //         custom_fields: response
+        //     },
+        //     onSuccess: (res) => verifyPaystackPayment(res),
+        //     onCancel: () => console.log('User cancelled'),
+        //     onLoad: (res) => console.log('WebView Loaded:', res),
+        //     onError: (err) => console.log('WebView Error:', err)
+        // });
     };
 
     const handleLogOut = async () => {
