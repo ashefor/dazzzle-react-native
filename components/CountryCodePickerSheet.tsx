@@ -7,7 +7,6 @@ import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import icons from '@/constants/icons';
 import FormField from './FormField';
-import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
 const CountryCodePickerSheet = (props: SheetProps<"country-code-action-sheet">) => {
     const [countries, setCountries] = React.useState(Array(20).fill(0));

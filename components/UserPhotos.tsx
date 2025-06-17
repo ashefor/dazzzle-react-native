@@ -145,6 +145,9 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
 
         await Promise.all(uploadPromises);
         Loader.hide();
+        const new_images = [images, newImages];
+        setNewImages([]);
+        setImages(new_images.flat());
         Toast.success('Images uploaded successfully.');
         } catch (error) {
         Loader.hide();
@@ -182,7 +185,7 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
                             </TouchableOpacity>}
 
                             {image?.uri ? (
-                                <Image className="w-full h-full border border-[#DD3FE5] rounded-lg" source={{ uri: image.uri }} />
+                                <Image className="w-full h-full rounded-lg" source={{ uri: image.uri }} />
                             ) : (
                                 <Image className="w-full h-full rounded-lg" source={Images.imagePlaceholder} />
                             )}
@@ -196,7 +199,7 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
                             </TouchableOpacity>}
 
                             {image?.uri ? (
-                                <Image className="w-full h-full border border-[#DD3FE5] rounded-lg" source={{ uri: image.uri }} />
+                                <Image className="w-full h-full rounded-lg" source={{ uri: image.uri }} />
                             ) : (
                                 <Image className="w-full h-full rounded-lg" source={Images.imagePlaceholder} />
                             )}

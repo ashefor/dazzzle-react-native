@@ -1,10 +1,9 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TouchableOpacity, View, Text, SafeAreaView as SafeAreaViewIOS, Platform, StyleSheet, Image, KeyboardAvoidingView, TextInput, FlatList, } from "react-native"
-import { SafeAreaView as SafeAreaViewAndroid } from "react-native-safe-area-context";
+import { TouchableOpacity, View, Text, Platform, StyleSheet, Image, KeyboardAvoidingView, TextInput, FlatList, } from "react-native"
 import { router, useLocalSearchParams } from "expo-router";
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import { Avatar, XStack, YStack } from 'tamagui';
-import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Entypo, Ionicons } from '@expo/vector-icons';
 import axiosRequest from '@/utils/axios';
 import { Fragment, useEffect, useState } from 'react';
 import { SingleChatResponse, UserConversation } from '@/models/chat';
@@ -14,9 +13,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { CONNECTION_STATE_HEIGHT, INPUT_MAX_HEIGHT } from '@/constants/constants';
 import { ReactionCodes } from '@/models/general';
 import { Loader } from '@/components/loader/LoaderWrapper';
-
-
-const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const KEYBOARD_AVOID_BEHAVIOR = Platform.select({ ios: 'padding' as const, default: undefined });
 
@@ -97,9 +93,11 @@ const ViewSingleChat = () => {
                     ]
                 })
                 setMessage('');
-                setTimeout(() => {
-                    flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
-                }, 200);
+                if (chats.length > 0) {
+                    setTimeout(() => {
+                        flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
+                    }, 200);
+                }
             }
         } catch (error) {
 
@@ -138,9 +136,11 @@ const ViewSingleChat = () => {
                     ]
                 })
                 setMessage('');
-                setTimeout(() => {
-                    flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
-                }, 200);
+                if (chats.length > 0) {
+                    setTimeout(() => {
+                        flatListRef.current?.scrollToIndex({ index: chats.length - 1 > 0 ? chats.length - 1 : 0, animated: true });
+                    }, 200);
+                }
             }
         } catch (error) {
             console.error('Error picking image:', error);
@@ -155,9 +155,8 @@ const ViewSingleChat = () => {
                 flex: 1, marginTop: 0,
                 zIndex: 1,
             }}>
-                <SafeArea />
                 <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-                    <View style={[styles.header]}>
+                    <View style={[styles.header, { paddingTop: insets.top }]}>
                         <View style={{ zIndex: 99 }}>
                             <TouchableOpacity onPress={() => router.back()} className='flex justify-center w-7 h-7' style={{ zIndex: 99 }}>
                                 <ArrowBackIcon />
@@ -204,16 +203,16 @@ const ViewSingleChat = () => {
                 )}
             </View>
 
-            {!isLoading && <View style={{paddingBottom: insets.bottom}}>
+            {!isLoading && <Fragment>
                 {chatDetails ? <Fragment>
                     {(chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_ACCEPTED' || chatDetails.userData.messageRequestStatus === 'SEND_NEW_MESSAGE' || chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_SENT') && <SendInput message={message} setMessage={setMessage} pickImage={pickImage} sendMessage={sendMessage} />}
                     {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_RECEIVED' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} full_name={chatDetails.userData.full_name} showDeclineButton />}
-                    {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE_BY_USER' && <View className='bg-red-500 p-3 justify-center items-center rounded-md m-4'>
+                    {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE_BY_USER' && <View style={{ paddingBottom: insets.bottom }} className='bg-red-500 p-3 justify-center items-center rounded-md m-4'>
                         <Text className='text-white text-sm'> {chatDetails.userData.full_name} declined your request</Text>
-                        </View>}
-                        {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} />}
+                    </View>}
+                    {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} />}
                 </Fragment> : null}
-                </View>}
+            </Fragment>}
 
         </View>
     )
@@ -228,13 +227,14 @@ const SendInput = ({ message, setMessage, pickImage, sendMessage }: { message: s
                 width: '100%',
                 borderTopWidth: 0.2,
                 borderColor: '#f2f2f2',
+                paddingBottom: bottom
             }}>
                 <View style={{ flexShrink: 1, flexDirection: "row" }} className="items-center gap-x-3 px-4 py-3">
                     <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[48px] px-3 py-1">
                         {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
                                     <MaterialIcons name="emoji-emotions" size={24} color="white" />
                                 </TouchableOpacity> */}
-                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'}  style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
+                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
                             className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
                     </View>
                     <View style={{ flexDirection: "row" }} className="items-center">
@@ -252,19 +252,22 @@ const SendInput = ({ message, setMessage, pickImage, sendMessage }: { message: s
     )
 }
 
-const ActionComponent = ({full_name, showDeclineButton, acceptOrDeclineMessageRequest }: { acceptOrDeclineMessageRequest: (status: '1' | '2') => void, showDeclineButton?: boolean, full_name?: string, }) => {
+const ActionComponent = ({ full_name, showDeclineButton, acceptOrDeclineMessageRequest }: { acceptOrDeclineMessageRequest: (status: '1' | '2') => void, showDeclineButton?: boolean, full_name?: string, }) => {
+    const { bottom } = useSafeAreaInsets();
     return (
-       <View className='p-4'>
-        {full_name && <Text className='text-white text-base text-center'> {full_name} wants to send you a message</Text>}
-         <View className='flex-row justify-between items-center space-x-3 mt-2'>
-                     {showDeclineButton && <TouchableOpacity onPress={() => acceptOrDeclineMessageRequest('2')} className='bg-red-500 flex-1 p-3 justify-center items-center rounded-md'>
+        <View style={{ paddingBottom: bottom }}>
+            <View className='p-4'>
+                {full_name && <Text className='text-white text-base text-center'> {full_name} wants to send you a message</Text>}
+                <View className='flex-row justify-between items-center space-x-3 mt-2'>
+                    {showDeclineButton && <TouchableOpacity onPress={() => acceptOrDeclineMessageRequest('2')} className='bg-red-500 flex-1 p-3 justify-center items-center rounded-md'>
                         <Text className='text-white'>Reject</Text>
                     </TouchableOpacity>}
                     <TouchableOpacity onPress={() => acceptOrDeclineMessageRequest('1')} className=' bg-[#DD3FE5] flex-1 p-3 justify-center items-center rounded-md'>
                         <Text className='text-white'>Accept</Text>
                     </TouchableOpacity>
-                        </View>
-       </View>
+                </View>
+            </View>
+        </View>
     )
 }
 
@@ -288,11 +291,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         flexDirection: 'row',
         alignItems: 'center',
-        // height: Platform.OS === 'android' ? 97 : 'auto',
-        // height: 97,
-        // paddingHorizontal: 16,
-        // paddingVertical: 10,
-        minHeight: 44,
+        minHeight: 56,
         backgroundColor: 'transparent',
         borderBottomWidth: 0,
         borderBottomColor: '#ddd',

@@ -4,17 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link, router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import Images from '@/constants/images'
-import {Form, YStack, Checkbox as TamguiCheckbox, XStack, Sheet, } from 'tamagui'
+import { Form, YStack, XStack, Sheet, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as WebBrowser from 'expo-web-browser';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { isValidEmail } from '@/utils/validators'
 import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
-import BouncyCheckbox from "react-native-bouncy-checkbox";
 import Checkbox from 'expo-checkbox';
 
 type SigUpForm = {
@@ -185,7 +183,7 @@ const SignIn = () => {
                                                 <MaterialCommunityIcons name="check-bold" size={18} color="#ffffff" />
                                             </Checkbox.Indicator>
                                         </Checkbox> */}
-                                        <Checkbox value={form.accepted_terms} onValueChange={(checked: boolean) => handleInputChange('accepted_terms', checked)}/>
+                                        <Checkbox value={form.accepted_terms} onValueChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} />
 
                                         {/* <BouncyCheckbox
                                         isChecked={form.accepted_terms}
@@ -216,7 +214,9 @@ const SignIn = () => {
                             </Form>
                             <View className='justify-center pt-5 flex-row gap-2'>
                                 <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
+                                <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
+                                    <Text className='text-sm text-tertiary font-firaregular underline'>Sign In</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </ScrollView>
@@ -247,8 +247,8 @@ const SignIn = () => {
                     </View>
                     <View className='px-6 pt-4 pb-10'>
                         <View className='space-y-4 text-center mb-5'>
-                        <Text className='text-white text-lg font-firabold text-center'>Account Created!</Text>
-                        <Text className='text-white text-sm font-firaregular text-center'>Your account created successfully, to activate your account please check your email.</Text>
+                            <Text className='text-white text-lg font-firabold text-center'>Account Created!</Text>
+                            <Text className='text-white text-sm font-firaregular text-center'>Your account created successfully, to activate your account please check your email.</Text>
                         </View>
                         <XStack gap="$2" alignItems="center" justifyContent="center" mb="$5">
                             <Text className='text-white text-sm font-firaregular text-center'>If you didn't receive the email,</Text>

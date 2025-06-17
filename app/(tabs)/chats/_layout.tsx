@@ -1,7 +1,6 @@
 import { TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
 import Header from '@/components/Header'
 import { getHeaderTitle } from '@react-navigation/elements'
@@ -30,7 +29,6 @@ const ProfileLayout = () => {
             // headerShown: false
           }} />
       </Stack>
-      <StatusBar backgroundColor='#161622' style='light' />
     </>
   )
 }

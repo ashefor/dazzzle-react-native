@@ -17,11 +17,9 @@ import { Feather } from '@expo/vector-icons';
 import { Loader } from '@/components/loader/LoaderWrapper';
 import { updateUserInfo } from '@/redux/slices/authSlice';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
-import { Tabs, MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
-import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs, MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-
-const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const MyProfile = () => {
     const { userInfo, userProfileData, loadingUserProfileData } = useAppSelector(state => state.auth);
@@ -121,12 +119,12 @@ const MyProfile = () => {
                                         <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
                                     </Avatar>
                                 </View>
-                                {editMode && <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                                 <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
                                     <XStack>
                                         <Text className='text-sm text-white font-firaregular'>Change Photo</Text>
                                         <Feather name="edit-3" size={16} color="white" />
                                     </XStack>
-                                </TouchableOpacity>}
+                                </TouchableOpacity>
                             </YStack>
                             <YStack>
                                 <Text className='text-lg font-firasemibold text-center text-white'>
@@ -166,9 +164,9 @@ const MyProfile = () => {
                     headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
                         <ArrowBackIcon />
                     </TouchableOpacity>,
-                    headerRight: () => <Pressable onPress={toggleEditModalVisible} className='flex  items-center justify-center'>
-                        <Text className='text-sm text-[#DD3FE5] font-firaregular'>{editMode ? 'Done' : 'Edit'}</Text>
-                    </Pressable>
+                    // headerRight: () => <Pressable onPress={toggleEditModalVisible} className='flex  items-center justify-center'>
+                    //     <Text className='text-sm text-[#DD3FE5] font-firaregular'>{editMode ? 'Done' : 'Edit'}</Text>
+                    // </Pressable>
                 }}
             />
             <Tabs.Container
@@ -177,24 +175,28 @@ const MyProfile = () => {
             >
                 <Tabs.Tab name="A" label={'Profile'}>
                     <Tabs.ScrollView className='py-5 px-4 bg-primary'>
-                        {loadingUserProfileData ? <SectionSkeletonLoader /> : <BasicInfo onEditDone={handleEditDone} editable={editMode} userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData} />}
-                        <SafeArea/>
+                        {loadingUserProfileData ? <SectionSkeletonLoader /> : <View style={{ height: '100%', paddingBottom: insets.bottom + 20 }}>
+                            <BasicInfo editable={true} onEditDone={handleEditDone}  userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData} />
+                            </View>}
+
                     </Tabs.ScrollView>
                 </Tabs.Tab>
                 <Tabs.Tab name="B" label={'Photos'}>
                     <Tabs.ScrollView className='py-5 px-4 bg-primary'>
                         {loadingUserProfileData ? 
                         <UserPhotosSkeletonLoader/>
-                        : <UserPhotos editable={editMode} userPhotos={userProfileData?.photosData} />}
-                        <SafeArea/>
+                        : <View style={{ height: '100%', paddingBottom: insets.bottom + 20 }}>
+                            <UserPhotos editable={true} userPhotos={userProfileData?.photosData} />
+                            </View>}
                     </Tabs.ScrollView>
                 </Tabs.Tab>
                 <Tabs.Tab name="C" label={'Interests'}>
                     <Tabs.ScrollView className='py-5 px-4 bg-primary'>
                         {loadingUserProfileData ? 
                         <UserInterestsSkeletonLoader/>
-                        : <UserInterests interests={userProfileData?.userProfileData.interest} />}
-                        <SafeArea/>
+                        : <View style={{ height: '100%', paddingBottom: insets.bottom + 20 }}>
+                            <UserInterests interests={userProfileData?.userProfileData.interest} />
+                            </View>}
                     </Tabs.ScrollView>
                 </Tabs.Tab>
             </Tabs.Container>

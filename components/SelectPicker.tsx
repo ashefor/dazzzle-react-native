@@ -1,10 +1,9 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { memo, useRef, useState } from "react";
-import { KeyboardAvoidingView, TouchableOpacity, View, Text, Keyboard, Platform, ScrollView, SafeAreaView as SafeAreaViewIOS, FlatList } from "react-native"
-import { SafeAreaView as SafeAreaViewAndroid } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, TouchableOpacity, View, Text, Keyboard, Platform, FlatList } from "react-native"
 import { Sheet, XStack, YStack, ListItem as ListItemBase } from "tamagui";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 interface CustomButtonProps {
     options: { id: string | number, value: string }[];
     onSelectOption: (event: string) => void;
@@ -17,6 +16,7 @@ interface CustomButtonProps {
 const SelectPicker = ({ options, defaultOption, onSelectOption, title, placeholder = "Select option", isLoading, disabled }: CustomButtonProps) => {
     const [openPicker, setOpenPicker] = useState(false);
     const flatListRef = useRef<FlatList>(null);
+    const insets = useSafeAreaInsets();
 
     const selectOption = (option: number | string) => {
         Keyboard.dismiss();
@@ -36,7 +36,11 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
         if (flatListRef.current && defaultOption) {
             const selectedOptionIndex = options.findIndex(g => g.id.toString() === defaultOption.toString());
             if (selectedOptionIndex !== -1) {
-                flatListRef.current.scrollToIndex({ index: selectedOptionIndex, animated: true });
+                setTimeout(() => {
+                    if (flatListRef.current) {
+                        flatListRef.current.scrollToIndex({ index: selectedOptionIndex, animated: true });
+                    }
+                }, 500);
             }
         }
     }
@@ -80,24 +84,24 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 </View>
             </View>
             <Sheet
-                forceRemoveScrollEnabled={openPicker}
                 modal={true}
                 open={openPicker}
                 disableDrag={true}
                 onOpenChange={setOpenPicker}
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
+                moveOnKeyboardChange={true}
                 zIndex={100_000_000}
-                animation="quicker"
+                animation="medium"
             >
                 <Sheet.Overlay
                     onPress={() => setOpenPicker(false)}
-                    animation="quicker"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame paddingBottom="$5" gap="$1" backgroundColor={'#1A1A1A'}>
-                    <SafeArea className='bg-[#1A1A1A] h-full'>
+                    <View style={{paddingTop: insets.top, paddingBottom: insets.bottom}} className='bg-[#1A1A1A] h-full'>
                         <View className='bg-[#1A1A1A] p-4 flex-row justify-center'>
                             <TouchableOpacity onPress={() => { Keyboard.dismiss(); setOpenPicker(false) }} className=' absolute top-4 left-4 z-10 flex items-center justify-center pr-4'>
                                 <Ionicons name="close-circle" size={24} color="#ffffff" />
@@ -130,7 +134,7 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                             >
                             </FlatList>
                         </KeyboardAvoidingView>
-                    </SafeArea>
+                    </View>
                 </Sheet.Frame>
             </Sheet>
         </>

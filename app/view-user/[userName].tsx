@@ -6,7 +6,6 @@ import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 import Images from '@/constants/images';
 import BasicInfo from '../../components/BasicInfo';
 import UserPhotos from '../../components/UserPhotos';
@@ -15,11 +14,9 @@ import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import { SingleUserDetails } from '@/models/user';
 // import SkeletonLoading from 'expo-skeleton-loading'
-import icons from '@/constants/icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
-import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import {  MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
 
 
@@ -517,7 +514,7 @@ const User = () => {
                         </View>
                     }}
                 />
-            <ScrollView className='h-full bg-primary relative'
+            <ScrollView  className='h-full bg-primary relative'
                 onScroll={
                     Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -527,7 +524,7 @@ const User = () => {
                 scrollEventThrottle={16}
 
             >
-                <View className='bg-[#1A1A1A] h-full relative pb-24 flex-1'>
+                <View className='bg-[#1A1A1A] h-full relative pb-32 flex-1'>
                     <View className='h-[150px]'>
                         <ImageBackground source={{ uri: userDetails?.userData.coverPicture }} className='w-full h-full' resizeMode='cover' >
                             <View className='h-full w-full bg-black/[0.8]'>
@@ -536,16 +533,6 @@ const User = () => {
                         </ImageBackground>
                     </View>
                     {isLoading ? <View className='py-5 px-4 space-y-3'>
-                        {/* <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
-                        <View style={{ width: 100, height: 100, backgroundColor: "#adadad", marginLeft: 'auto', marginRight: 'auto', borderRadius: 100 }} />
-                    </SkeletonLoading>
-                    <SkeletonLoading background={"#adadad"} highlight={"#ffffff"}>
-                        <View className='mt-2'>
-                        <View style={{ backgroundColor: "#adadad", width: "40%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
-                           <View style={{ backgroundColor: "#adadad", width: "60%", height: 10, marginTop: 16, marginLeft: 'auto', marginRight: 'auto', marginBottom: 3, borderRadius: 5 }} />
-                           <View style={{ backgroundColor: "#adadad", width: "75%", height: 10, marginLeft: 'auto', marginRight: 'auto', marginBottom: 16, borderRadius: 5 }} />
-                        </View>
-                    </SkeletonLoading> */}
                     <ActivityIndicator size="large" color="#fff" />
                     </View> : (
                         userDetails ? (
@@ -581,15 +568,15 @@ const User = () => {
                                 </View>
                             </YStack>
                         ) :
-                            <View>
-
+                            <View className='py-5 px-4 space-y-2'>
+                                <Text className='text-lg font-firasemibold text-center text-white'>User not found</Text>
                             </View>
                     )}
 
                 </View>
 
             </ScrollView>
-            {userDetails && !(userDetails.blockByMeUser || userDetails?.isBlockUser) && <View className='absolute bottom-0 w-full py-7 items-center justify-center'>
+            {userDetails && !(userDetails.blockByMeUser || userDetails?.isBlockUser) && <View style={{bottom: insets.bottom}} className='absolute w-full py-7 items-center justify-center'>
                 <XStack alignItems='center' flex={1} gap="$4" justifyContent='center'>
                     <Button onPress={dislikeUser} className='w-[60px] h-[60px] bg-white flex items-center justify-center rounded-full' unstyled>
                         <FontAwesome name="close" size={36} color={hasUserDisliked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
@@ -606,8 +593,7 @@ const User = () => {
                     </Button>
                 </XStack>
             </View>}
-            <StatusBar style="light" />
-            <SafeArea />
+            {/* <SafeArea /> */}
         </View>
     )
 }

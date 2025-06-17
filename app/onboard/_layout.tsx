@@ -1,7 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { router, Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
 
 const AuthLayout = () => {
@@ -27,7 +26,6 @@ const AuthLayout = () => {
           </TouchableOpacity>
         }} />
       </Stack>
-      <StatusBar style='light' />
     </>
   )
 }

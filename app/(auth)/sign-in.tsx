@@ -1,31 +1,22 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-import { Link, router } from 'expo-router'
+import {router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
 import Images from '@/constants/images'
-import { Button, Form, H4, Spinner, YStack, Input, Label, } from 'tamagui'
+import { Form, YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import axios from 'axios'
-import { AuthApiResponse } from '@/models/user'
 import { isValidUsernameOrEmail } from '@/utils/validators'
-import { API_URL } from '@/constants/constants'
 import { useAxiosContext } from '@/context/AxiosProvider'
-import { setItem } from '@/utils/asyncStorage'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
-import { Loader } from '@/components/loader/LoaderWrapper'
 
 const SignIn = () => {
     const dispatch = useAppDispatch();
     const { loading, isProfileCompleted, userInfo, error } = useAppSelector(state => state.auth);
-    const { setUser, setAuthState, setToken } = useGlobalContext();
-    const { axiosRequest } = useAxiosContext();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [status, setStatus] = useState<'off' | 'submitting' | 'submitted'>('off');
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
     const [form, setForm] = useState({
         email_or_username: '',
@@ -162,7 +153,9 @@ const SignIn = () => {
                         </Form>
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <Text className='text-sm text-white font-firaregular'>Don't have an account?</Text>
-                            <Link className='text-sm text-tertiary font-firaregular underline' href='./sign-up'>Create an Account</Link>
+                            <TouchableOpacity onPress={() => router.replace('/(auth)/sign-up')}>
+                                <Text className='text-sm text-tertiary font-firaregular underline'>Create an Account</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </ScrollView>

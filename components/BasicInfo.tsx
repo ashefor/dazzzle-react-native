@@ -285,7 +285,7 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                 animation="medium"
             >
                 <Sheet.Overlay
-                    animation="lazy"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />

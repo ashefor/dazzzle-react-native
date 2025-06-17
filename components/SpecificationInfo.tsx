@@ -2,19 +2,22 @@ import { UserSpecification } from "@/models/user";
 import axiosRequest from "@/utils/axios";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useState, useCallback, useEffect } from "react";
-import { Alert, TouchableOpacity, View, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
+import { Alert, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 import { YStack, XStack, Sheet, Form } from "tamagui";
 import CustomButton from "./CustomButton";
 import { Loader } from "./loader/LoaderWrapper";
 import SelectPicker from "./SelectPicker";
 import Toast from "./toast/toast";
 import FormField from "./FormField";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecification, editable: boolean, onEditDone?: () => void }) => {
     const [editSpecificationModalVisible, setEditSpecificationModalVisible] = useState(false);
     const [formData, setFormData] = useState<{ [key: string]: string }>({});
     const [options, setOptions] = useState<any>([]);
     const [shouldUseSelector, setShouldUseSelector] = useState(item.items.some(item => item.input_type === 'select'));
+
+    const insets = useSafeAreaInsets();
 
     const toggleEditModal = useCallback(() => setEditSpecificationModalVisible(!editSpecificationModalVisible), [editSpecificationModalVisible]);
 
@@ -114,12 +117,12 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
                 animation="medium"
             >
                 <Sheet.Overlay
-                    animation="lazy"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame gap="$5" backgroundColor={'#1A1A1A'}>
-                    <SafeAreaView className='bg-[#1A1A1A] h-full'>
+                    <View style={{paddingTop: insets.top, paddingBottom: insets.bottom}} className='bg-[#1A1A1A] h-full'>
                         <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
                             <TouchableOpacity onPress={() => setEditSpecificationModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
                                 <Ionicons name="close" size={24} color="#ffffff" />
@@ -155,7 +158,7 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
                                 </Form>
                             </ScrollView>
                         </KeyboardAvoidingView>
-                    </SafeAreaView>
+                    </View>
                 </Sheet.Frame>
             </Sheet>
         </>
