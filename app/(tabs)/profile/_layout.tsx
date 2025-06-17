@@ -9,21 +9,32 @@ import { getHeaderTitle } from '@react-navigation/elements'
 const ProfileLayout = () => {
   return (
     <>
-      <Stack 
-      // screenOptions={{
-      //   header: ({ navigation, route, options, back }) => {
-      //     const title = getHeaderTitle(options, route.name);
-      //     return (
-      //       <Header.Default
-      //         title={title}
-      //         leftButton={
-      //           back && <TouchableOpacity onPress={navigation.goBack} className='flex justify-center w-7 h-7' style={{zIndex: 99}}>
-      //             <ArrowBackIcon />
-      //           </TouchableOpacity>
-      //         } />
-      //     )
-      //   }
-      // }}
+      <Stack
+        screenOptions={{
+          header: ({ navigation, route, options, back }) => {
+            const title = getHeaderTitle(options, route.name);
+            const HeaderRight = options.headerRight;
+            const HeaderLeft = options.headerLeft;
+            return (
+              <Header.Default
+                title={title}
+                // leftContent={
+                //   back && <TouchableOpacity onPress={navigation.goBack} className='flex justify-center w-7 h-7' style={{zIndex: 99}}>
+                //     <ArrowBackIcon />
+                //   </TouchableOpacity>
+                // } 
+                leftContent={
+                  HeaderLeft
+                    ? HeaderLeft({}) : back && <TouchableOpacity onPress={navigation.goBack} className='flex justify-center w-7 h-7' style={{zIndex: 99}}>
+                  <ArrowBackIcon />
+                </TouchableOpacity>
+                }
+                rightContent={HeaderRight ? HeaderRight({}) : null}
+
+              />
+            )
+          }
+        }}
       >
         <Stack.Screen name='index' options={{
           title: 'Profile',
@@ -49,7 +60,7 @@ const ProfileLayout = () => {
           presentation: 'modal',
         }}
         />
-         <Stack.Screen name='wallet-transactions' options={{
+        <Stack.Screen name='wallet-transactions' options={{
           title: 'Transactions',
         }}
         />

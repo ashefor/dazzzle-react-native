@@ -27,6 +27,7 @@ const ViewSingleChat = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string>('');
     const flatListRef = React.useRef<FlatList>(null);
+    const insets = useSafeAreaInsets();
 
     const fetchMessages = async () => {
         try {
@@ -203,7 +204,7 @@ const ViewSingleChat = () => {
                 )}
             </View>
 
-            {!isLoading && <Fragment>
+            {!isLoading && <View style={{paddingBottom: insets.bottom}}>
                 {chatDetails ? <Fragment>
                     {(chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_ACCEPTED' || chatDetails.userData.messageRequestStatus === 'SEND_NEW_MESSAGE' || chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_SENT') && <SendInput message={message} setMessage={setMessage} pickImage={pickImage} sendMessage={sendMessage} />}
                     {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_RECEIVED' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} full_name={chatDetails.userData.full_name} showDeclineButton />}
@@ -212,9 +213,8 @@ const ViewSingleChat = () => {
                         </View>}
                         {chatDetails.userData.messageRequestStatus === 'MESSAGE_REQUEST_DECLINE' && <ActionComponent acceptOrDeclineMessageRequest={(status) => acceptOrDeclineMessageRequest(status)} />}
                 </Fragment> : null}
-                </Fragment>}
+                </View>}
 
-                <SafeArea />
         </View>
     )
 }
@@ -230,11 +230,11 @@ const SendInput = ({ message, setMessage, pickImage, sendMessage }: { message: s
                 borderColor: '#f2f2f2',
             }}>
                 <View style={{ flexShrink: 1, flexDirection: "row" }} className="items-center gap-x-3 px-4 py-3">
-                    <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[40px] px-3 py-1">
+                    <View style={{ flex: 1, flexDirection: "row" }} className=" items-center bg-[#242124] rounded-[20px] h-[48px] px-3 py-1">
                         {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
                                     <MaterialIcons name="emoji-emotions" size={24} color="white" />
                                 </TouchableOpacity> */}
-                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} multiline style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
+                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'}  style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
                             className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
                     </View>
                     <View style={{ flexDirection: "row" }} className="items-center">

@@ -115,13 +115,13 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
         }
     };
 
-    const updateStatus = (id, changes) => {
-        setUploadStatuses(prev =>
-            prev.map(status =>
-                status.id === id ? { ...status, ...changes } : status
-            )
-        );
-    };
+    // const updateStatus = (id, changes) => {
+    //     setUploadStatuses(prev =>
+    //         prev.map(status =>
+    //             status.id === id ? { ...status, ...changes } : status
+    //         )
+    //     );
+    // };
 
     const uploadAllImages = async () => {
         try {
@@ -133,19 +133,14 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
                 type: image?.mimeType || "image/jpeg",
             } as any);
 
-            updateStatus(index, { status: 'uploading' });
             Loader.show();
             return axiosRequest.post('/upload-photos', formData, {
                 headers: { "Content-Type": "multipart/form-data" },
                 onUploadProgress: (progressEvent) => {
                     const progress = Math.round((progressEvent.loaded * 100) / (progressEvent?.total ? progressEvent?.total : 1));
-                    updateStatus(index, { progress });
+                    // updateStatus(index, { progress });
                 }
-            }).then(() => {
-                updateStatus(index, { status: 'success' });
-            }).catch(() => {
-                updateStatus(index, { status: 'error' });
-            });
+            })
         });
 
         await Promise.all(uploadPromises);

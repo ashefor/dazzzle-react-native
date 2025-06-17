@@ -1,14 +1,11 @@
 import { Tabs } from 'expo-router';
-import React, { useEffect } from 'react';
-
+import React from 'react';
 import { HapticTab } from '@/components/HapticTab';
 import LikeTabIcon from '@/components/LikeTabIcon';
 import HomeTabIcon from '@/components/HomeTabIcon';
 import ProfileTabIcon from '@/components/ProfileTabIcon';
 import MessagesTabIcon from '@/components/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
-import { getHeaderTitle } from '@react-navigation/elements';
-import Header from '@/components/Header';
 
 export default function TabLayout() {
 
@@ -18,7 +15,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: '#DD3FE5',
         tabBarStyle: {
-          backgroundColor: '#1A1A1A'
+          backgroundColor: '#1A1A1A',
         },
         // headerShown: false,
         tabBarButton: HapticTab,
@@ -42,7 +39,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Discover',
           href: null,
           // headerShown: true,
           // headerShadowVisible: false,
@@ -61,7 +58,6 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          headerShown: true,
           tabBarIcon: ({ color, focused }) => <SearchTabIcon focused={focused} />,
         }}
       />

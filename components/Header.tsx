@@ -1,30 +1,33 @@
 import { TouchableOpacity, View, Text, SafeAreaView as SafeAreaViewIOS, Platform, StyleSheet, } from "react-native"
 import ArrowBackIcon from "./icons/ArrowBackIcon"
-import { SafeAreaView as SafeAreaViewAndroid } from "react-native-safe-area-context";
+import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 interface CustomHeaderProps {
     title?: string,
     rightContent?: React.ReactNode,
-    leftButton?: React.ReactNode
+    leftContent?: React.ReactNode
     showBackButton?: boolean
 }
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const Default = (props: CustomHeaderProps) => {
-    const { title, rightContent, leftButton } = props;
+    const { title, rightContent, leftContent } = props;
+    const insets = useSafeAreaInsets();
     return (
-        <View className="bg-primary">
-            <SafeArea />
-            <View style={{ paddingHorizontal: 16, }}>
+        <View className="bg-primary" style={{ paddingTop: insets.top }}>
+            {/* <SafeArea /> */}
+            <View>
                 <View style={[styles.header]}>
-                    <View style={{zIndex: 99}}>
-                    {leftButton}
+                    <View style={{ zIndex: 100, paddingLeft: 16 }}>
+                        {leftContent}
                     </View>
-                    {title && <Text style={{ pointerEvents: 'none' }} className='z-0 absolute px-16 left-0 top-0 w-full h-full  py-2 text-white text-lg font-firamedium flex items-center justify-center flex-1 text-center'>{title}</Text>}
-                    <View>
-                    {rightContent}
+                    {title && <View className="  z-0 absolute left-0 top-0 w-full h-full flex flex-col justify-center items-center">
+                        <Text style={{ pointerEvents: 'none' }} className=' text-white text-lg font-firamedium'>{title}</Text>
+                    </View>}
+                    <View style={{ zIndex: 100, paddingRight: 16 }}>
+                        {rightContent}
                     </View>
                 </View>
             </View>
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
         // height: 97,
         // paddingHorizontal: 16,
         // paddingVertical: 10,
-        minHeight: 44,
+        minHeight: 56,
         backgroundColor: 'transparent',
         borderBottomWidth: 0,
         borderBottomColor: '#ddd',

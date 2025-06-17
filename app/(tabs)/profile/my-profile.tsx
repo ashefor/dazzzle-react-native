@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Alert, Button, Pressable } from 'react-native';
+import { Text, View, TouchableOpacity, Alert, SafeAreaView as SafeAreaViewIOS, Pressable, Platform } from 'react-native';
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Avatar, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
@@ -18,7 +18,10 @@ import { Loader } from '@/components/loader/LoaderWrapper';
 import { updateUserInfo } from '@/redux/slices/authSlice';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
 import { Tabs, MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
+import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+
+const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const MyProfile = () => {
     const { userInfo, userProfileData, loadingUserProfileData } = useAppSelector(state => state.auth);
@@ -26,7 +29,8 @@ const MyProfile = () => {
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
-    const [editMode, setEditMode] = useState<boolean>(false)
+    const [editMode, setEditMode] = useState<boolean>(false);
+        const insets = useSafeAreaInsets();
     const fetchUserDetails = async () => {
         try {
             const userName = userInfo?.username;
@@ -117,12 +121,12 @@ const MyProfile = () => {
                                         <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
                                     </Avatar>
                                 </View>
-                                <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                                {editMode && <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
                                     <XStack>
                                         <Text className='text-sm text-white font-firaregular'>Change Photo</Text>
                                         <Feather name="edit-3" size={16} color="white" />
                                     </XStack>
-                                </TouchableOpacity>
+                                </TouchableOpacity>}
                             </YStack>
                             <YStack>
                                 <Text className='text-lg font-firasemibold text-center text-white'>
@@ -168,23 +172,29 @@ const MyProfile = () => {
                 }}
             />
             <Tabs.Container
-                containerStyle={{ backgroundColor: '#1A1A1A', }}
                 renderTabBar={renderTabBar}
                 renderHeader={HeaderComponent}
             >
                 <Tabs.Tab name="A" label={'Profile'}>
                     <Tabs.ScrollView className='py-5 px-4 bg-primary'>
                         {loadingUserProfileData ? <SectionSkeletonLoader /> : <BasicInfo onEditDone={handleEditDone} editable={editMode} userProfileData={userProfileData?.userProfileData} userSpecificationData={userProfileData?.userSpecificationData} />}
+                        <SafeArea/>
                     </Tabs.ScrollView>
                 </Tabs.Tab>
                 <Tabs.Tab name="B" label={'Photos'}>
-                    <Tabs.ScrollView className='py-5 px-4'>
-                        <UserPhotos editable={editMode} userPhotos={userProfileData?.photosData} />
+                    <Tabs.ScrollView className='py-5 px-4 bg-primary'>
+                        {loadingUserProfileData ? 
+                        <UserPhotosSkeletonLoader/>
+                        : <UserPhotos editable={editMode} userPhotos={userProfileData?.photosData} />}
+                        <SafeArea/>
                     </Tabs.ScrollView>
                 </Tabs.Tab>
                 <Tabs.Tab name="C" label={'Interests'}>
-                    <Tabs.ScrollView className='py-5 px-4'>
-                        <UserInterests interests={userProfileData?.userProfileData.interest} />
+                    <Tabs.ScrollView className='py-5 px-4 bg-primary'>
+                        {loadingUserProfileData ? 
+                        <UserInterestsSkeletonLoader/>
+                        : <UserInterests interests={userProfileData?.userProfileData.interest} />}
+                        <SafeArea/>
                     </Tabs.ScrollView>
                 </Tabs.Tab>
             </Tabs.Container>
@@ -195,18 +205,68 @@ const MyProfile = () => {
 const SectionSkeletonLoader = () => {
     return (
         <View className='space-y-5'>
-            <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
-                <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+            <View className="rounded-lg h-72 w-full flex items-center  overflow-hidden justify-center">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
             </View>
 
-            <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
-                <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+            <View className="rounded-lg h-72 w-full flex items-center  overflow-hidden justify-center">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
             </View>
 
-            <View className="rounded-lg h-72 w-full flex items-center mt-5 overflow-hidden justify-center">
-                <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
+            <View className="rounded-lg h-72 w-full flex items-center  overflow-hidden justify-center">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
             </View>
         </View>
+    )
+}
+
+const UserPhotosSkeletonLoader = () => {
+    return (
+        <View className='flex flex-row justify-between'>
+                            <View className="w-[31%] h-40 rounded-2xl">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-[31%] h-40 rounded-2xl">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-[31%] h-40 rounded-2xl">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+                        </View>
+    )
+}
+
+const UserInterestsSkeletonLoader = () => {
+    return (
+        <View className='flex flex-row flex-wrap gap-3'>
+                            <View className="w-16 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-24 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-20 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-16 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-24 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-20 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-16 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-24 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+            <View className="w-20 h-7 rounded-lg">
+                <SkeletonPlaceholder style={{ height: '100%', width: '100%', backgroundColor: "#FFFFFF1A" }} />
+            </View>
+                        </View>
     )
 }
 
