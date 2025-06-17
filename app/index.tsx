@@ -9,7 +9,7 @@ import { fetchAppConfig } from '@/redux/thunks/appActions';
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
-  const { loading, appConfig } = useAppSelector(state => state.app);
+  const { loading, appConfig, error } = useAppSelector(state => state.app);
   const { userInfo, userToken } = useAppSelector(state => state.auth);
 
   // const loadInitialSettings = async () => {
@@ -43,7 +43,6 @@ export default function HomeScreen() {
   }, [])
 
   if (loading) {
-    console.log('loading');
     return <ImageBackground className='h-full w-full' source={Images.splash} >
     </ImageBackground>
   } else {

@@ -5,7 +5,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView as SafeAreaViewAndroid } from 'react-native-safe-area-context';
+import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Images from '@/constants/images';
 import BasicInfo from '../../components/BasicInfo';
@@ -26,9 +26,11 @@ import {  MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-t
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeArea);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 const User = () => {
     const { userName } = useLocalSearchParams();
+        const insets = useSafeAreaInsets();
       const dispatch = useAppDispatch();
     const { axiosRequest } = useAxiosContext();
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -495,23 +497,14 @@ const User = () => {
 
     return (
         <View className='flex-1 bg-primary h-full'>
-            <ScrollView className='h-full bg-primary relative'
-                onScroll={
-                    Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false } // For color interpolation, native driver must be false
-                    )
-                }
-                scrollEventThrottle={16}
-
-            >
-                <Stack.Screen
+            <Stack.Screen
                     options={{
                         headerStyle: { backgroundColor: 'transparent' },
                         headerShown: true,
                         headerTransparent: true,
                         header: (props) => <View>
-                            <AnimatedSafeAreaView style={{ backgroundColor: headerBackgroundColor, }} />
+                            {/* <AnimatedSafeAreaView style={{ backgroundColor: headerBackgroundColor, }} /> */}
+                            <AnimatedView style={{ backgroundColor: headerBackgroundColor, paddingTop: insets.top }} />
                             <Animated.View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
                                 <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center'>
                                     <ArrowBackIcon />
@@ -524,6 +517,16 @@ const User = () => {
                         </View>
                     }}
                 />
+            <ScrollView className='h-full bg-primary relative'
+                onScroll={
+                    Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false } // For color interpolation, native driver must be false
+                    )
+                }
+                scrollEventThrottle={16}
+
+            >
                 <View className='bg-[#1A1A1A] h-full relative pb-24 flex-1'>
                     <View className='h-[150px]'>
                         <ImageBackground source={{ uri: userDetails?.userData.coverPicture }} className='w-full h-full' resizeMode='cover' >
@@ -602,9 +605,9 @@ const User = () => {
                         <Ionicons name="heart" size={36} color={hasUserLiked(userDetails.userLikeData) ? "#EB4242" : "#cccccc"} />
                     </Button>
                 </XStack>
-                {/* <SafeArea /> */}
             </View>}
             <StatusBar style="light" />
+            <SafeArea />
         </View>
     )
 }

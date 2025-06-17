@@ -7,7 +7,6 @@ import { API_URL } from '@/constants/constants'
 export const fetchAppConfig = createAsyncThunk(
     'user/prepare-sign-up',
     async (_, { rejectWithValue }) => {
-        console.log('fetchingAppConfig');
         try {
             const config = {
                 headers: {
