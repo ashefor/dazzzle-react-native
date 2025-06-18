@@ -4,7 +4,7 @@
     "slug": "dazzzle-react-native",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-new.png",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -21,7 +21,12 @@
       "package": "com.dazzzle.app",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/foreground.png",
+        "backgroundImage": "./assets/images/background.png",
+        "icon": "./assets/images/icon-new.png"
+      }
     },
     "web": {
       "bundler": "metro",
