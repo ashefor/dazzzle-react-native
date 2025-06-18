@@ -32,7 +32,6 @@ export const fetchAppConfig = createAsyncThunk(
             if (errorMessage) {
                 return rejectWithValue(errorMessage)
             }
-            console.log('generalConfigSettings', generalConfigSettings);
             return generalConfigSettings;
         } catch (error: any) {
             if (error.response && error.response.data.message) {

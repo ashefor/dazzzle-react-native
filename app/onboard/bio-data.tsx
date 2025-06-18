@@ -56,9 +56,10 @@ const OnboardBioData = () => {
     const fetchUserProfileUpdateStatus = async () => {
         try {
             Loader.show();
-            const response = await axiosRequest.get('/profile/check-profile-updated');
-            const reaction = response.data.reaction;
-            const responseData = response.data.data;
+            const response: any = await axiosRequest.get('/profile/check-profile-updated');
+            Loader.hide();
+            const reaction = response.reaction;
+            const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
                 if (profileData) {
@@ -71,9 +72,7 @@ const OnboardBioData = () => {
                         country_code: profileData.country_code
                     })
                 }
-
             }
-            Loader.hide();
         } catch (error: any) {
             Loader.hide();
             console.error('Error fetching data:', error.errorMessage);
@@ -113,13 +112,16 @@ const OnboardBioData = () => {
 
     const submit = async () => {
         try {
-            const response = await axiosRequest.post('/update-basic-settings', form);
-            if (response.data.reaction === ReactionCodes.SUCCESS) {
+            Loader.show();
+            const response: any = await axiosRequest.post('/update-basic-settings', form);
+            Loader.hide();
+            if (response.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/profile-picture');
             }
         } catch (error: any) {
             console.log('error', error);
+            Loader.hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to submit')
         }
     }

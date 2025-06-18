@@ -176,7 +176,7 @@ export const signUserOut = createAsyncThunk(
             await removeItem('dazzzle-token');
             await removeItem('dazzzle-user');
             clear();
-            // Loader.hide();
+            Loader.hide();
             return true;
         } catch (error: any) {
             Loader.hide();

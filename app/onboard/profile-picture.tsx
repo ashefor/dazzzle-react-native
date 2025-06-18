@@ -33,9 +33,10 @@ const OnboardProfilePicture = () => {
     const fetchUserProfileUpdateStatus = async () => {
         try {
             Loader.show();
-            const response = await axiosRequest.get('/profile/check-profile-updated');
-            const reaction = response.data.reaction;
-            const responseData = response.data.data;
+            const response: any = await axiosRequest.get('/profile/check-profile-updated');
+            Loader.hide();
+            const reaction = response.reaction;
+            const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
                 if (profileData) {
@@ -44,7 +45,6 @@ const OnboardProfilePicture = () => {
                     }
                 }
             }
-            Loader.hide();
         } catch (error) {
             Loader.hide();
             console.error('Error fetching data:', error);
@@ -60,7 +60,6 @@ const OnboardProfilePicture = () => {
 
             // Return function is invoked whenever the route gets out of focus.
             return () => {
-                console.log('This route is now unfocused.');
             };
         }, [])
     )
@@ -84,13 +83,13 @@ const OnboardProfilePicture = () => {
                     type: image?.mimeType || "image/jpeg",
                 } as any);
                 Loader.show();
-                const response = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
+                const response: any = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
                 Loader.hide();
-                if (response.data.reaction === ReactionCodes.SUCCESS) {
+                if (response.reaction === ReactionCodes.SUCCESS) {
                     Toast.success('Profile updated successfully');
                     router.push('/onboard/location');
                 } else {
-                    Alert.alert('Error', response.data.message ? response.data.message : 'Unable to proceed')
+                    Alert.alert('Error', response.message ? response.message : 'Unable to proceed')
                 }
             }
         } catch (error: any) {

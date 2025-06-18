@@ -4,7 +4,6 @@ import { router, useFocusEffect } from 'expo-router'
 import { YStack, Progress, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
 import Toast from '@/components/toast/toast';
@@ -40,9 +39,10 @@ const OnboardLocation = () => {
     const fetchUserProfileUpdateStatus = async () => {
         try {
             Loader.show();
-            const response = await axiosRequest.get('/profile/check-profile-updated');
-            const reaction = response.data.reaction;
-            const responseData = response.data.data;
+            const response: any = await axiosRequest.get('/profile/check-profile-updated');
+            Loader.hide();
+            const reaction = response.reaction;
+            const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
                 if (profileData) {
@@ -51,7 +51,6 @@ const OnboardLocation = () => {
                     }
                 }
             }
-            Loader.hide();
         } catch (error) {
             Loader.hide();
             console.error('Error fetching data:', error);
@@ -114,7 +113,9 @@ const OnboardLocation = () => {
 
         setIsSubmitting(true);
         try {
-            const { data } = await axiosRequest.post('/process-location-data', googleMapsLocation);
+            Loader.show();
+            const data: any = await axiosRequest.post('/process-location-data', googleMapsLocation);
+            Loader.hide();
             const response = data.data;
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success(response.message || 'Location updated successfully', 2000)
@@ -123,6 +124,7 @@ const OnboardLocation = () => {
         } catch (error: any) {
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update location')
         } finally {
+            Loader.hide();
             setIsSubmitting(false);
         }
     }
@@ -147,7 +149,7 @@ const OnboardLocation = () => {
                             <GooglePlacesAutocomplete
                                 placeholder="Search"
                                 query={{
-                                    // key: GOOGLE_MAPS_API_KEY,
+                                    key: GOOGLE_MAPS_API_KEY,
                                     language: 'en', // language of the results
                                 }}
                                 onPress={(data, details = null) => fetchLocationFromPlacesApi(data.place_id)}

@@ -16,6 +16,7 @@ const UserDetails = () => {
     const [hasExpired, setHasExpired] = useState(false);
 
     useEffect(() => {
+        console.log('user details page');
         dispatch(fetchAuthenticatedUser())
     }, [])
 
@@ -37,22 +38,8 @@ const UserDetails = () => {
     useEffect(() => {
         if (error) {
             dispatch(signUserOut()).unwrap().then(() => router.replace('./(auth)/sign-in'))
-        } else if (userInfo) {
-            if (!isProfileCompleted) {
-                if (userInfo.is_premium) {
-                    if (!hasExpired) {
-                        router.replace('/(tabs)/discover');
-                    } else {
-                        router.replace('/paywall');
-                    }
-                } else {
-                    router.replace('/paywall');
-                }
-            } else {
-                router.replace('./onboard/bio-data');
-            }
         }
-    }, [error, userInfo, isProfileCompleted])
+    }, [error])
 
 
     if (loadingUser) {
@@ -65,15 +52,21 @@ const UserDetails = () => {
             </View>
         )
     } else {
-        if (error) {
-            return <Redirect href={'/(auth)/sign-in'} />
-        } else {
-            if (isProfileCompleted) {
-                return <Redirect href="./(tabs)/discover" />;
+        if (userInfo) {
+            if (!isProfileCompleted) {
+                if (userInfo.is_premium) {
+                    if (hasExpired) {
+                        return <Redirect href="./paywall" />
+                    } else {
+                        return <Redirect href="./(tabs)/discover" />
+                    }
+                } else {
+                    return <Redirect href="./paywall" />
+                }
             } else {
                 return <Redirect href="./onboard/bio-data" />
             }
-        }
+        } 
     }
 }
 

@@ -39,7 +39,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     // loadInitialSettings();
-    console.log('fetchAppConfigSettings');
     fetchAppConfigSettings()
   }, [])
 
