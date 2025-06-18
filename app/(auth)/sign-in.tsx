@@ -8,7 +8,6 @@ import { Form, YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import { isValidUsernameOrEmail } from '@/utils/validators'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
 
@@ -102,8 +101,7 @@ const SignIn = () => {
         if (userInfo) {
             if (isProfileCompleted) {
                 if (userInfo.is_premium) {
-                    // router.replace('/(tabs)/discover');
-                    router.replace('/user-details')
+                    router.replace('/(tabs)/discover');
                 } else {
                     router.replace('/paywall');
                 }

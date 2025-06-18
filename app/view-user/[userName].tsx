@@ -1,35 +1,30 @@
 import { SafeAreaView as SafeAreaViewIOS, StyleSheet, Text, Image, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform, Alert, ActivityIndicator } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertDialog, AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, Tabs, TabLayout, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
+import { AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, Tabs, TabLayout, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView as SafeAreaViewAndroid, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Images from '@/constants/images';
-import BasicInfo from '../../components/BasicInfo';
-import UserPhotos from '../../components/UserPhotos';
-import UserInterests from '../../components/UserInterests';
-import { useAxiosContext } from '@/context/AxiosProvider';
+import BasicInfo from '@/components/BasicInfo';
+import UserPhotos from '@/components/UserPhotos';
+import UserInterests from '@/components/UserInterests';
 import { ReactionCodes } from '@/models/general';
 import { SingleUserDetails } from '@/models/user';
-// import SkeletonLoading from 'expo-skeleton-loading'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import {  MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
+import axiosRequest from '@/utils/axios';
 
 
 const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
-
-const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeArea);
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 const User = () => {
     const { userName } = useLocalSearchParams();
-        const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
       const dispatch = useAppDispatch();
-    const { axiosRequest } = useAxiosContext();
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +69,7 @@ const User = () => {
     const fetchUserDetails = async () => {
         try {
             setIsLoading(true);
-            const { data } = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
+            const data:any = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const user = data.data;
                 setUserDetails(user);
@@ -117,7 +112,7 @@ const User = () => {
             const params = {
                 block_user_id: userDetails?.userData.userId
             }
-            const { data } = await axiosRequest.post(`/block-user`, params);
+            const data:any = await axiosRequest.post(`/block-user`, params);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 setUserDetails((prevUserDetails) => {
                     return {
@@ -137,7 +132,7 @@ const User = () => {
             const params = {
                 block_user_id: userDetails?.userData.userId
             }
-            const { data } = await axiosRequest.post(`${userId}/unblock-user-data`, {});
+            const data:any = await axiosRequest.post(`${userId}/unblock-user-data`, {});
             console.log('user data from unblock', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 setUserDetails((prevUserDetails) => {

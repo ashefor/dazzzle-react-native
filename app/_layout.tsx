@@ -7,8 +7,6 @@ import { useEffect } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { TamaguiProvider, YStack } from 'tamagui'
 import { tamaguiConfig } from '../tamagui.config';
-import GlobalProvider from '@/context/GlobalProvider';
-import AxiosProvider from '@/context/AxiosProvider';
 import NavigationStack from '@/components/NavigationStack';
 import ToastWrapper from '@/components/toast/ToastWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,7 +15,6 @@ import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import {SheetProvider} from 'react-native-actions-sheet';
 import '@/context/sheets';
-import { LoaderWrapper } from '@/components/loader/LoaderWrapper';
 import { LoaderProvider } from '@/context/LoaderProvider';
 
 

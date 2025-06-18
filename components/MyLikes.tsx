@@ -1,15 +1,16 @@
 import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import Ionicons from '@expo/vector-icons/Ionicons'
-import { router } from 'expo-router'
-import { ReactionCodes } from '@/models/general'
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
+import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user'
-import Toast from '@/components/toast/toast'
-import axiosRequest from '@/utils/axios'
-import { Loader } from './loader/LoaderWrapper'
+import Toast from '@/components/toast/toast';
+import axiosRequest from '@/utils/axios';
+import { useLoader } from '@/context/LoaderProvider';
 
 const MyLikes = () => {
     const { width } = useWindowDimensions();
+        const { show, hide } = useLoader();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -18,16 +19,16 @@ const MyLikes = () => {
 
     const fetchLikedUsers = async (pageUrl = '/my-likes', hideLoader = true) => {
         try {
-            Loader.show();
+            show();
             const data: any = await axiosRequest.get(pageUrl);
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
                 setUsers(usersData);
                 setPaginationDetails({ totalCount, nextPageUrl });
             }
-            Loader.hide();
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error fetching liked users:', error);
             setPaginationDetails(null);
         }

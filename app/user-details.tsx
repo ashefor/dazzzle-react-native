@@ -1,10 +1,8 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
-import { logUserOut } from "@/redux/slices/authSlice";
-import { clear } from "@/utils/asyncStorage";
 import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { SafeAreaView, ActivityIndicator, View, Image } from "react-native"
+import { View, Image } from "react-native"
 import { Spinner, YStack } from "tamagui";
 import Images from '@/constants/images';
 import dayjs, { Dayjs } from 'dayjs'
@@ -44,10 +42,11 @@ const UserDetails = () => {
     if (loadingUser) {
         return (
             <View className="h-full w-full items-center justify-center bg-primary">
-                {/* <Spinner color={'#023c69'} size="large" /> */}
-                <YStack flex={1} width="100%" alignItems="center" justifyContent="center" backgroundColor={"$black075"}>
+                <Spinner color={"$gray10"} size="large" />
+                
+                {/* <YStack flex={1} width="100%" alignItems="center" justifyContent="center" backgroundColor={"$black075"}>
                     <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                </YStack>
+                </YStack> */}
             </View>
         )
     } else {

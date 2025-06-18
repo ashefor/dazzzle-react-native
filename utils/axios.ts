@@ -75,22 +75,18 @@ axiosInstance.interceptors.response.use(
                     errorMessage = data.message;
                 }
             } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
-                errorMessage = message
+                const validationMessage = response.data.data.message
+                errorMessage = message || validationMessage || 'Validation error';
             }
             if (errorMessage) {
-            errorMessage =  errorMessage.replace(/<br\s*\/?>/gi, '\n');
-                throw new Error(errorMessage); // This will stop further processing and reject the promise
+                errorMessage =  errorMessage.replace(/<br\s*\/?>/gi, '\n');
+                // throw new Error(errorMessage); // This will stop further processing and reject the promise
+                return Promise.reject({ errorMessage});
             }
         }
         return response.data;
     },
     (error) => {
-        const { showGlobalLoader = true } = error.config || {};
-        if (showGlobalLoader) {
-            // store.dispatch(hideLoading());
-        }
-
-        console.log('parent error', error)
         let message = error.response?.data?.message || "An error occurred";
         if (message) {
             message = message.replace(/<br\s*\/?>/gi, '\n');

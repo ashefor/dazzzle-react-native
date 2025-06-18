@@ -1,16 +1,14 @@
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native'
-import React, { Fragment, useCallback, useEffect, useState } from 'react'
-import CustomButton from '@/components/CustomButton'
-import FormField from '@/components/FormField'
-import { Form, YStack } from 'tamagui'
-import Toast from '@/components/toast/toast'
-import { useAxiosContext } from '@/context/AxiosProvider'
-import { ReactionCodes } from '@/models/general'
-import { LoggedInUser } from '@/models/user'
-import { getItem } from '@/utils/asyncStorage'
-import { isValidEmail } from '@/utils/validators'
-import { router, Stack } from 'expo-router'
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import CustomButton from '@/components/CustomButton';
+import FormField from '@/components/FormField';
+import { Form, YStack } from 'tamagui';
+import Toast from '@/components/toast/toast';
+import { ReactionCodes } from '@/models/general';
+import { router, Stack } from 'expo-router';
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
+import { useLoader } from '@/context/LoaderProvider';
+import axiosRequest from '@/utils/axios';
 
 type ChangePasswordForm = {
     current_password: string;
@@ -18,7 +16,7 @@ type ChangePasswordForm = {
     new_password_confirmation: string;
 };
 const ChangePasswordScreen = () => {
-    const { axiosRequest } = useAxiosContext();
+    const { show, hide } = useLoader();
     const [isFormValid, setIsFormValid] = useState(false);
     const [errors, setErrors] = useState<ChangePasswordForm | Record<string, string>>({});
     const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
@@ -70,14 +68,16 @@ const ChangePasswordScreen = () => {
 
     const handleChangePassword = async () => {
         try {
-            const { data } = await axiosRequest.post('/profile/change-password-process', form);
+            show();
+            const data: any = await axiosRequest.post('/profile/change-password-process', form);
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const response = data.data;
                 Toast.success(response.message || 'Password changed successfully', 2000)
                 router.replace('/profile');
             }
         } catch (error: any) {
-            console.log('error', error);
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to change password')
         }
     }

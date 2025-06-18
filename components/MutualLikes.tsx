@@ -7,10 +7,11 @@ import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
 import Toast from './toast/toast'
 import axiosRequest from '@/utils/axios'
-import { Loader } from './loader/LoaderWrapper'
+import { useLoader } from '@/context/LoaderProvider'
 
 const MutualLikes = () => {
     const { width } = useWindowDimensions();
+            const { show, hide } = useLoader();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -19,16 +20,16 @@ const MutualLikes = () => {
 
     const fetchLikedUsers = async (pageUrl = '/mutual-likes', hideLoader = true) => {
         try {
-            Loader.show();
+            show();
             const data: any = await axiosRequest.get(pageUrl);
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { usersData, totalCount, nextPageUrl } = data.data;
                 setUsers(usersData);
                 setPaginationDetails({ totalCount, nextPageUrl });
             }
-            Loader.hide();
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error fetching liked users:', error);
             setPaginationDetails(null);
         }

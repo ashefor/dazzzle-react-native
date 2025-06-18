@@ -4,23 +4,33 @@ import { Link, router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AccessIcon from '@/components/icons/AccessIcon';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { signUserOut } from '@/redux/thunks/authActions';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Feather, Octicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import * as WebBrowser from 'expo-web-browser';
+import { useLoader } from '@/context/LoaderProvider';
 
 export default function ProfileScreen() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+      const { show, hide } = useLoader();
   const dispatch = useAppDispatch();
-  const { userInfo } = useAppSelector(state => state.auth);
+  const { userInfo, loggingOut } = useAppSelector(state => state.auth);
   const { currentSubscription, isActive } = useAppSelector(state => state.subscription);
 
   const handleLogOut = async () => {
     dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
   }
+
+  useEffect(() => {
+      if (loggingOut) {
+          show();
+      } else {
+          hide();
+      }
+  }, [loggingOut])
 
   const getSubscriptionPlanNameFromPlanId = (planId?: string) => {
     return planId ? planId.split('_').join(' ') : 'Unknown';

@@ -15,7 +15,8 @@ type UserState = {
     isProfileCompleted: boolean,
     error: any,
     userProfileData: {[key: string]: any} | null,
-    loadingUserProfileData: boolean
+    loadingUserProfileData: boolean,
+    loggingOut: boolean
     // shouldSignUserOut: boolean,
 }
 
@@ -27,7 +28,8 @@ const initialState: UserState = {
     isProfileCompleted: false,
     error: null,
     userProfileData: null,
-    loadingUserProfileData: false
+    loadingUserProfileData: false,
+    loggingOut: false
     // shouldSignUserOut: false
 }
 
@@ -89,10 +91,10 @@ export const userSlice = createSlice({
             state.error = action.payload;
         })
         builder.addCase(signUserOut.pending, (state, action) => {
-            state.loading = true;
+            state.loggingOut = true;
         }),
         builder.addCase(signUserOut.fulfilled, (state, action) => {
-            state.loading = false;
+            state.loggingOut = false;
             // state.shouldSignUserOut = action.payload;
             state.userInfo = null;
             state.userToken = '';
@@ -101,7 +103,7 @@ export const userSlice = createSlice({
             clear()
         }),
         builder.addCase(signUserOut.rejected, (state, action) => {
-            state.loading = false;
+            state.loggingOut = false;
             state.error = action.payload;
         })
         builder.addCase(fetchUserProfileData.pending, (state) => {

@@ -3,14 +3,14 @@ import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import { Form, YStack } from 'tamagui'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import { router, Stack } from 'expo-router'
-import { getItem } from '@/utils/asyncStorage';
 import Toast from '@/components/toast/toast'
-import { isValidEmail, isValidUsernameOrEmail } from '@/utils/validators'
-import { LoggedInUser } from '@/models/user'
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import { isValidEmail, isValidUsernameOrEmail } from '@/utils/validators';
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
+import { useAppSelector } from '@/hooks/reduxHooks';
+import axiosRequest from '@/utils/axios';
+import { useLoader } from '@/context/LoaderProvider';
 
 type ChangeEmailForm = {
   current_email: string;
@@ -19,7 +19,8 @@ type ChangeEmailForm = {
 };
 
 const ChangeEmailScreen = () => {
-  const { axiosRequest } = useAxiosContext();
+  const { userInfo } = useAppSelector(state => state.auth);
+      const { show, hide } = useLoader();
   const [isFormValid, setIsFormValid] = useState(false);
   const [errors, setErrors] = useState<ChangeEmailForm | Record<string, string>>({});
   const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
@@ -37,13 +38,10 @@ const ChangeEmailScreen = () => {
   }, [form])
 
   useEffect(() => {
-    getItem('dazzzle-user').then((user: LoggedInUser) => {
-      if (user) {
-        const {profile} = user
-        updateForm('current_email', profile.email);
-      }
-    })
-  }, [])
+    if (userInfo && userInfo.email) {
+      updateForm('current_email', userInfo.email);
+    }
+  }, [userInfo])
 
   const handleInputChange = (field: keyof ChangeEmailForm, value: string) => {
     // setForm(prev => ({ ...prev, [field]: value }));
@@ -77,73 +75,73 @@ const ChangeEmailScreen = () => {
 
   const handleChangeEmail = async () => {
     try {
-
-        const { data } = await axiosRequest.post('/profile/update-email-process', form);
+      show();
+      const data: any = await axiosRequest.post('/profile/update-email-process', form);
+      hide();
       if (data.reaction === ReactionCodes.SUCCESS) {
         const response = data.data;
         Toast.success(response.message || 'Email changed successfully', 2000)
         router.replace('/profile');
       }
-
     } catch (error: any) {
-      console.log('error', error);
+      hide();
       Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to change email')
     }
   }
 
   return (
     <Fragment>
-       <Stack.Screen
-                    options={{
-                        headerStyle: { backgroundColor: '#1A1A1A' },
-                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-                            <ArrowBackIcon />
-                        </TouchableOpacity>
-                    }}
-                />
-                <View className='bg-[#1A1A1A] h-full'>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-        <ScrollView>
-          <View className='px-4 py-5'>
-            <Form gap="$7">
-              <YStack gap="$4">
-                <YStack gap="$1">
-                <FormField
-                  title="Current Email"
-                  placeholder='Enter username'
-                  value={form.current_email}
-                  handleChangeText={(text: string) => handleInputChange('current_email', text)}
-                />
-                {hasTyped.current_email && errors.current_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_email}</Text>}
+      <Stack.Screen
+        options={{
+          headerStyle: { backgroundColor: '#1A1A1A' },
+          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
+            <ArrowBackIcon />
+          </TouchableOpacity>
+        }}
+      />
+      <View className='bg-[#1A1A1A] h-full'>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+          <ScrollView>
+            <View className='px-4 py-5'>
+              <Form gap="$7">
+                <YStack gap="$4">
+                  <YStack gap="$1">
+                    <FormField
+                      title="Current Email"
+                      placeholder='Enter username'
+                      value={form.current_email}
+                      handleChangeText={(text: string) => handleInputChange('current_email', text)}
+                    />
+                    {hasTyped.current_email && errors.current_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_email}</Text>}
+                  </YStack>
+
+                  <YStack gap="$1">
+                    <FormField
+                      title="New Email"
+                      placeholder='Enter username'
+                      value={form.new_email}
+                      handleChangeText={(text: string) => handleInputChange('new_email', text)}
+                    />
+                    {hasTyped.new_email && errors.new_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_email}</Text>}
+                  </YStack>
+                  <YStack gap="$1">
+                    <FormField
+                      title="Password"
+                      value={form.current_password}
+                      placeholder='Enter password'
+                      handleChangeText={(text: string) => handleInputChange('current_password', text)}
+                    />
+                    {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
+                  </YStack>
                 </YStack>
-                
-                <YStack gap="$1">
-                <FormField
-                  title="New Email"
-                  placeholder='Enter username'
-                  value={form.new_email}
-                  handleChangeText={(text: string) => handleInputChange('new_email', text)}
-                />
-                {hasTyped.new_email && errors.new_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_email}</Text>}
-                </YStack>
-                <YStack gap="$1">
-                <FormField
-                  title="Password"
-                  value={form.current_password}
-                  placeholder='Enter password'
-                  handleChangeText={(text: string) => handleInputChange('current_password', text)}
-                />
-                 {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
-                </YStack>
-              </YStack>
-              <Form.Trigger asChild>
-                <CustomButton title='Change Email' handlePress={handleChangeEmail} />
-              </Form.Trigger>
-            </Form>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+                <Form.Trigger asChild>
+                  <CustomButton title='Change Email' handlePress={handleChangeEmail} />
+                </Form.Trigger>
+              </Form>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </Fragment>
   )
 }

@@ -8,6 +8,9 @@ const NavigationStack = () => {
 
     return (
         <Stack screenOptions={{
+            contentStyle: {
+                backgroundColor: '#1A1A1A'
+            },
             headerShown: false
         }}>
             {/* <Stack.Screen name='(auth)' />
