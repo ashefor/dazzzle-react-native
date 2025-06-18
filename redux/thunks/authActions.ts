@@ -5,6 +5,7 @@ import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import { API_URL } from '@/constants/constants'
+import { Loader } from '@/components/loader/LoaderWrapper'
 
 // const backendURL = 'http://127.0.0.1:5000'
 
@@ -145,8 +146,6 @@ export const signUserOut = createAsyncThunk(
     '/user/logout',
     async (_, { rejectWithValue, getState }) => {
         try {
-            // const token = await getItem('dazzzle-token');
-            console.log('sign out')
             const state = (getState() as any).auth;
             const config: AxiosRequestConfig = {
                 headers: {
@@ -155,6 +154,7 @@ export const signUserOut = createAsyncThunk(
                     ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
                 }
             }
+            Loader.show();
             const response = await axios.post(
                 `${API_URL}/user/logout`,
                 {},
@@ -176,8 +176,10 @@ export const signUserOut = createAsyncThunk(
             await removeItem('dazzzle-token');
             await removeItem('dazzzle-user');
             clear();
+            // Loader.hide();
             return true;
         } catch (error: any) {
+            Loader.hide();
             // return custom error message from API if any
             if (error.response && error.response.data.message) {
                 return rejectWithValue(error.response.data.message)

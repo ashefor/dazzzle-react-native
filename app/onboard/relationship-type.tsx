@@ -15,6 +15,8 @@ import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Loader } from '@/components/loader/LoaderWrapper'
 
 const OnboardRelationshipType = () => {
     const dispatch = useAppDispatch();
@@ -23,6 +25,7 @@ const OnboardRelationshipType = () => {
     const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
     // const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         setTimeout(() => {
@@ -59,15 +62,19 @@ const OnboardRelationshipType = () => {
     const submit = async () => {
         setIsSubmitting(true);
         try {
+            Loader.show();
             const { data } = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/choose-interests');
             }
+            Loader.hide();
         } catch (error: any) {
+            Loader.hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update')
         } finally {
             setIsSubmitting(false);
+            Loader.hide();
         }
     }
 
@@ -80,8 +87,9 @@ const OnboardRelationshipType = () => {
     };
 
     return (
-        <SafeAreaView className='bg-[#1A1A1A] h-full'>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+            <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
@@ -94,7 +102,7 @@ const OnboardRelationshipType = () => {
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
                         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }} >
-                        <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
+                            <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
                             <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
                                 <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[48.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />
@@ -147,8 +155,8 @@ const OnboardRelationshipType = () => {
                         </ScrollView>
                     </View>
                 </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+            </View>
+        </KeyboardAvoidingView>
     )
 }
 

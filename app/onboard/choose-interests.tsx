@@ -2,25 +2,26 @@ import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet,
 import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router'
 import { useGlobalContext } from '@/context/GlobalProvider'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView, Sheet } from 'tamagui'
+import { YStack, Progress, ScrollView, Sheet } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
-import { useGeneralConfig } from '@/hooks/useGeneralConfig'
 import { Interest, ReactionCodes } from '@/models/general'
 import { useAxiosContext } from '@/context/AxiosProvider'
-import Toast from '@/components/toast/toast'
-import { setItem } from '@/utils/asyncStorage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Loader } from '@/components/loader/LoaderWrapper'
 
 const OnboardChooseInterests = () => {
     const dispatch = useAppDispatch();
-        const { loading, appConfig } = useAppSelector(state => state.app);
+    const { loading, appConfig } = useAppSelector(state => state.app);
     const { axiosRequest } = useAxiosContext();
     const { setAuthState } = useGlobalContext();
     const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
     const [interests, setInterests] = useState<Interest[]>([]);
     const [hasFinished, setHasFinished] = useState(false);
+
+    const insets = useSafeAreaInsets();
 
     const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
 
@@ -47,6 +48,7 @@ const OnboardChooseInterests = () => {
     const submit = async () => {
         setIsSubmitting(true);
         try {
+            Loader.show();
             const { data } = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 // Toast.success('Profile updated successfully');
@@ -55,9 +57,12 @@ const OnboardChooseInterests = () => {
                 // await setItem('profileCompletion', 'completed');
                 // router.replace('/(tabs)/discover');
             }
+            Loader.hide();
         } catch (error: any) {
+            Loader.hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
         } finally {
+            Loader.hide();
             setIsSubmitting(false);
         }
     }
@@ -84,8 +89,10 @@ const OnboardChooseInterests = () => {
 
     return (
         <>
-            <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+            >
+                <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full'>
                     <View className='px-4'>
                         <Progress size="$3" value={progress}>
                             <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
@@ -118,8 +125,8 @@ const OnboardChooseInterests = () => {
                             </YStack>
                         </View>
                     </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
+                </View>
+            </KeyboardAvoidingView>
             <Sheet
                 forceRemoveScrollEnabled={hasFinished}
                 modal={true}
@@ -129,11 +136,11 @@ const OnboardChooseInterests = () => {
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
                 zIndex={100_000}
-                animation="quicker"
+                animation="medium"
             >
                 <Sheet.Overlay
                     onPress={() => setHasFinished(false)}
-                    animation="quicker"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />

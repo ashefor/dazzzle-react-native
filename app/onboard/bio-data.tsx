@@ -1,5 +1,5 @@
 import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, TextInput, Keyboard } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Link, router, useFocusEffect } from 'expo-router'
@@ -16,13 +16,16 @@ import dayjs from 'dayjs';
 import DateOfBirthPicker from '@/components/DateOfBirthPicker'
 import Dropdown from '@/components/Dropdown'
 import { useGeneralConfig } from '@/hooks/useGeneralConfig'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import { Feather } from '@expo/vector-icons'
 import Toast from '@/components/toast/toast'
 import { clear } from '@/utils/asyncStorage'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
+import SelectPicker from '@/components/SelectPicker'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import axiosRequest from '@/utils/axios'
+import { Loader } from '@/components/loader/LoaderWrapper'
 
 type BioDataForm = {
     first_name: string;
@@ -34,12 +37,11 @@ type BioDataForm = {
 };
 const OnboardBioData = () => {
     const dispatch = useAppDispatch();
-    const { axiosRequest } = useAxiosContext();
     const { loading, appConfig } = useAppSelector(state => state.app);
     const [progress, setProgress] = React.useState(0);
     const [showGenderPicker, setShowGenderPicker] = useState(false);
     const [snapPoints, setSnapPoints] = useState(['200', 35]);
-
+    const insets = useSafeAreaInsets();
 
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
     const [form, setForm] = useState<BioDataForm>({
@@ -53,6 +55,7 @@ const OnboardBioData = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
+            Loader.show();
             const response = await axiosRequest.get('/profile/check-profile-updated');
             const reaction = response.data.reaction;
             const responseData = response.data.data;
@@ -70,7 +73,9 @@ const OnboardBioData = () => {
                 }
 
             }
+            Loader.hide();
         } catch (error: any) {
+            Loader.hide();
             console.error('Error fetching data:', error.errorMessage);
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch data')
         }
@@ -108,8 +113,8 @@ const OnboardBioData = () => {
 
     const submit = async () => {
         try {
-            const { data } = await axiosRequest.post('/update-basic-settings', form);
-            if (data.reaction === ReactionCodes.SUCCESS) {
+            const response = await axiosRequest.post('/update-basic-settings', form);
+            if (response.data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/profile-picture');
             }
@@ -119,7 +124,7 @@ const OnboardBioData = () => {
         }
     }
 
-    const setSelectGender = (gender: number) => {
+    const setSelectGender = (gender: number | string) => {
         Keyboard.dismiss();
         updateForm('gender', String(gender));
         setShowGenderPicker(false);
@@ -131,14 +136,15 @@ const OnboardBioData = () => {
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <SafeAreaView className='bg-[#1A1A1A] h-full'>
+        <Fragment>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} >
+            <View style={{paddingBottom: insets.bottom}} className='bg-[#1A1A1A] h-full'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
                     </Progress>
                 </View>
-                <ScrollView>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                     <View className='p-4 space-y-5'>
                         <YStack>
                             <Text className='text-2xl text-white font-firabold'>Complete your profile</Text>
@@ -185,7 +191,7 @@ const OnboardBioData = () => {
                                         onChange={(item) => updateForm('gender', item.value)}
                                         placeholder="Select pet"
                                     /> */}
-                                    <View className="space-y-2">
+                                    {/* <View className="space-y-2">
                                         <Text className='text-base text-white font-firamedium'>Gender</Text>
                                         <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
                                             <View
@@ -196,8 +202,9 @@ const OnboardBioData = () => {
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
-                                    </View>
-
+                                    </View> */}
+                                    
+                                    <SelectPicker options={appConfig?.genders!} onSelectOption={(params) => setSelectGender(params)} defaultOption={form.gender} title='Gender' />
                                 </YStack>
                                 <Form.Trigger asChild disabled={status !== 'off'}>
                                     <CustomButton title='Next' handlePress={submit} />
@@ -212,8 +219,9 @@ const OnboardBioData = () => {
                         </YStack>
                     </View>
                 </ScrollView>
-            </SafeAreaView>
-            <Sheet
+            </View>
+        </KeyboardAvoidingView>
+         {/* <Sheet
                 forceRemoveScrollEnabled={showGenderPicker}
                 modal={true}
                 open={showGenderPicker}
@@ -251,8 +259,8 @@ const OnboardBioData = () => {
                         </YStack>
                     </KeyboardAvoidingView>
                 </Sheet.Frame>
-            </Sheet>
-        </KeyboardAvoidingView>
+            </Sheet> */}
+        </Fragment>
     )
 }
 

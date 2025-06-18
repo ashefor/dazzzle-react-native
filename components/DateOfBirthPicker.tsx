@@ -4,15 +4,17 @@ import { Sheet, XStack } from 'tamagui'
 import dayjs, { Dayjs } from 'dayjs'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import DateTimePicker, { DateType } from 'react-native-ui-datepicker'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBirthSelected: (selectedCountry: string) => void, dateOfBirth: string }) => {
     const [birthday, setBirthday] = useState<DateType>();
     const [showDatePicker, setShowDatePicker] = useState(false);
     // const age18yearsFromNow = dayjs().add(18, 'year').format('YYYY-MM-DD');
     const atLeast18YearsOld = dayjs().subtract(18, 'year').format('YYYY-MM-DD');
+    const insets = useSafeAreaInsets();
 
     const emitSelectedDate = () => {
-        onDateOfBirthSelected(birthday ? dayjs(birthday).format('YYYY-MM-DD'): '');
+        onDateOfBirthSelected(birthday ? dayjs(birthday).format('YYYY-MM-DD') : '');
         setShowDatePicker(false)
     }
 
@@ -56,28 +58,30 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame gap="$5" backgroundColor={'#1A1A1A'}>
-                    <View className='flex-row items-center justify-end pt-4 px-4'>
-                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                            <Ionicons name="close-circle" size={24} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    </View>
-                    <DateTimePicker
-                        calendarTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
-                        headerTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
-                        weekDaysTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
-                        selectedItemColor='#DF3FE5'
-                        maxDate={atLeast18YearsOld}
-                        headerButtonColor="#ffffff"
-                        monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
-                        yearContainerStyle={{backgroundColor: '1A1A1A'}}
-                        mode="single"
-                        date={birthday}
-                        onChange={(params) => setBirthday(params.date)}
-                    />
-                    <View className='flex-row items-center justify-end p-4'>
-                        <TouchableOpacity className='py-2 px-4 border border-white rounded-full' onPress={emitSelectedDate}>
-                            <Text className='text-base text-white font-firaregular'>Done</Text>
-                        </TouchableOpacity>
+                    <View style={{ paddingBottom: insets.bottom }}>
+                        <View className='flex-row items-center justify-end pt-4 px-4'>
+                            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                                <Ionicons name="close-circle" size={24} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
+                        <DateTimePicker
+                            calendarTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
+                            headerTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
+                            weekDaysTextStyle={{ color: '#FFFFFF', fontSize: 16 }}
+                            selectedItemColor='#DF3FE5'
+                            maxDate={atLeast18YearsOld}
+                            headerButtonColor="#ffffff"
+                            monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
+                            yearContainerStyle={{ backgroundColor: '1A1A1A' }}
+                            mode="single"
+                            date={birthday}
+                            onChange={(params) => setBirthday(params.date)}
+                        />
+                        <View className='flex-row items-center justify-end p-4'>
+                            <TouchableOpacity className='py-2 px-4 border border-white rounded-full' onPress={emitSelectedDate}>
+                                <Text className='text-base text-white font-firaregular'>Done</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </Sheet.Frame>
             </Sheet>

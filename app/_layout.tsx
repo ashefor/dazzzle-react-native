@@ -12,17 +12,24 @@ import AxiosProvider from '@/context/AxiosProvider';
 import NavigationStack from '@/components/NavigationStack';
 import ToastWrapper from '@/components/toast/ToastWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-// import { PaystackProvider } from 'react-native-paystack-webview';
+import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
-import { SheetProvider } from 'react-native-actions-sheet';
+import {SheetProvider} from 'react-native-actions-sheet';
 import '@/context/sheets';
 import { LoaderWrapper } from '@/components/loader/LoaderWrapper';
 
+
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  // const [loaded] = useFonts({
+  //   FiraSans_100Thin,
+  //   FiraSans_200ExtraLight, FiraSans_300Light, FiraSans_400Regular, FiraSans_500Medium, FiraSans_600SemiBold, FiraSans_700Bold, FiraSans_800ExtraBold, FiraSans_900Black
+  // });
 
   const [loaded] = useFonts({
     Onest_100Thin,
@@ -42,22 +49,24 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{
-        flex: 1,
-      }}>
-        <ToastWrapper />
-        <LoaderWrapper />
-        <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
-          <ThemeProvider value={DarkTheme}>
-            <GlobalProvider>
-              <AxiosProvider>
-                <SheetProvider>
-                  <NavigationStack />
-                </SheetProvider>
-              </AxiosProvider>
-            </GlobalProvider>
-          </ThemeProvider>
-        </TamaguiProvider>
-      </GestureHandlerRootView>
+      flex: 1,
+    }}>
+      <ToastWrapper />
+      <LoaderWrapper/>
+      <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
+      <ThemeProvider value={DarkTheme}>
+          <GlobalProvider>
+            <AxiosProvider>
+              <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
+              <SheetProvider>
+                <NavigationStack />
+              </SheetProvider>
+              </PaystackProvider>
+            </AxiosProvider>
+          </GlobalProvider>
+      </ThemeProvider>
+      </TamaguiProvider>
+    </GestureHandlerRootView>
     </Provider>
   );
 }

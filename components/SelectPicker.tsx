@@ -34,13 +34,15 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
 
     const scrollToSelectedOption = () => {
         if (flatListRef.current && defaultOption) {
-            const selectedOptionIndex = options.findIndex(g => g.id.toString() === defaultOption.toString());
+            if (options && options.length > 0) {
+                const selectedOptionIndex = options.findIndex(g => g.id.toString() === defaultOption.toString());
             if (selectedOptionIndex !== -1) {
                 setTimeout(() => {
                     if (flatListRef.current) {
                         flatListRef.current.scrollToIndex({ index: selectedOptionIndex, animated: true });
                     }
                 }, 500);
+            }
             }
         }
     }
@@ -60,8 +62,6 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
             </TouchableOpacity>
         );
     });
-
-    const renderItem2 = ({ item }: { item: { id: string | number, value: string } }) => <ListItem item={item} />;
 
     const renderItem = ({ item }: { item: { id: string | number, value: string } }) => <ListItemBase onPress={() => selectOption(item.id)} className={`bg-gray-800 rounded-lg ${defaultOption == item.id.toString() ? 'bg-secondary' : ''}`}>
         <XStack gap="$3" alignItems='center'>

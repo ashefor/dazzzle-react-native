@@ -1,18 +1,17 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, TextInput, Keyboard } from 'react-native'
+import { Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Link, router, useFocusEffect } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, Sheet, } from 'tamagui'
+import { router, useFocusEffect } from 'expo-router'
+import { YStack, Progress, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
-import FormField from '@/components/FormField';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { GooglePlacesAutocompleteRef } from 'react-native-google-places-autocomplete';
 import { useAxiosContext } from '@/context/AxiosProvider';
 import { ReactionCodes } from '@/models/general';
-import { Feather } from '@expo/vector-icons';
-import Toast from '@/components/toast/toast'
-import { useAppDispatch } from '@/hooks/reduxHooks'
-import { signUserOut } from '@/redux/thunks/authActions'
+import Toast from '@/components/toast/toast';
+import { useAppDispatch } from '@/hooks/reduxHooks';
+import { signUserOut } from '@/redux/thunks/authActions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Loader } from '@/components/loader/LoaderWrapper';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
 const OnboardLocation = () => {
@@ -28,7 +27,8 @@ const OnboardLocation = () => {
         latitude: any;
     }>();
 
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         setTimeout(() => {
@@ -39,6 +39,7 @@ const OnboardLocation = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
+            Loader.show();
             const response = await axiosRequest.get('/profile/check-profile-updated');
             const reaction = response.data.reaction;
             const responseData = response.data.data;
@@ -50,7 +51,9 @@ const OnboardLocation = () => {
                     }
                 }
             }
+            Loader.hide();
         } catch (error) {
+            Loader.hide();
             console.error('Error fetching data:', error);
         }
     };
@@ -125,8 +128,9 @@ const OnboardLocation = () => {
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <SafeAreaView className='bg-[#1A1A1A] h-full flex-1'>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} 
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+            <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full flex-1'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
@@ -143,7 +147,7 @@ const OnboardLocation = () => {
                             <GooglePlacesAutocomplete
                                 placeholder="Search"
                                 query={{
-                                    key: GOOGLE_MAPS_API_KEY,
+                                    // key: GOOGLE_MAPS_API_KEY,
                                     language: 'en', // language of the results
                                 }}
                                 onPress={(data, details = null) => fetchLocationFromPlacesApi(data.place_id)}
@@ -172,7 +176,7 @@ const OnboardLocation = () => {
                         </View>
                     </View>
                 </View>
-            </SafeAreaView>
+            </View>
         </KeyboardAvoidingView>
     )
 }

@@ -9,17 +9,19 @@ import CustomButton from '@/components/CustomButton'
 import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather'
 import { ReactionCodes } from '@/models/general'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
+import { Loader } from '@/components/loader/LoaderWrapper'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import axiosRequest from '@/utils/axios'
 
 const OnboardProfilePicture = () => {
     const dispatch = useAppDispatch();
-    const { axiosRequest } = useAxiosContext();
     const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((1 / 5) * 100));
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         setTimeout(() => {
@@ -30,6 +32,7 @@ const OnboardProfilePicture = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
+            Loader.show();
             const response = await axiosRequest.get('/profile/check-profile-updated');
             const reaction = response.data.reaction;
             const responseData = response.data.data;
@@ -41,7 +44,9 @@ const OnboardProfilePicture = () => {
                     }
                 }
             }
+            Loader.hide();
         } catch (error) {
+            Loader.hide();
             console.error('Error fetching data:', error);
         }
     };
@@ -78,16 +83,18 @@ const OnboardProfilePicture = () => {
                     name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
                     type: image?.mimeType || "image/jpeg",
                 } as any);
-                const { data } = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
-                const response = data.data;
-                if (data.reaction === ReactionCodes.SUCCESS) {
+                Loader.show();
+                const response = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
+                Loader.hide();
+                if (response.data.reaction === ReactionCodes.SUCCESS) {
                     Toast.success('Profile updated successfully');
                     router.push('/onboard/location');
                 } else {
-                    Alert.alert('Error', data.message ? data.message : 'Unable to proceed')
+                    Alert.alert('Error', response.data.message ? response.data.message : 'Unable to proceed')
                 }
             }
         } catch (error: any) {
+            Loader.hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to proceed with error')
         }
     }
@@ -114,8 +121,8 @@ const OnboardProfilePicture = () => {
     };
 
     return (
-        <SafeAreaView className='bg-[#1A1A1A] h-full'>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+            <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
@@ -149,16 +156,16 @@ const OnboardProfilePicture = () => {
                             <YStack>
                                 <CustomButton title='Next' handlePress={submit} />
                                 <View className='justify-center pt-5 flex-row gap-2'>
-                                     <TouchableOpacity onPress={() => handleLogOut()}>
-                                                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
-                                                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => handleLogOut()}>
+                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </YStack>
                         </YStack>
                     </View>
                 </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+            </View>
+        </KeyboardAvoidingView>
     )
 }
 

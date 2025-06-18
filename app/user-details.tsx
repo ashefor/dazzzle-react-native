@@ -38,7 +38,7 @@ const UserDetails = () => {
         if (error) {
             dispatch(signUserOut()).unwrap().then(() => router.replace('./(auth)/sign-in'))
         } else if (userInfo) {
-            if (isProfileCompleted) {
+            if (!isProfileCompleted) {
                 if (userInfo.is_premium) {
                     if (!hasExpired) {
                         router.replace('/(tabs)/discover');
