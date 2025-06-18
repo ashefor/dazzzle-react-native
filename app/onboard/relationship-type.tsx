@@ -1,30 +1,22 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
-// import { SafeAreaView } from 'react-native-safe-area-context'
-
-import { Link, router } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
+import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress } from 'tamagui'
+import { YStack, Progress } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
-import * as ImagePicker from 'expo-image-picker';
-import Feather from '@expo/vector-icons/Feather'
-import { useGeneralConfig } from '@/hooks/useGeneralConfig'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Loader } from '@/components/loader/LoaderWrapper'
+import { useLoader } from '@/context/LoaderProvider'
+import axiosRequest from '@/utils/axios'
 
 const OnboardRelationshipType = () => {
     const dispatch = useAppDispatch();
-    const { axiosRequest } = useAxiosContext();
-    const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
+    const { show, hide } = useLoader();
     const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
-    // const [relationshipTypes, setRelationshipTypes] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -37,11 +29,14 @@ const OnboardRelationshipType = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-            const response = await axiosRequest.get('/profile/check-profile-updated');
-            const reaction = response.data.reaction;
-            const responseData = response.data.data;
+            show();
+            const response: any = await axiosRequest.get('/profile/check-profile-updated');
+            hide();
+            const reaction = response.reaction;
+            const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
+                console.log('profileData', responseData);
                 if (profileData) {
 
                 }
@@ -62,23 +57,21 @@ const OnboardRelationshipType = () => {
     const submit = async () => {
         setIsSubmitting(true);
         try {
-            Loader.show();
-            const { data } = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
+            show();
+            const data: any = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/choose-interests');
             }
-            Loader.hide();
         } catch (error: any) {
-            Loader.hide();
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update')
-        } finally {
-            setIsSubmitting(false);
-            Loader.hide();
         }
     }
 
     const chooseRelationshipType = (type: string) => {
+        console.log('type', type);
         if (selectedRelationshipTypes.includes(type)) {
             setSelectedRelationshipTypes(selectedRelationshipTypes.filter((item) => item !== type));
         } else {
@@ -102,7 +95,7 @@ const OnboardRelationshipType = () => {
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                         </YStack>
                         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }} >
-                            <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>
+                            {selectedRelationshipTypes.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>}
                             <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
                                 <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[48.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
                                     <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />

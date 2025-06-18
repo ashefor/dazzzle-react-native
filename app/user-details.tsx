@@ -16,7 +16,6 @@ const UserDetails = () => {
     const [hasExpired, setHasExpired] = useState(false);
 
     useEffect(() => {
-        console.log('user details page');
         dispatch(fetchAuthenticatedUser())
     }, [])
 
@@ -53,7 +52,7 @@ const UserDetails = () => {
         )
     } else {
         if (userInfo) {
-            if (!isProfileCompleted) {
+            if (isProfileCompleted) {
                 if (userInfo.is_premium) {
                     if (hasExpired) {
                         return <Redirect href="./paywall" />

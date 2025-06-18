@@ -1,10 +1,8 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, ImageBackground } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, ImageBackground } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-// import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Link, router, useFocusEffect } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, ScrollView } from 'tamagui'
+import { router, useFocusEffect } from 'expo-router'
+import {  YStack, Progress, ScrollView } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import * as ImagePicker from 'expo-image-picker';
 import Feather from '@expo/vector-icons/Feather'
@@ -12,12 +10,13 @@ import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
-import { Loader } from '@/components/loader/LoaderWrapper'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import axiosRequest from '@/utils/axios'
+import { useLoader } from '@/context/LoaderProvider'
 
 const OnboardProfilePicture = () => {
     const dispatch = useAppDispatch();
+    const { show, hide } = useLoader();
     const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | undefined>(undefined);
     const [progress, setProgress] = React.useState(Math.ceil((1 / 5) * 100));
@@ -32,9 +31,9 @@ const OnboardProfilePicture = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-            Loader.show();
+            show();
             const response: any = await axiosRequest.get('/profile/check-profile-updated');
-            Loader.hide();
+            hide();
             const reaction = response.reaction;
             const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
@@ -46,7 +45,7 @@ const OnboardProfilePicture = () => {
                 }
             }
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error fetching data:', error);
         }
     };
@@ -82,9 +81,9 @@ const OnboardProfilePicture = () => {
                     name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
                     type: image?.mimeType || "image/jpeg",
                 } as any);
-                Loader.show();
+                show();
                 const response: any = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
-                Loader.hide();
+                hide();
                 if (response.reaction === ReactionCodes.SUCCESS) {
                     Toast.success('Profile updated successfully');
                     router.push('/onboard/location');
@@ -93,7 +92,7 @@ const OnboardProfilePicture = () => {
                 }
             }
         } catch (error: any) {
-            Loader.hide();
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to proceed with error')
         }
     }

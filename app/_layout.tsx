@@ -18,6 +18,7 @@ import { store } from '@/redux/store';
 import {SheetProvider} from 'react-native-actions-sheet';
 import '@/context/sheets';
 import { LoaderWrapper } from '@/components/loader/LoaderWrapper';
+import { LoaderProvider } from '@/context/LoaderProvider';
 
 
 
@@ -52,18 +53,16 @@ export default function RootLayout() {
       flex: 1,
     }}>
       <ToastWrapper />
-      <LoaderWrapper/>
+      {/* <LoaderWrapper/> */}
       <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
       <ThemeProvider value={DarkTheme}>
-          <GlobalProvider>
-            <AxiosProvider>
-              <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
+          <LoaderProvider>
+            <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
               <SheetProvider>
                 <NavigationStack />
               </SheetProvider>
               </PaystackProvider>
-            </AxiosProvider>
-          </GlobalProvider>
+          </LoaderProvider>
       </ThemeProvider>
       </TamaguiProvider>
     </GestureHandlerRootView>

@@ -1,31 +1,20 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, TextInput, Keyboard } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Keyboard } from 'react-native'
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
-// import { SafeAreaView } from 'react-native-safe-area-context'
-
-import { Link, router, useFocusEffect } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
-import Images from '@/constants/images'
-import { Button, Form, H4, Spinner, YStack, Input, Label, Checkbox, XStack, Progress, Sheet, ListItem, } from 'tamagui'
+import { router, useFocusEffect } from 'expo-router'
+import { Form, YStack, Progress } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import Ionicons from '@expo/vector-icons/Ionicons';
-import * as WebBrowser from 'expo-web-browser';
 import CountryCodePicker from '@/components/CountryCodePicker'
-import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import DateOfBirthPicker from '@/components/DateOfBirthPicker'
-import Dropdown from '@/components/Dropdown'
-import { useGeneralConfig } from '@/hooks/useGeneralConfig'
 import { ReactionCodes } from '@/models/general'
-import { Feather } from '@expo/vector-icons'
 import Toast from '@/components/toast/toast'
-import { clear } from '@/utils/asyncStorage'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import SelectPicker from '@/components/SelectPicker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import axiosRequest from '@/utils/axios'
-import { Loader } from '@/components/loader/LoaderWrapper'
+import axiosRequest from '@/utils/axios';
+import { useLoader } from '@/context/LoaderProvider'
 
 type BioDataForm = {
     first_name: string;
@@ -37,10 +26,9 @@ type BioDataForm = {
 };
 const OnboardBioData = () => {
     const dispatch = useAppDispatch();
+        const { show, hide } = useLoader();
     const { loading, appConfig } = useAppSelector(state => state.app);
     const [progress, setProgress] = React.useState(0);
-    const [showGenderPicker, setShowGenderPicker] = useState(false);
-    const [snapPoints, setSnapPoints] = useState(['200', 35]);
     const insets = useSafeAreaInsets();
 
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off')
@@ -55,9 +43,9 @@ const OnboardBioData = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-            Loader.show();
+            show();
             const response: any = await axiosRequest.get('/profile/check-profile-updated');
-            Loader.hide();
+            hide();
             const reaction = response.reaction;
             const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
@@ -74,8 +62,7 @@ const OnboardBioData = () => {
                 }
             }
         } catch (error: any) {
-            Loader.hide();
-            console.error('Error fetching data:', error.errorMessage);
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch data')
         }
     };
@@ -112,16 +99,16 @@ const OnboardBioData = () => {
 
     const submit = async () => {
         try {
-            Loader.show();
+            show();
             const response: any = await axiosRequest.post('/update-basic-settings', form);
-            Loader.hide();
+            hide();
             if (response.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
                 router.push('/onboard/profile-picture');
             }
         } catch (error: any) {
             console.log('error', error);
-            Loader.hide();
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to submit')
         }
     }
@@ -129,7 +116,6 @@ const OnboardBioData = () => {
     const setSelectGender = (gender: number | string) => {
         Keyboard.dismiss();
         updateForm('gender', String(gender));
-        setShowGenderPicker(false);
     }
 
     const getGenderName = (gender: string | number) => {

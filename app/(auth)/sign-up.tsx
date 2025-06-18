@@ -1,8 +1,7 @@
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Link, router } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
+import { router } from 'expo-router'
 import Images from '@/constants/images'
 import { Form, YStack, XStack, Sheet, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
@@ -10,10 +9,11 @@ import FormField from '@/components/FormField'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as WebBrowser from 'expo-web-browser';
 import { isValidEmail } from '@/utils/validators'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import Checkbox from 'expo-checkbox';
+import axiosRequest from '@/utils/axios'
+import { useLoader } from '@/context/LoaderProvider'
 
 type SigUpForm = {
     username: string;
@@ -24,9 +24,8 @@ type SigUpForm = {
 }
 
 const SignIn = () => {
-    const { axiosRequest } = useAxiosContext();
-    const { setUser, setAuthState } = useGlobalContext();
     const [isFormValid, setIsFormValid] = useState(false);
+    const { show, hide } = useLoader();
     const [hasCreatedAccount, setHasCreatedAccount] = useState(false);
     const [errors, setErrors] = useState<SigUpForm | Record<string, string>>({});
     const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
@@ -44,8 +43,6 @@ const SignIn = () => {
             [key]: value
         })
     }, [form])
-
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const _handlePressButtonAsync = async (link: string) => {
         await WebBrowser.openBrowserAsync(link);
@@ -93,31 +90,31 @@ const SignIn = () => {
         if (!isFormValid) {
             return Alert.alert('Error', 'Please fill in all fields')
         }
-        setIsSubmitting(true);
         try {
-            const response = await axiosRequest.post('/user/process-sign-up', form);
-            if (response.data.reaction === ReactionCodes.SUCCESS) {
-                setAuthState('incomplete');
+            show();
+            const response: any = await axiosRequest.post('/user/process-sign-up', form);
+            hide();
+            if (response.reaction === ReactionCodes.SUCCESS) {
                 setHasCreatedAccount(true);
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
-        } finally {
-            setIsSubmitting(false);
         }
     }
 
     const handleResendEmail = async () => {
         try {
             setHasCreatedAccount(false);
-            const response = await axiosRequest.post('/user/process-resend-activation-mail', { email: form.email });
-            if (response.data.reaction === ReactionCodes.SUCCESS) {
+            show();
+            const response: any = await axiosRequest.post('/user/process-resend-activation-mail', { email: form.email });
+            hide();
+            if (response.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Verification email sent successfully');
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.message ? error.message : 'Failed to log in')
-        } finally {
-            setIsSubmitting(false);
         }
     }
     return (
@@ -159,7 +156,6 @@ const SignIn = () => {
                                             value={form.password}
                                             placeholder='Enter password'
                                             secureTextEntry
-                                            textContentType="password"
                                             handleChangeText={(text: string) => handleInputChange('password', text)}
                                         />
                                         {hasTyped.password && errors.password && <Text className='text-xs text-red-500 font-firaregular'>{errors.password}</Text>}
@@ -170,7 +166,6 @@ const SignIn = () => {
                                             value={form.repeat_password}
                                             placeholder='Confirm password'
                                             secureTextEntry
-                                            textContentType="password"
                                             handleChangeText={(text: string) => handleInputChange('repeat_password', text)}
                                         />
                                         {hasTyped.repeat_password && errors.repeat_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.repeat_password}</Text>}
@@ -231,15 +226,15 @@ const SignIn = () => {
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
                 zIndex={100_000}
-                animation="quicker"
+                animation="medium"
             >
                 <Sheet.Overlay
                     onPress={() => setHasCreatedAccount(false)}
-                    animation="quicker"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
-                <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
+                <Sheet.Frame flex={1} paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
                     <View className='bg-[#1A1A1A] flex-row items-center p-4 pb-0 space-x-1' >
                         <TouchableOpacity onPress={() => setHasCreatedAccount(false)} className='z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />

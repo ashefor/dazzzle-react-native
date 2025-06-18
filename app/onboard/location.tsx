@@ -3,19 +3,20 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router'
 import { YStack, Progress, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { useAxiosContext } from '@/context/AxiosProvider';
+// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { ReactionCodes } from '@/models/general';
 import Toast from '@/components/toast/toast';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { signUserOut } from '@/redux/thunks/authActions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Loader } from '@/components/loader/LoaderWrapper';
+import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete";
+import axiosRequest from '@/utils/axios'
+import { useLoader } from '@/context/LoaderProvider'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
 const OnboardLocation = () => {
     const dispatch = useAppDispatch();
-    const { axiosRequest } = useAxiosContext();
+    const { show, hide } = useLoader();
     const [progress, setProgress] = React.useState(Math.ceil((2 / 5) * 100));
 
     const [location, setLocation] = useState('');
@@ -25,8 +26,6 @@ const OnboardLocation = () => {
         longitude: any;
         latitude: any;
     }>();
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -38,13 +37,14 @@ const OnboardLocation = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-            Loader.show();
+            show();
             const response: any = await axiosRequest.get('/profile/check-profile-updated');
-            Loader.hide();
+            hide();
             const reaction = response.reaction;
             const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
+                console.log('profileData', profileData);
                 if (profileData) {
                     if (profileData.location_latitude && profileData.location_longitude) {
                         fetchLocationFromLatLong(profileData.location_latitude, profileData.location_longitude);
@@ -52,7 +52,7 @@ const OnboardLocation = () => {
                 }
             }
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error fetching data:', error);
         }
     };
@@ -65,15 +65,13 @@ const OnboardLocation = () => {
             fetchUserProfileUpdateStatus();
 
             // Return function is invoked whenever the route gets out of focus.
-            return () => {
-                console.log('This route is now unfocused.');
-            };
+            return () => { };
         }, [])
     )
 
     const fetchLocationFromLatLong = async (latitude: number, longitude: number) => {
         // https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=YOUR_API_KEY
-        const { data } = await axiosRequest.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`);
+        const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`);
         const results = data.results[0];
         const address = results.formatted_address;
         const params = {
@@ -86,20 +84,29 @@ const OnboardLocation = () => {
         setGoogleMapsLocation(params);
     }
 
-    const fetchLocationFromPlacesApi = async (placeId: string) => {
-        const { data } = await axiosRequest.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`);
-
-        const results = data.result;
-        const location = results.geometry.location;
-        const address = results.formatted_address;
-        const params = {
-            placeData: results.address_components,
-            locality: results.vicinity,
-            longitude: location.lng,
-            latitude: location.lat
+    const fetchLocationFromPlacesApi = async (placeId?: string) => {
+        if (placeId) {
+            try {
+                show();;
+                const data:any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`);
+                hide();
+                const results = data.result;
+                const location = results.geometry.location;
+                const address = results.formatted_address;
+                const params = {
+                    placeData: results.address_components,
+                    locality: results.vicinity,
+                    longitude: location.lng,
+                    latitude: location.lat
+                }
+                setLocation(address);
+                setGoogleMapsLocation(params);
+            } catch (error) {
+                hide();
+            }
+        } else {
+            Alert.alert('Error', 'Please select a location')
         }
-        setLocation(address);
-        setGoogleMapsLocation(params);
     }
 
     const handleLogOut = async () => {
@@ -110,28 +117,24 @@ const OnboardLocation = () => {
         if (!googleMapsLocation) {
             return Alert.alert('Error', 'Please select a location')
         }
-
-        setIsSubmitting(true);
         try {
-            Loader.show();
+            show();
             const data: any = await axiosRequest.post('/process-location-data', googleMapsLocation);
-            Loader.hide();
+            hide();
             const response = data.data;
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success(response.message || 'Location updated successfully', 2000)
                 router.push('/onboard/relationship-type');
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update location')
-        } finally {
-            Loader.hide();
-            setIsSubmitting(false);
         }
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} 
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
             <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full flex-1'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
@@ -146,7 +149,7 @@ const OnboardLocation = () => {
                         </YStack>
                         <View className='flex-1 justify-between'>
 
-                            <GooglePlacesAutocomplete
+                            {/* <GooglePlacesAutocomplete
                                 placeholder="Search"
                                 query={{
                                     key: GOOGLE_MAPS_API_KEY,
@@ -154,11 +157,16 @@ const OnboardLocation = () => {
                                 }}
                                 onPress={(data, details = null) => fetchLocationFromPlacesApi(data.place_id)}
                                 onFail={(error) => console.error(error)}
-                            // requestUrl={{
-                            //     url:
-                            //         'https://maps.googleapis.com/maps/api/place/autocomplete/json',
-                            //     useOnPlatform: 'all',
-                            // }} // this in only required for use on the web. See https://git.io/JflFv more for details.
+                            /> */}
+
+                            <GooglePlacesAutocomplete
+                                placeholder="Search location"
+                                searchInputStyle={{ backgroundColor: 'transparent', margin: 0, fontSize: 16 } as any}
+                                containerStyle={{ flex: 0, borderRadius: 5, padding: 0 }}
+                                inputContainerStyle={{ flex: 0,  borderWidth: 0, margin: 0, padding: 4, borderRadius: 5 }}
+                                apiKey={GOOGLE_MAPS_API_KEY}
+                                onPlaceSelected={(data) => fetchLocationFromPlacesApi(data.placeId)}
+                                onSearchError={(error) => console.error(error)}
                             />
 
                             {location && <View className='mt-4 mb-8 space-y-2'>

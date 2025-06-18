@@ -234,7 +234,7 @@ const SendInput = ({ message, setMessage, pickImage, sendMessage }: { message: s
                         {/* <TouchableOpacity onPress={() => setIsEmojiPickerOpen(true)} className="rounded-md  items-center justify-center">
                                     <MaterialIcons name="emoji-emotions" size={24} color="white" />
                                 </TouchableOpacity> */}
-                        <TextInput value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
+                        <TextInput autoCorrect={false} value={message} onChangeText={setMessage} placeholderTextColor={'#A1A1A1'} style={{ flex: 1, maxHeight: INPUT_MAX_HEIGHT, alignSelf: 'center' }}
                             className="text-sm h-full mx-3 items-center text-white" placeholder="Type a message" />
                     </View>
                     <View style={{ flexDirection: "row" }} className="items-center">

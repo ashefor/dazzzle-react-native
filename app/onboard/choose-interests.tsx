@@ -1,22 +1,20 @@
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, Platform, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Pressable } from 'react-native'
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
 import { YStack, Progress, ScrollView, Sheet } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import { Interest, ReactionCodes } from '@/models/general'
-import { useAxiosContext } from '@/context/AxiosProvider'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Loader } from '@/components/loader/LoaderWrapper'
+import { useLoader } from '@/context/LoaderProvider'
+import axiosRequest from '@/utils/axios'
 
 const OnboardChooseInterests = () => {
     const dispatch = useAppDispatch();
-    const { loading, appConfig } = useAppSelector(state => state.app);
-    const { axiosRequest } = useAxiosContext();
-    const { setAuthState } = useGlobalContext();
+        const { show, hide } = useLoader();
+    const { appConfig } = useAppSelector(state => state.app);
     const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
     const [interests, setInterests] = useState<Interest[]>([]);
     const [hasFinished, setHasFinished] = useState(false);
@@ -35,7 +33,6 @@ const OnboardChooseInterests = () => {
         setInterests(appConfig?.interests || [])
     }, [appConfig])
 
-    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const chooseSelectedInterests = (interest: number) => {
         if (selectedInterests.includes(interest)) {
@@ -46,10 +43,9 @@ const OnboardChooseInterests = () => {
     }
 
     const submit = async () => {
-        setIsSubmitting(true);
         try {
-            Loader.show();
-            const { data } = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
+            show();
+            const data:any = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 // Toast.success('Profile updated successfully');
                 setHasFinished(true)
@@ -57,13 +53,10 @@ const OnboardChooseInterests = () => {
                 // await setItem('profileCompletion', 'completed');
                 // router.replace('/(tabs)/discover');
             }
-            Loader.hide();
+            hide();
         } catch (error: any) {
-            Loader.hide();
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in')
-        } finally {
-            Loader.hide();
-            setIsSubmitting(false);
         }
     }
 
@@ -106,7 +99,7 @@ const OnboardChooseInterests = () => {
                             </YStack>
                             <YStack>
                                 {interests && interests.length > 0 && <>
-                                    <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one interest type</Text>
+                                    {selectedInterests.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one interest type</Text>}
                                     <View className='flex-row flex-wrap my-6'>
                                         {interests.map((interest, index) => (
                                             <Pressable onPress={() => chooseSelectedInterests(interest.id)} key={index} className={`rounded-lg px-4 py-2 mr-3 mb-3 ${selectedInterests.includes(interest.id) ? 'bg-[#DF3FE5]' : 'bg-[#414141]'}`}>
@@ -132,7 +125,6 @@ const OnboardChooseInterests = () => {
                 modal={true}
                 open={hasFinished}
                 disableDrag={true}
-                onOpenChange={setHasFinished}
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
                 zIndex={100_000}

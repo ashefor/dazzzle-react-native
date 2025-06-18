@@ -87,7 +87,6 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 modal={true}
                 open={openPicker}
                 disableDrag={true}
-                onOpenChange={setOpenPicker}
                 snapPointsMode={'fit'}
                 dismissOnSnapToBottom
                 moveOnKeyboardChange={true}
@@ -100,7 +99,7 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
-                <Sheet.Frame paddingBottom="$5" gap="$1" backgroundColor={'#1A1A1A'}>
+                <Sheet.Frame flex={1} paddingBottom="$5" gap="$1" backgroundColor={'#1A1A1A'}>
                     <View style={{paddingTop: insets.top, paddingBottom: insets.bottom}} className='bg-[#1A1A1A] h-full'>
                         <View className='bg-[#1A1A1A] p-4 flex-row justify-center'>
                             <TouchableOpacity onPress={() => { Keyboard.dismiss(); setOpenPicker(false) }} className=' absolute top-4 left-4 z-10 flex items-center justify-center pr-4'>

@@ -11,7 +11,6 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Feather, Octicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import * as WebBrowser from 'expo-web-browser';
-import { Loader } from '@/components/loader/LoaderWrapper';
 
 export default function ProfileScreen() {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);

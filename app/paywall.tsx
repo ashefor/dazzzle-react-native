@@ -1,24 +1,27 @@
 import CustomButton from "@/components/CustomButton";
 import Toast from "@/components/toast/toast";
 import { API_URL } from "@/constants/constants";
-import { useAxiosContext } from "@/context/AxiosProvider";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { ReactionCodes } from "@/models/general";
 import { CreatePaystackOrderResponse, CreditPlan, PremiumFeature, PremiumFeatureType, SubscriptionResponse } from "@/models/subscription";
 import { LoggedInUser, LoggedInUserProfile } from "@/models/user";
 import { signUserOut } from "@/redux/thunks/authActions";
 import { getItem } from "@/utils/asyncStorage";
+import axiosRequest from "@/utils/axios";
+import dayjs from "dayjs";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLoader } from '@/context/LoaderProvider';
+import * as WebBrowser from 'expo-web-browser';
 
 const PayWallScreen = () => {
     const { popup } = usePaystack();
     const dispatch = useAppDispatch();
-    const { currentSubscription,  } = useAppSelector(state => state.subscription);
-    const { axiosRequest } = useAxiosContext();
+    const { show, hide } = useLoader();
+    const { currentSubscription, } = useAppSelector(state => state.subscription);
     const [premiumfeatures, setPremiumFeatures] = useState<string[]>([]);
     const [creditPlans, setCreditPlans] = useState<CreditPlan[]>([]);
     const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
@@ -44,7 +47,7 @@ const PayWallScreen = () => {
 
     const fetchSubscriptionDetails = async () => {
         try {
-            const { data } = await axiosRequest.get(API_URL + '/premium-plan/premium-plan-data');
+            const data: any = await axiosRequest.get(API_URL + '/premium-plan/premium-plan-data');
             const reaction = data.reaction;
             const responseData = data.data;
             if (reaction === ReactionCodes.SUCCESS) {
@@ -68,7 +71,13 @@ const PayWallScreen = () => {
     }
 
     useEffect(() => {
-        fetchSubscriptionDetails();
+        if (currentSubscription) {
+            if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
+                fetchSubscriptionDetails();
+            } else {
+                router.replace('/(tabs)/discover');
+            }
+        }
     }, [])
 
     const formatAsCurrency = (amount: string) => {
@@ -82,22 +91,29 @@ const PayWallScreen = () => {
     const payPlanFromWallet = async () => {
         try {
             const params = {
-                "selectedPlan":{"select_plan":"one_day"}
+                "selectedPlan": { "select_plan": "one_day" }
             }
-            const { data } = await axiosRequest.post(API_URL + '/premium-plan/buy-plans', params);
+            show();
+            const data: any = await axiosRequest.post(API_URL + '/premium-plan/buy-plans', params);
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Subscription successful');
                 router.replace('/(tabs)/discover');
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to buy plan');
         }
     }
 
+    const openPrivacyPolicy = async () => {
+        await WebBrowser.openBrowserAsync('https://dazzzle.org/privacy-policy');
+      };
+
     const createPaystackOrder = async () => {
-        console.log(selectedCreditPlan);
+        console.log('selectedCreditPlan', selectedCreditPlan);
         try {
-            if(selectedCreditPlan?.credits === 0) {
+            if (selectedCreditPlan?.credits === 0) {
                 payPlanFromWallet();
             } else {
                 const params = {
@@ -106,25 +122,31 @@ const PayWallScreen = () => {
                     packageName: selectedCreditPlan?.title,
                     select_payment_method: "paystack-checkout"
                 }
-                const { data } = await axiosRequest.post(API_URL + '/premium-plan/capture-paystack-order', params);
+                show();
+                const data = await axiosRequest.post(API_URL + '/premium-plan/capture-paystack-order', params);
+                hide();
                 const responseData = data.data as CreatePaystackOrderResponse;
                 if (responseData && responseData.reference) {
                     processPaystackPayment(responseData);
                 }
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');
         }
     }
 
     const verifyPaystackPayment = async (response: any) => {
         try {
-            const { data } = await axiosRequest.post(API_URL + '/premium-plan/paystack-order-submit', { response });
+            show();
+            const data: any = await axiosRequest.post(API_URL + '/premium-plan/paystack-order-submit', { response });
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Subscription successful');
                 router.replace('/(tabs)/discover');
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');
         }
     }
@@ -153,10 +175,17 @@ const PayWallScreen = () => {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <CustomButton disabled={!selectedCreditPlan} title={`Subscribe ${selectedCreditPlan? 'for ' + formatAsCurrency(selectedCreditPlan.price) : ''}`} handlePress={createPaystackOrder} />
-                    <Text className="text-white text-xs text-center mt-3">
-                        By subscribing, you agree to our Terms of Service and Privacy Policy.
+                    <CustomButton disabled={!selectedCreditPlan} title={`Subscribe ${selectedCreditPlan ? 'for ' + formatAsCurrency(selectedCreditPlan.price) : ''}`} handlePress={createPaystackOrder} />
+                    <View className="flex flex-wrap flex-1 flex-row gap-1 mt-3 items-center justify-center">
+                        <Text className="text-white text-xs text-center">
+                        By subscribing, you agree to our 
                     </Text>
+                     <TouchableOpacity onPress={openPrivacyPolicy}>
+                            <Text className="text-tertiary text-xs text-center">
+                                 Terms of Service and Privacy Policy.
+                            </Text>
+                            </TouchableOpacity>
+                    </View>
                     <View className='justify-center pt-5 flex-row gap-2'>
                         <TouchableOpacity onPress={() => handleLogOut()}>
                             <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>

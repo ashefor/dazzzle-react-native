@@ -1,4 +1,4 @@
-import { View, Image, Text, KeyboardAvoidingView, Platform, ScrollView, Keyboard, TouchableOpacity } from 'react-native'
+import { View, Image, Text, KeyboardAvoidingView, Platform, ScrollView, Keyboard, TouchableOpacity, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import icons from '@/constants/icons';
 import { YStack, ListItem, XStack, Sheet } from 'tamagui';
@@ -7,6 +7,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { CountryPhoneCode } from '@/models/general';
 import { useAppSelector } from '@/hooks/reduxHooks';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
     // const country_phone_codes = useGeneralConfig()?.country_phone_codes;
@@ -17,6 +18,7 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
     const [showCountryPicker, setShowCountryPicker] = React.useState(false)
     const [countrySheetPosition, setCountrySheetPosition] = React.useState(0);
     const [snapPoints, setSnapPoints] = useState([65, 85]);
+        const insets = useSafeAreaInsets();
 
     useEffect(() => {
         if (appConfig?.country_phone_codes) {
@@ -77,11 +79,11 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
                 position={countrySheetPosition}
                 onPositionChange={setCountrySheetPosition}
                 zIndex={100_000}
-                animation="quicker"
+                animation="medium"
             >
                 <Sheet.Overlay
                 onPress={() => setShowCountryPicker(false)}
-                    animation="quicker"
+                    animation="medium"
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
@@ -92,11 +94,25 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
                         </TouchableOpacity>
                         <Text className='font-firabold text-white text-base mx-auto'>Select Country</Text>
                     </XStack>
-                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
                         <View className='px-4'>
                             <FormField placeholder='Search' handleChangeText={(event) => filterCountries(event)} />
                         </View>
-                        <ScrollView className='p-4' style={{ flexGrow: 1 }}>
+                        <FlatList
+                        contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: insets.bottom + 16 }}
+                        keyExtractor={(item, index) => `${item.phone_code}-${index}`}
+                        ItemSeparatorComponent={() => <View className='h-2' />}
+                        data={filteredCountryCodes}
+                        renderItem={({ item, index }) => (
+                            <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className='bg-gray-800 rounded-lg  text-white'>
+                                <XStack gap="$3" alignItems='center'>
+                                    <Text className='text-lg text-white'>(+{item.phone_code})</Text>
+                                    <Text className='text-lg text-white'>{item.name}</Text>
+                                </XStack>
+                            </ListItem>
+                        )}
+                        />
+                        {/* <ScrollView className='p-4 flex-1' contentContainerStyle={{ flexGrow: 1 }}>
                             <YStack gap="$2">
                                 {filteredCountryCodes.map((country, index) => (
                                     <ListItem onPress={() => selectCountryCode(country.phone_code.toString())} key={index} className='bg-gray-800 rounded-lg  text-white'>
@@ -107,7 +123,7 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
                                     </ListItem>
                                 ))}
                             </YStack>
-                        </ScrollView>
+                        </ScrollView> */}
                     </KeyboardAvoidingView>
                 </Sheet.Frame>
             </Sheet>
