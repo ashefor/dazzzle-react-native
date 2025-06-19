@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLoader } from '@/context/LoaderProvider';
+import { useLoader } from '@/context/loader/LoaderProvider';
 import * as WebBrowser from 'expo-web-browser';
 
 const PayWallScreen = () => {

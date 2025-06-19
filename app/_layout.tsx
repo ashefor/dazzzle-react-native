@@ -15,7 +15,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import {SheetProvider} from 'react-native-actions-sheet';
 import '@/context/sheets';
-import { LoaderProvider } from '@/context/LoaderProvider';
+import { LoaderProvider } from '@/context/loader/LoaderProvider';
 
 
 

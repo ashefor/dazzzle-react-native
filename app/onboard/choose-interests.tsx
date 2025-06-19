@@ -8,7 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
 
 const OnboardChooseInterests = () => {

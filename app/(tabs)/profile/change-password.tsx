@@ -7,7 +7,7 @@ import Toast from '@/components/toast/toast';
 import { ReactionCodes } from '@/models/general';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
-import { useLoader } from '@/context/LoaderProvider';
+import { useLoader } from '@/context/loader/LoaderProvider';
 import axiosRequest from '@/utils/axios';
 
 type ChangePasswordForm = {

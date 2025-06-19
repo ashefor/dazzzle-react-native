@@ -9,7 +9,7 @@ import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
 
 const OnboardRelationshipType = () => {

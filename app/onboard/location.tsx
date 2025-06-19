@@ -11,7 +11,7 @@ import { signUserOut } from '@/redux/thunks/authActions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete";
 import axiosRequest from '@/utils/axios'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
 const OnboardLocation = () => {

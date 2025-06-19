@@ -5,10 +5,11 @@ import { LikedUserProfile } from '@/models/user';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import axiosRequest from '@/utils/axios';
-import { Loader } from '@/components/loader/LoaderWrapper';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 const BlockedUsers = () => {
      const { width } = useWindowDimensions();
+     const {show, hide} = useLoader();
      const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
      const [users, setUsers] = useState<LikedUserProfile[]>([]);
      const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -17,16 +18,16 @@ const BlockedUsers = () => {
  
      const fetchLikedUsers = async () => {
          try {
-            Loader.show();
+            show();
              const data: any = await axiosRequest.get('/blocked-users-list');
              if (data.reaction === ReactionCodes.SUCCESS) {
                  const { usersData, totalCount, nextPageUrl } = data.data;
                  setUsers(usersData);
                  setPaginationDetails({ totalCount, nextPageUrl });
              }
-            Loader.hide();
+            hide();
          } catch (error) {
-            Loader.hide();
+            hide();
              console.error('Error fetching liked users:', error);
              setPaginationDetails(null);
          }

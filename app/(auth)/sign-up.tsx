@@ -13,7 +13,7 @@ import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import Checkbox from 'expo-checkbox';
 import axiosRequest from '@/utils/axios'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 type SigUpForm = {
     username: string;

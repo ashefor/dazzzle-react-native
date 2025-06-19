@@ -10,7 +10,7 @@ import { isValidEmail, isValidUsernameOrEmail } from '@/utils/validators';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import { useAppSelector } from '@/hooks/reduxHooks';
 import axiosRequest from '@/utils/axios';
-import { useLoader } from '@/context/LoaderProvider';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 type ChangeEmailForm = {
   current_email: string;

@@ -12,12 +12,13 @@ import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { CONNECTION_STATE_HEIGHT, INPUT_MAX_HEIGHT } from '@/constants/constants';
 import { ReactionCodes } from '@/models/general';
-import { Loader } from '@/components/loader/LoaderWrapper';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 const KEYBOARD_AVOID_BEHAVIOR = Platform.select({ ios: 'padding' as const, default: undefined });
 
 const ViewSingleChat = () => {
     const { userId } = useLocalSearchParams();
+    const { show, hide } = useLoader();
     const [chatDetails, setChatDetails] = useState<SingleChatResponse>();
     const [chats, setChats] = useState<UserConversation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -57,14 +58,14 @@ const ViewSingleChat = () => {
             const params = {
                 message_request_status,
             }
-            Loader.show();
+            show();
             const data: any = await axiosRequest.post(`/messenger/${userId}/process-accept-decline-message-request`, params);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 fetchMessages();
             }
-            Loader.hide();
+            hide();
         } catch (error) {
-            Loader.hide();
+            hide();
         }
     }
 

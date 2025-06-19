@@ -4,7 +4,7 @@ import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
 import axiosRequest from '@/utils/axios'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 const WhoLikesMe = () => {
     const { width } = useWindowDimensions();

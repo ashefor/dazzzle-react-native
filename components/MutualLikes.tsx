@@ -7,7 +7,7 @@ import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
 import Toast from './toast/toast'
 import axiosRequest from '@/utils/axios'
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 const MutualLikes = () => {
     const { width } = useWindowDimensions();

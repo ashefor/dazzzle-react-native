@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import SelectPicker from '@/components/SelectPicker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import axiosRequest from '@/utils/axios';
-import { useLoader } from '@/context/LoaderProvider'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 type BioDataForm = {
     first_name: string;
