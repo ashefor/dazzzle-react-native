@@ -5,17 +5,18 @@ import { useState, useCallback, useEffect } from "react";
 import { Alert, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 import { YStack, XStack, Sheet, Form } from "tamagui";
 import CustomButton from "./CustomButton";
-import { Loader } from "./loader/LoaderWrapper";
 import SelectPicker from "./SelectPicker";
 import Toast from "./toast/toast";
 import FormField from "./FormField";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLoader } from "@/context/loader/LoaderProvider";
 
 const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecification, editable: boolean, onEditDone?: () => void }) => {
     const [editSpecificationModalVisible, setEditSpecificationModalVisible] = useState(false);
     const [formData, setFormData] = useState<{ [key: string]: string }>({});
     const [options, setOptions] = useState<any>([]);
     const [shouldUseSelector, setShouldUseSelector] = useState(item.items.some(item => item.input_type === 'select'));
+    const {show, hide} = useLoader();
 
     const insets = useSafeAreaInsets();
 
@@ -61,14 +62,14 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
 
     const updateSpecificationData = async () => {
         try {
-            Loader.show();
+            show();
             await axiosRequest.post(`/update-profile-settings`, formData);
-            Loader.hide();
+            hide();
             Toast.success('Profile updated successfully');
             toggleEditModal();
             onEditDone && onEditDone();
         } catch (error: any) {
-            Loader.hide();
+            hide();
             console.log('error', error);
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to update')
         }

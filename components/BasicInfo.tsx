@@ -1,22 +1,21 @@
-import { View, Text, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, ScrollView, TextInput, Pressable, Keyboard, FlatList, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, TextInput, Pressable, Keyboard, FlatList, Alert } from 'react-native'
 import React, { memo, useCallback, useEffect, useState } from 'react'
-import { YStack, XStack, Form, Select, Adapt, Sheet, Dialog, Fieldset, Input, Label, TooltipSimple, Unspaced, Button, ListItem } from 'tamagui'
+import { YStack, XStack, Form, Sheet, ListItem } from 'tamagui'
 import Feather from '@expo/vector-icons/Feather'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import CustomButton from './CustomButton'
 import FormField from './FormField'
-import { UserProfileData, UserSpecification, UserSpecificationsData } from '@/models/user'
+import { UserProfileData, UserSpecificationsData } from '@/models/user'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import DateOfBirthPicker from './DateOfBirthPicker';
 import axiosRequest from '@/utils/axios';
 import SelectPicker from './SelectPicker'
 import { educationOptions, preferredLanguageOptions, relationshipStatusOptions, workStatusOptions } from '@/constants/constants'
 import Toast from './toast/toast'
-import { ReactionCodes } from '@/models/general'
-import { Loader } from './loader/LoaderWrapper'
 import SpecificationData from './SpecificationInfo'
 import { fetchUserProfileData } from '@/redux/thunks/userActions'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 type BasicInfoForm = {
     first_name: string;
@@ -35,6 +34,7 @@ type BasicInfoForm = {
 
 const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEditDone, ...props }: { editable?: boolean, userProfileData?: UserProfileData, userSpecificationData?: UserSpecificationsData, onEditDone?: () => void }) => {
     const dispatch = useAppDispatch();
+        const {show, hide} = useLoader();
     const [editBioDataModalVisible, setEditBioDataModalVisible] = useState(false);
     const [status, setStatus] = React.useState<'off' | 'submitting' | 'submitted'>('off');
     const { userInfo } = useAppSelector(state => state.auth);
@@ -145,15 +145,15 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                 ...userProfileData,
                 ...basicInfoForm
             }
-            Loader.show();
+            show();
             const { data } = await axiosRequest.post(`/update-basic-settings`, params);
-            Loader.hide();
+            hide();
             Toast.success('Profile updated successfully');
             toggleEditModalVisible();
             onEditDone && onEditDone();
             dispatch(fetchUserProfileData());
         } catch (error: any) {
-            Loader.hide();
+            hide();
             console.log('error', error);
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to update')
         }
@@ -505,14 +505,14 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
 
 //     const updateSpecificationData = async () => {
 //         try {
-//             Loader.show();
+//             show();
 //             await axiosRequest.post(`/update-profile-settings`, formData);
-//             Loader.hide();
+//             hide();
 //             Toast.success('Profile updated successfully');
 //             toggleEditModal();
 //             onEditDone && onEditDone();
 //         } catch (error: any) {
-//             Loader.hide();
+//             hide();
 //             console.log('error', error);
 //             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to update')
 //         }

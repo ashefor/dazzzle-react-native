@@ -6,14 +6,15 @@ import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';
 import { SheetManager } from 'react-native-actions-sheet';
 import axiosRequest from '@/utils/axios';
-import { Loader } from './loader/LoaderWrapper';
 import Toast from './toast/toast';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string }[], editable?: boolean }) => {
     const [initialPhotos, setInitialPhotos] = useState<{ image_url: string }[]>([]);
     const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
     const [newImages, setNewImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
     const [isEditing, setIsEditing] = useState(false);
+    const { show, hide } = useLoader();
     const [uploadStatuses, setUploadStatuses] = useState(
         images.map((img, index) => ({
             id: index, // or a unique ID from image
@@ -126,31 +127,31 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
     const uploadAllImages = async () => {
         try {
             const uploadPromises = newImages.map((image, index) => {
-            const formData = new FormData();
-            formData.append("filepond", {
-                uri: image?.uri,
-                name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
-                type: image?.mimeType || "image/jpeg",
-            } as any);
+                const formData = new FormData();
+                formData.append("filepond", {
+                    uri: image?.uri,
+                    name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
+                    type: image?.mimeType || "image/jpeg",
+                } as any);
 
-            Loader.show();
-            return axiosRequest.post('/upload-photos', formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-                onUploadProgress: (progressEvent) => {
-                    const progress = Math.round((progressEvent.loaded * 100) / (progressEvent?.total ? progressEvent?.total : 1));
-                    // updateStatus(index, { progress });
-                }
-            })
-        });
+                show();
+                return axiosRequest.post('/upload-photos', formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    onUploadProgress: (progressEvent) => {
+                        const progress = Math.round((progressEvent.loaded * 100) / (progressEvent?.total ? progressEvent?.total : 1));
+                        // updateStatus(index, { progress });
+                    }
+                })
+            });
 
-        await Promise.all(uploadPromises);
-        Loader.hide();
-        const new_images = [images, newImages];
-        setNewImages([]);
-        setImages(new_images.flat());
-        Toast.success('Images uploaded successfully.');
+            await Promise.all(uploadPromises);
+            hide();
+            const new_images = [images, newImages];
+            setNewImages([]);
+            setImages(new_images.flat());
+            Toast.success('Images uploaded successfully.');
         } catch (error) {
-        Loader.hide();
+            hide();
         }
     };
 
@@ -220,15 +221,15 @@ const UserPhotos = ({ editable, userPhotos }: { userPhotos: { image_url: string 
 
             {editable && <View className='my-4 space-y-3'>
                 <TouchableOpacity onPress={() => pickMultipleImages()} className='border border-[#DD3FE5] p-3 justify-center items-center rounded-md'>
-                <Text className='text-[#DD3FE5]'>Add Images</Text>
-            </TouchableOpacity>
-            {newImages && newImages.length > 0 && <View className='flex-row justify-between items-center space-x-3'>
-             <TouchableOpacity onPress={cancelUpload} className='bg-red-500 flex-1 p-3 justify-center items-center rounded-md'>
-                <Text className='text-white'>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={uploadAllImages} className=' bg-[#DD3FE5] flex-1 p-3 justify-center items-center rounded-md'>
-                <Text className='text-white'>Save Changes</Text>
-            </TouchableOpacity>
+                    <Text className='text-[#DD3FE5]'>Add Images</Text>
+                </TouchableOpacity>
+                {newImages && newImages.length > 0 && <View className='flex-row justify-between items-center space-x-3'>
+                    <TouchableOpacity onPress={cancelUpload} className='bg-red-500 flex-1 p-3 justify-center items-center rounded-md'>
+                        <Text className='text-white'>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={uploadAllImages} className=' bg-[#DD3FE5] flex-1 p-3 justify-center items-center rounded-md'>
+                        <Text className='text-white'>Save Changes</Text>
+                    </TouchableOpacity>
                 </View>}
             </View>}
         </YStack>
