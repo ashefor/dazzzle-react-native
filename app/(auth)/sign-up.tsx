@@ -234,7 +234,7 @@ const SignIn = () => {
                     enterStyle={{ opacity: 0 }}
                     exitStyle={{ opacity: 0 }}
                 />
-                <Sheet.Frame flex={1} paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
+                <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
                     <View className='bg-[#1A1A1A] flex-row items-center p-4 pb-0 space-x-1' >
                         <TouchableOpacity onPress={() => setHasCreatedAccount(false)} className='z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />

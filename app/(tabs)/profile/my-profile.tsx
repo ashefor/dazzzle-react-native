@@ -14,16 +14,17 @@ import SkeletonPlaceholder from '@/components/SkeletonLoader';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from '@/components/toast/toast';
 import { Feather } from '@expo/vector-icons';
-import { Loader } from '@/components/loader/LoaderWrapper';
 import { updateUserInfo } from '@/redux/slices/authSlice';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
 import { Tabs, MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 
 const MyProfile = () => {
     const { userInfo, userProfileData, loadingUserProfileData } = useAppSelector(state => state.auth);
     const dispatch = useAppDispatch();
+    const {show, hide} = useLoader();
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [profile_picture_url, setProfilePictureUrl] = useState<string | undefined>(undefined);
@@ -82,7 +83,7 @@ const MyProfile = () => {
                     name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
                     type: image?.mimeType || "image/jpeg",
                 } as any);
-                Loader.show();
+                show();
                 const data: any = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
                 const response = data.data
                 const image_url = response.image_url;
@@ -95,10 +96,10 @@ const MyProfile = () => {
                 } else {
                     Alert.alert('Error', data.message ? data.message : 'Unable to proceed')
                 }
-                Loader.hide();
+                hide();
             }
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error picking image:', error);
         }
     };

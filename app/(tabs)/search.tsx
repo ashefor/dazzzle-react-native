@@ -7,8 +7,8 @@ import icons from '@/constants/icons';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ReactionCodes } from '@/models/general';
-import { Loader } from '@/components/loader/LoaderWrapper';
 import axiosRequest from '@/utils/axios';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 interface FeaturedUser {
   _id: number
@@ -32,6 +32,7 @@ interface FeaturedUser {
   detailString: string
 }
 const FilterUsers = () => {
+    const {show, hide} = useLoader();
     const [modalVisible, setModalVisible] = useState(false);
     const { width } = useWindowDimensions();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
@@ -45,16 +46,16 @@ const FilterUsers = () => {
 
     const fetchLikedUsers = async () => {
         try {
-            Loader.show();
+            show();
             setFilterParams(null);
             const data: any = await axiosRequest.get('/get-featured-user-data');
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { getFeatureUserList } = data.data;
                 setUsers(getFeatureUserList);
             }
-            Loader.hide();
+            hide();
         } catch (error) {
-            Loader.hide();
+            hide();
             console.error('Error fetching liked users:', error);
         }
     };
@@ -128,7 +129,7 @@ const FilterUsers = () => {
             setFilterParams(params);
             // const oldUSers = [...users];
             setUsers([]);
-            Loader.show();
+            show();
             const data: any = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { filterData, totalCount, filterCount, nextPageUrl} = data.data;
@@ -136,9 +137,9 @@ const FilterUsers = () => {
                 setNextPageUrl(nextPageUrl);
                 setTotalCount(totalCount);
             }
-            Loader.hide();
+            hide();
         } catch (error) {
-            Loader.hide();
+            hide();
         }
     }
 
