@@ -17,13 +17,42 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoader } from '@/context/loader/LoaderProvider';
 import * as WebBrowser from 'expo-web-browser';
 
+const defaultCreditPlans =  [
+    {
+        "_id": 3,
+        "_uid": "9a4d25be-7e3a-4d4e-bce9-66629e12c7a1",
+        "created_at": "2024-06-10T15:08:20.000000Z",
+        "updated_at": "2024-07-08T12:07:45.000000Z",
+        "status": 1,
+        "title": "One Week Subscription",
+        "credits": 1000,
+        "price": "1000.0000",
+        "image": "1000.jpg",
+        "is_subscription_package": 1,
+        "users__id": 1
+    },
+    {
+        "_id": 4,
+        "_uid": "ee88daa5-9d7e-431d-9bd3-ff45c34a1ad8",
+        "created_at": "2024-06-10T15:20:38.000000Z",
+        "updated_at": "2024-07-08T12:07:22.000000Z",
+        "status": 1,
+        "title": "One Month Subscription",
+        "credits": 2000,
+        "price": "2000.0000",
+        "image": "2000.jpg",
+        "is_subscription_package": 1,
+        "users__id": 1
+    }
+]
+
 const PayWallScreen = () => {
     const { popup } = usePaystack();
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
     const { currentSubscription, } = useAppSelector(state => state.subscription);
     const [premiumfeatures, setPremiumFeatures] = useState<string[]>([]);
-    const [creditPlans, setCreditPlans] = useState<CreditPlan[]>([]);
+    const [creditPlans, setCreditPlans] = useState<CreditPlan[]>(defaultCreditPlans);
     const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
 
     const processPaystackPayment = (response: CreatePaystackOrderResponse) => {
@@ -47,7 +76,9 @@ const PayWallScreen = () => {
 
     const fetchSubscriptionDetails = async () => {
         try {
+            show();
             const data: any = await axiosRequest.get(API_URL + '/premium-plan/premium-plan-data');
+            hide();
             const reaction = data.reaction;
             const responseData = data.data;
             if (reaction === ReactionCodes.SUCCESS) {
@@ -66,6 +97,7 @@ const PayWallScreen = () => {
 
             }
         } catch (error: any) {
+            hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch subscription details');
         }
     }
@@ -77,6 +109,8 @@ const PayWallScreen = () => {
             } else {
                 router.replace('/(tabs)/discover');
             }
+        } else {
+            fetchSubscriptionDetails();
         }
     }, [])
 

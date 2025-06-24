@@ -72,7 +72,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                             maxDate={atLeast18YearsOld}
                             headerButtonColor="#ffffff"
                             monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
-                            yearContainerStyle={{ backgroundColor: '1A1A1A' }}
+                            yearContainerStyle={{ backgroundColor: '#1A1A1A' }}
                             mode="single"
                             date={birthday}
                             onChange={(params) => setBirthday(params.date)}

@@ -51,8 +51,12 @@ axiosInstance.interceptors.request.use(async (config) => {
 
     return config;
 }, (error) => {
+    let message = error.response?.data?.message || "An error occurred";
+    if (message) {
+            message = message.replace(/<br\s*\/?>/gi, '\n');
+    }
     // store.dispatch(hideLoading());
-    return Promise.reject(error);
+    return Promise.reject({...error, errorMessage: message});
 });
 
 // Response Interceptor

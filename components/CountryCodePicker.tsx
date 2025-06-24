@@ -8,12 +8,13 @@ import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { CountryPhoneCode } from '@/models/general';
 import { useAppSelector } from '@/hooks/reduxHooks';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { countryCodes } from '@/constants/constants';
 
 const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
     // const country_phone_codes = useGeneralConfig()?.country_phone_codes;
             const { loading, appConfig } = useAppSelector(state => state.app);
     const [country, setCountry] = React.useState('');
-    const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>([]);
+    const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>(countryCodes);
     const [selectedCountryCode, setSelectedCountryCode] = React.useState(countryCode);
     const [showCountryPicker, setShowCountryPicker] = React.useState(false)
     const [countrySheetPosition, setCountrySheetPosition] = React.useState(0);

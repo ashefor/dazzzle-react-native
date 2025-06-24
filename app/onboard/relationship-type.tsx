@@ -71,7 +71,6 @@ const OnboardRelationshipType = () => {
     }
 
     const chooseRelationshipType = (type: string) => {
-        console.log('type', type);
         if (selectedRelationshipTypes.includes(type)) {
             setSelectedRelationshipTypes(selectedRelationshipTypes.filter((item) => item !== type));
         } else {

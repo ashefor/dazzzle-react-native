@@ -73,6 +73,7 @@ const OnboardProfilePicture = () => {
                 router.push('/onboard/location');
             } else {
                 if (!image) {
+                    Alert.alert('Error', 'Please select a profile picture')
                     return;
                 }
                 const formData = new FormData();

@@ -95,7 +95,7 @@ const OnboardLocation = () => {
                 const address = results.formatted_address;
                 const params = {
                     placeData: results.address_components,
-                    locality: results.vicinity,
+                    locality: results.vicinity || '',
                     longitude: location.lng,
                     latitude: location.lat
                 }

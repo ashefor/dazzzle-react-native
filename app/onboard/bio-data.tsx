@@ -15,6 +15,7 @@ import SelectPicker from '@/components/SelectPicker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import axiosRequest from '@/utils/axios';
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { genders } from '@/constants/constants'
 
 type BioDataForm = {
     first_name: string;
@@ -192,7 +193,7 @@ const OnboardBioData = () => {
                                         </View>
                                     </View> */}
                                     
-                                    <SelectPicker options={appConfig?.genders!} onSelectOption={(params) => setSelectGender(params)} defaultOption={form.gender} title='Gender' />
+                                    <SelectPicker options={appConfig?.genders! || genders} onSelectOption={(params) => setSelectGender(params)} defaultOption={form.gender} title='Gender' />
                                 </YStack>
                                 <Form.Trigger asChild disabled={status !== 'off'}>
                                     <CustomButton title='Next' handlePress={submit} />

@@ -10,13 +10,14 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
+import { defaultInterests } from '@/constants/constants'
 
 const OnboardChooseInterests = () => {
     const dispatch = useAppDispatch();
         const { show, hide } = useLoader();
     const { appConfig } = useAppSelector(state => state.app);
     const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
-    const [interests, setInterests] = useState<Interest[]>([]);
+    const [interests, setInterests] = useState<Interest[]>(defaultInterests);
     const [hasFinished, setHasFinished] = useState(false);
 
     const insets = useSafeAreaInsets();
@@ -30,7 +31,9 @@ const OnboardChooseInterests = () => {
     }, [])
 
     useEffect(() => {
-        setInterests(appConfig?.interests || [])
+        if (appConfig?.interests) {
+            setInterests(appConfig?.interests)
+        }
     }, [appConfig])
 
 
