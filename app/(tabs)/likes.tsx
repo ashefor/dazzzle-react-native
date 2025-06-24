@@ -21,7 +21,7 @@ const renderTabBar = (props: SceneRendererProps & {
     <TabBar
         {...props}
         indicatorStyle={{ backgroundColor: '#DD3FE5' }}
-        style={{ backgroundColor: 'transparent', borderBottomWidth: 0, borderBottomColor: '#E4E4E7' }}
+        style={{ backgroundColor: 'transparent', elevation: 0, borderBottomWidth: 0, borderBottomColor: '#E4E4E7' }}
         activeColor='#DD3FE5'
         inactiveColor='white'
     />
