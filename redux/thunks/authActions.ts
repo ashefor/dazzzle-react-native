@@ -5,6 +5,8 @@ import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import { API_URL } from '@/constants/constants'
+import dayjs, { Dayjs } from 'dayjs'
+import { RootState } from '../store'
 
 // const backendURL = 'http://127.0.0.1:5000'
 
@@ -181,6 +183,22 @@ export const signUserOut = createAsyncThunk(
             } else {
                 return rejectWithValue(error.message)
             }
+        }
+    }
+)
+
+export const checkUserSubscriptionHasExpired = createAsyncThunk(
+    'check-user-subscription-has-expired',
+    async (_, { rejectWithValue, getState }) => {
+        try {
+            // const userSubscription = await getItem('dazzzle-user-subscription');
+            const state = (getState() as RootState).subscription;
+            const userSubscription = state.currentSubscription;
+            const hasExpired = userSubscription ? dayjs().isAfter(dayjs(userSubscription.expiry_at)) : false;
+            console.log('hasExpired', hasExpired);
+            return hasExpired;
+        } catch (error: any) {
+            return rejectWithValue(error)
         }
     }
 )

@@ -1,16 +1,20 @@
 import CustomButton from '@/components/CustomButton';
 import Images from '@/constants/images';
-import { Redirect } from 'expo-router';
-import { useEffect } from 'react';
+import { Redirect, router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { View, Text, ImageBackground } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
+import dayjs from 'dayjs';
+import { signUserOut } from '@/redux/thunks/authActions';
 
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const { loading, appConfig, error } = useAppSelector(state => state.app);
   const { userInfo, userToken } = useAppSelector(state => state.auth);
+  const { currentSubscription, } = useAppSelector(state => state.subscription);
+  const [hasExpired, setHasExpired] = useState(false);
 
   // const loadInitialSettings = async () => {
   //   try {
@@ -38,9 +42,22 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    // loadInitialSettings();
-    fetchAppConfigSettings()
+    fetchAppConfigSettings();
+    checkForExpiration();
   }, [])
+
+  const checkForExpiration = () => {
+    const intervalId = setInterval(() => {
+      if (currentSubscription) {
+        if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
+          setHasExpired(true);
+          clearInterval(intervalId);
+          router.replace('/paywall')
+        }
+      }
+    }, 1000);
+  }
+
 
   if (loading) {
     return <ImageBackground className='h-full w-full' source={Images.splash} >

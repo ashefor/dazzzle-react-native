@@ -112,9 +112,9 @@ const SignIn = () => {
     }, [userInfo, isProfileCompleted])
 
     return (
-        <SafeAreaView className='bg-primary h-full'>
+        <SafeAreaView style={{ flex: 1 }} className='bg-primary h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                <ScrollView>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View className='w-full min-h-[85vh] justify-center px-4 my-6'>
                         <Form
                             gap="$7"
