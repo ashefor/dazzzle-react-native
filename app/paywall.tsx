@@ -87,13 +87,13 @@ const PayWallScreen = () => {
                 const creditPlans = premiumPlanData.creditPlans;
                 const premiumFeatureStrings = convertObjectToArrayOfStrings(premiumFeature);
                 setPremiumFeatures(premiumFeatureStrings);
-                if (currentSubscription) {
-                    setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0));
-                } else {
-                    setCreditPlans(creditPlans);
-                }
+                // if (currentSubscription) {
+                //     setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0));
+                // } else {
+                //     setCreditPlans(creditPlans);
+                // }
                 // setCreditPlans(creditPlans)
-                // setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0))
+                setCreditPlans(creditPlans.filter((creditPlan) => creditPlan.credits !== 0))
 
             }
         } catch (error: any) {
