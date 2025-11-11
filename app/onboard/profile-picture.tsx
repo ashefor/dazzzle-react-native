@@ -1,18 +1,18 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, ImageBackground } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
+import { Alert, Image, ImageBackground, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
-import { router, useFocusEffect } from 'expo-router'
-import {  YStack, Progress, ScrollView } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
-import * as ImagePicker from 'expo-image-picker';
-import Feather from '@expo/vector-icons/Feather'
-import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
-import { useAppDispatch } from '@/hooks/reduxHooks'
-import { signUserOut } from '@/redux/thunks/authActions'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { useAppDispatch } from '@/hooks/reduxHooks'
+import { ReactionCodes } from '@/models/general'
+import { signUserOut } from '@/redux/thunks/authActions'
+import axiosRequest from '@/utils/axios'
+import Feather from '@expo/vector-icons/Feather'
+import * as ImagePicker from 'expo-image-picker'
+import { router, useFocusEffect } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Progress, ScrollView, YStack } from 'tamagui'
 
 const OnboardProfilePicture = () => {
     const dispatch = useAppDispatch();

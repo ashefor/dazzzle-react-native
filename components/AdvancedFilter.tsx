@@ -1,9 +1,7 @@
-import { View, Text, Dimensions, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState } from 'react'
-import MultiSlider from '@ptomasroos/react-native-multi-slider'
-import { YStack, XStack, RadioGroup, SizeTokens, Label } from 'tamagui'
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native'
+import { YStack } from 'tamagui'
 import CustomButton from './CustomButton'
-import FormField from './FormField'
 
 const UsersAdvancedFilter = () => {
     const [filterParams, setFilterParams] = useState({

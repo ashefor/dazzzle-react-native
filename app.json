@@ -10,7 +10,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#1A1A1A"
     },
-    "scheme": "myapp",
+    "scheme": "dazzzle",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -54,6 +54,7 @@
           "cameraPermission": "The app accesses your camera to let you take photos and share them with your friends."
         }
       ],
+      "expo-notifications",
       [
         "expo-web-browser",
         {

@@ -1,16 +1,79 @@
-import React, { Fragment, useEffect } from "react";
-import { StyleSheet, View, Text, ActivityIndicator, Alert, TouchableOpacity, Image } from "react-native";
+import React, { Fragment, useEffect, useState } from "react";
+import { StyleSheet, View, Text, ActivityIndicator, Alert, Platform } from "react-native";
 import SwipeCard from "@/components/SwipeCard";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import CustomButton from "@/components/CustomButton";
 import { clearSwipeError } from "@/redux/slices/usersSlice";
 import { fetchProfilesAsync, swipeLeftAsync, swipeRightAsync } from "@/redux/thunks/swipeActions";
 import { Stack } from "expo-router";
-import icons from "@/constants/icons";
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import axiosRequest from '@/utils/axios';
 
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+function handleRegistrationError(errorMessage: string) {
+  alert(errorMessage);
+  throw new Error(errorMessage);
+}
+
+async function registerForPushNotificationsAsync() {
+  console.log('registerForPushNotificationsAsync');
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      handleRegistrationError('Permission not granted to get push token for push notification!');
+      return;
+    }
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      handleRegistrationError('A valid expo project id is required to get push token. Restart the app and try again');
+    }
+    try {
+      const pushTokenString = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+      return pushTokenString;
+    } catch (e: unknown) {
+      handleRegistrationError(`${e}`);
+    }
+  } else {
+    handleRegistrationError('Must use physical device for push notifications');
+  }
+}
 export default function DiscoverScreen() {
   const dispatch = useAppDispatch();
   const { profiles, currentIndex, loading, swipeLoading, swipeError } = useAppSelector((state) => state.users);
+   const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+      undefined
+    );
 
   // Fetch profiles when component mounts
   useEffect(() => {
@@ -25,6 +88,46 @@ export default function DiscoverScreen() {
       ]);
     }
   }, [swipeError, dispatch]);
+
+   useEffect(() => {
+    registerForPushNotificationsAsync()
+      .then(token => setExpoPushToken(token ?? ''))
+      .catch((error: any) => {
+        console.log(error);
+        // Alert.alert('Error', 'Failed to get push token for push notification!');
+      });
+
+    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.remove();
+      responseListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (expoPushToken) {
+      Alert.alert('Push Notification Token', JSON.stringify(expoPushToken, null, 2));
+      console.log('expoPushToken', expoPushToken);
+
+      sendFCMTokenToServer(expoPushToken);
+    }
+  }, [expoPushToken]);
+
+  const sendFCMTokenToServer = async (token: string) => {
+    try {
+      const response = await axiosRequest.post('/update-user-fcm-token', { fcm_token: token });
+      console.log('response', response.data);
+    } catch (error) {
+      console.error('Error sending FCM token to server:', error);
+    }
+  };
 
   const handleSwipeLeft = () => {
     if (currentIndex < profiles.length) {
