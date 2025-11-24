@@ -98,6 +98,7 @@ export default function DiscoverScreen() {
       });
 
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+      console.log(JSON.stringify(notification, null, 2));
       setNotification(notification);
     });
 

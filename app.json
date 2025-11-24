@@ -18,7 +18,8 @@
       "bundleIdentifier": "com.dazzzle.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.dazzzle.app",
@@ -29,7 +30,8 @@
         "foregroundImage": "./assets/images/foreground.png",
         "backgroundImage": "./assets/images/background.png",
         "icon": "./assets/images/icon-new.png"
-      }
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

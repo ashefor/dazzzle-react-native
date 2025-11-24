@@ -1,5 +1,5 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TouchableOpacity, View, Text, Platform, StyleSheet, Image, KeyboardAvoidingView, TextInput, FlatList, } from "react-native"
+import { TouchableOpacity, View, Text, Platform, StyleSheet, Image, KeyboardAvoidingView, TextInput, FlatList, } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
 import { Avatar, XStack, YStack } from 'tamagui';
@@ -18,6 +18,7 @@ const KEYBOARD_AVOID_BEHAVIOR = Platform.select({ ios: 'padding' as const, defau
 
 const ViewSingleChat = () => {
     const { userId } = useLocalSearchParams();
+    console.log('userId:', userId);
     const { show, hide } = useLoader();
     const [chatDetails, setChatDetails] = useState<SingleChatResponse>();
     const [chats, setChats] = useState<UserConversation[]>([]);

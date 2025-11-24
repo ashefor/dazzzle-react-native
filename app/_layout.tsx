@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { TamaguiProvider, YStack } from 'tamagui'
+import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
 import NavigationStack from '@/components/NavigationStack';
 import ToastWrapper from '@/components/toast/ToastWrapper';
@@ -13,9 +13,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
-import {SheetProvider} from 'react-native-actions-sheet';
+import { SheetProvider } from 'react-native-actions-sheet';
 import '@/context/sheets';
 import { LoaderProvider } from '@/context/loader/LoaderProvider';
+import { StatusBar } from 'react-native';
 
 
 
@@ -50,6 +51,7 @@ export default function RootLayout() {
       flex: 1,
     }}>
       <ToastWrapper />
+      <StatusBar barStyle={'light-content'} />
       {/* <LoaderWrapper/> */}
       <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
       <ThemeProvider value={DarkTheme}>
