@@ -15,5 +15,8 @@ import relType5 from "../assets/images/relationship/5.jpg";
 import relType6 from "../assets/images/relationship/6.jpg";
 import coverPhoto from "../assets/images/cover-photo.jpg";
 import splash from "../assets/images/fullsplash.png";
+import onboardScreenOne from "../assets/images/onboard/screen-one.png";
+import onboardScreenTwo from "../assets/images/onboard/screen-two.png";
+import onboardScreenThree from "../assets/images/onboard/screen-three.png";
 
-export default { male, female, header, imagePlaceholder, onboard, splash, onboard3, coverPhoto, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6 };
+export default { male, female, header, imagePlaceholder, onboard, splash, onboard3, coverPhoto, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6, onboardScreenOne, onboardScreenTwo, onboardScreenThree };
