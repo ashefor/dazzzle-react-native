@@ -4,9 +4,7 @@ import { API_URL } from "@/constants/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { ReactionCodes } from "@/models/general";
 import { CreatePaystackOrderResponse, CreditPlan, PremiumFeature, PremiumFeatureType, SubscriptionResponse } from "@/models/subscription";
-import { LoggedInUser, LoggedInUserProfile } from "@/models/user";
 import { signUserOut } from "@/redux/thunks/authActions";
-import { getItem } from "@/utils/asyncStorage";
 import axiosRequest from "@/utils/axios";
 import dayjs from "dayjs";
 import { router } from "expo-router";
@@ -186,7 +184,7 @@ const PayWallScreen = () => {
     }
 
     return (
-        <SafeAreaView className='bg-[#1A1A1A] h-full'>
+        <SafeAreaView className=' h-full'>
             <ScrollView className='h-full'>
                 <View className="w-full min-h-[65vh] justify-center px-4 my-6 py-10">
                     <Text className="text-white text-2xl font-firabold text-center">Choose your plan</Text>

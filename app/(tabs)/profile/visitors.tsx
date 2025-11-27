@@ -1,13 +1,12 @@
-import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground, ScrollView } from 'react-native'
-import React, { useState } from 'react'
-import { YStack } from 'tamagui';
+import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground } from 'react-native';
+import React, { useState } from 'react';
 import Images from '@/constants/images';
 
 const Visitors = () => {
   const [visitors, setVisitors] = useState<string[]>(Array.from({ length: 20 }))
 
   return (
-    <View className='bg-[#1A1A1A] h-full'>
+    <View className=' h-full'>
       <FlatList
           className='p-1'
           // columnWrapperStyle={{ gap: 10 }}

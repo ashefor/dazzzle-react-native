@@ -2,8 +2,8 @@ import SkeletonPlaceholder from "@/components/SkeletonLoader";
 import { ChatsResponse, MessengerUser } from "@/models/chat";
 import axiosRequest from "@/utils/axios";
 import { router, useFocusEffect } from "expo-router";
-import { Fragment, useCallback, useEffect, useState } from "react"
-import { FlatList, Text, TouchableOpacity, View } from "react-native"
+import { Fragment, useCallback, useState } from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Avatar, XStack, YStack } from "tamagui";
 
 const Chats = () => {
@@ -43,7 +43,7 @@ const Chats = () => {
         <Fragment>
             {isLoading ? <ChatLoaders /> : (
                 <FlatList
-                    className="bg-[#1A1A1A]"
+                    className=""
                     contentContainerStyle={{ paddingBottom: 100, padding: 20 }}
                     data={chats}
                     keyExtractor={(item, index) => item.user_id.toString()}

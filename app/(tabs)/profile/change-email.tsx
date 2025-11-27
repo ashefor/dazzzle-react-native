@@ -6,11 +6,11 @@ import { Form, YStack } from 'tamagui'
 import { ReactionCodes } from '@/models/general'
 import { router, Stack } from 'expo-router'
 import Toast from '@/components/toast/toast'
-import { isValidEmail, isValidUsernameOrEmail } from '@/utils/validators';
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
-import { useAppSelector } from '@/hooks/reduxHooks';
-import axiosRequest from '@/utils/axios';
-import { useLoader } from '@/context/loader/LoaderProvider';
+import { isValidEmail } from '@/utils/validators'
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import { useAppSelector } from '@/hooks/reduxHooks'
+import axiosRequest from '@/utils/axios'
+import { useLoader } from '@/context/loader/LoaderProvider'
 
 type ChangeEmailForm = {
   current_email: string;
@@ -99,7 +99,7 @@ const ChangeEmailScreen = () => {
           </TouchableOpacity>
         }}
       />
-      <View className='bg-[#1A1A1A] h-full'>
+      <View className=' h-full'>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
           <ScrollView>
             <View className='px-4 py-5'>
@@ -110,7 +110,7 @@ const ChangeEmailScreen = () => {
                       title="Current Email"
                       placeholder='Enter username'
                       value={form.current_email}
-                      handleChangeText={(text: string) => handleInputChange('current_email', text)}
+                      onChangeText={(text: string) => handleInputChange('current_email', text)}
                     />
                     {hasTyped.current_email && errors.current_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_email}</Text>}
                   </YStack>
@@ -120,7 +120,7 @@ const ChangeEmailScreen = () => {
                       title="New Email"
                       placeholder='Enter username'
                       value={form.new_email}
-                      handleChangeText={(text: string) => handleInputChange('new_email', text)}
+                      onChangeText={(text: string) => handleInputChange('new_email', text)}
                     />
                     {hasTyped.new_email && errors.new_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_email}</Text>}
                   </YStack>
@@ -129,7 +129,7 @@ const ChangeEmailScreen = () => {
                       title="Password"
                       value={form.current_password}
                       placeholder='Enter password'
-                      handleChangeText={(text: string) => handleInputChange('current_password', text)}
+                      onChangeText={(text: string) => handleInputChange('current_password', text)}
                     />
                     {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
                   </YStack>

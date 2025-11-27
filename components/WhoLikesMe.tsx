@@ -1,5 +1,5 @@
-import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, ActivityIndicator, Alert, RefreshControl, useWindowDimensions } from 'react-native'
-import React, { use, useCallback, useEffect, useState } from 'react'
+import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, ActivityIndicator, RefreshControl, useWindowDimensions } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
@@ -92,7 +92,7 @@ const WhoLikesMe = () => {
     }, []);
 
     return (
-        <View className='bg-[#1A1A1A] h-full'>
+        <View className=' h-full'>
             <FlatList
                 className='p-1'
                 data={users}

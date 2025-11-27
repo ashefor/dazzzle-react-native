@@ -1,5 +1,5 @@
 import 'react-native-get-random-values';
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Onest_100Thin, Onest_200ExtraLight, Onest_300Light, Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold, Onest_900Black, useFonts } from '@expo-google-fonts/onest';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -17,6 +17,9 @@ import { SheetProvider } from 'react-native-actions-sheet';
 import '@/context/sheets';
 import { LoaderProvider } from '@/context/loader/LoaderProvider';
 import { StatusBar } from 'react-native';
+import {
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 
 
@@ -51,10 +54,11 @@ export default function RootLayout() {
       flex: 1,
     }}>
       <ToastWrapper />
-      <StatusBar barStyle={'light-content'} />
+      <StatusBar barStyle={'dark-content'} />
       {/* <LoaderWrapper/> */}
       <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
-      <ThemeProvider value={DarkTheme}>
+      <BottomSheetModalProvider>
+        <ThemeProvider value={DefaultTheme}>
           <LoaderProvider>
             <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
               <SheetProvider>
@@ -63,6 +67,7 @@ export default function RootLayout() {
               </PaystackProvider>
           </LoaderProvider>
       </ThemeProvider>
+      </BottomSheetModalProvider>
       </TamaguiProvider>
     </GestureHandlerRootView>
     </Provider>

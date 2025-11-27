@@ -1,9 +1,9 @@
-import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { ReactionCodes } from '@/models/general';
-import { LikedUserProfile } from '@/models/user'
+import { LikedUserProfile } from '@/models/user';
 import Toast from '@/components/toast/toast';
 import axiosRequest from '@/utils/axios';
 import { useLoader } from '@/context/loader/LoaderProvider';
@@ -124,7 +124,7 @@ const MyLikes = () => {
     }, [])
 
     return (
-        <View className='bg-[#1A1A1A] h-full'>
+        <View className=' h-full'>
             <FlatList
                 className='p-1'
                 data={users}

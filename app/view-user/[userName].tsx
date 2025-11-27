@@ -1,5 +1,5 @@
-import { SafeAreaView as SafeAreaViewIOS, StyleSheet, Text, Image, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform, Alert, ActivityIndicator } from 'react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { SafeAreaView as SafeAreaViewIOS, StyleSheet, Text, View, ImageBackground, ScrollView, TouchableOpacity, Animated, LayoutRectangle, Platform, Alert, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, Avatar, Button, ListItem, Popover, PopoverProps, Separator, SizableText, StackProps, styled, Tabs, TabLayout, TabsTabProps, XStack, YGroup, YStack } from 'tamagui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
@@ -14,7 +14,7 @@ import { SingleUserDetails } from '@/models/user';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
-import {  MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view'
+import { MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view';
 import axiosRequest from '@/utils/axios';
 
 
@@ -519,7 +519,7 @@ const User = () => {
                 scrollEventThrottle={16}
 
             >
-                <View className='bg-[#1A1A1A] h-full relative pb-32 flex-1'>
+                <View className=' h-full relative pb-32 flex-1'>
                     <View className='h-[150px]'>
                         <ImageBackground source={{ uri: userDetails?.userData.coverPicture }} className='w-full h-full' resizeMode='cover' >
                             <View className='h-full w-full bg-black/[0.8]'>

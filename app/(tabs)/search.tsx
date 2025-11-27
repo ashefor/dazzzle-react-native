@@ -1,6 +1,6 @@
-import { View, Image, Modal, TouchableOpacity, Alert, useWindowDimensions, ImageBackground, TouchableWithoutFeedback, FlatList, RefreshControl, Text, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import { XStack } from 'tamagui'
+import { View, Image, Modal, TouchableOpacity, useWindowDimensions, ImageBackground, TouchableWithoutFeedback, FlatList, RefreshControl, Text, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { XStack } from 'tamagui';
 import UsersBasicFilter, { BasicFilter } from '@/components/UsersBasicFilter';
 import { router, Stack } from 'expo-router';
 import icons from '@/constants/icons';
@@ -175,7 +175,7 @@ const FilterUsers = () => {
                     <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
                 </TouchableOpacity>
             }} />
-            <View className='bg-[#1A1A1A] h-full'>
+            <View className=' h-full'>
                 {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
                     <Text className='text-white'>Showing filter</Text>
                     <TouchableOpacity onPress={clearFilter} className='items-center justify-center'>
@@ -215,8 +215,8 @@ const FilterUsers = () => {
                 }}
             >
                 <SafeAreaProvider>
-                    <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                        <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                    <SafeAreaView className=' h-full'>
+                        <View className=' flex-row items-center justify-center px-4 py-3 relative'>
                             <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
                                 {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
                                 <Ionicons name="close" size={24} color="#ffffff" />

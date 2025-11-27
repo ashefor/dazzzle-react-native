@@ -544,3 +544,12 @@ export interface Notifications {
   notificationCount: number
 }
 
+export type BioDataForm = {
+    first_name: string;
+    last_name: string;
+    mobile_number: string;
+    birthday: string;
+    gender: string;
+    country_code: string;
+};
+

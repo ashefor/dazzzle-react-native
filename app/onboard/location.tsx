@@ -1,20 +1,21 @@
-import { Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import { router, useFocusEffect } from 'expo-router'
-import { YStack, Progress, } from 'tamagui'
+import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { router } from 'expo-router'
+import { YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 // import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { ReactionCodes } from '@/models/general';
-import Toast from '@/components/toast/toast';
-import { useAppDispatch } from '@/hooks/reduxHooks';
-import { signUserOut } from '@/redux/thunks/authActions';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete";
+import { ReactionCodes } from '@/models/general'
+import Toast from '@/components/toast/toast'
+import { useAppDispatch } from '@/hooks/reduxHooks'
+import { signUserOut } from '@/redux/thunks/authActions'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete"
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { OnboardPagesProps } from '.'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';
-const OnboardLocation = () => {
+const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
     const [progress, setProgress] = React.useState(Math.ceil((2 / 5) * 100));
@@ -29,45 +30,14 @@ const OnboardLocation = () => {
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
-        setTimeout(() => {
-            setProgress(Math.ceil((3 / 5) * 100))
-        }, 500);
-    }, [])
-
-
-    const fetchUserProfileUpdateStatus = async () => {
-        try {
-            show();
-            const response: any = await axiosRequest.get('/profile/check-profile-updated');
-            hide();
-            const reaction = response.reaction;
-            const responseData = response.data;
-            if (reaction === ReactionCodes.SUCCESS) {
-                const profileData = responseData['profileInfo'];
-                console.log('profileData', profileData);
-                if (profileData) {
-                    if (profileData.location_latitude && profileData.location_longitude) {
-                        fetchLocationFromLatLong(profileData.location_latitude, profileData.location_longitude);
-                    }
-                }
+        if (pageData) {
+            if (pageData.location_latitude && pageData.location_longitude) {
+                fetchLocationFromLatLong(pageData.location_latitude, pageData.location_longitude);
             }
-        } catch (error) {
-            hide();
-            console.error('Error fetching data:', error);
         }
-    };
+       
+    }, [pageData])
 
-    useFocusEffect(
-        // Callback should be wrapped in `React.useCallback` to avoid running the effect too often.
-        useCallback(() => {
-            setProgress(Math.ceil((2 / 5) * 100))
-            // Invoked whenever the route is focused.
-            fetchUserProfileUpdateStatus();
-
-            // Return function is invoked whenever the route gets out of focus.
-            return () => { };
-        }, [])
-    )
 
     const fetchLocationFromLatLong = async (latitude: number, longitude: number) => {
         // https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=YOUR_API_KEY
@@ -133,16 +103,7 @@ const OnboardLocation = () => {
     }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-            <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full flex-1'>
-                <View className='px-4'>
-                    <Progress size="$3" value={progress}>
-                        <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
-                    </Progress>
-                </View>
-                <View className='flex-1'>
-                    <View className='p-4 flex-1 space-y-4'>
+        <View className='p-4 flex-1 space-y-4'>
                         <YStack>
                             <Text className='text-2xl text-white font-firabold'>Choose location</Text>
                             <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
@@ -185,9 +146,6 @@ const OnboardLocation = () => {
                             </View>
                         </View>
                     </View>
-                </View>
-            </View>
-        </KeyboardAvoidingView>
     )
 }
 

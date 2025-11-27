@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native'
+import { Text, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import { YStack, XStack, RadioGroup, SizeTokens, Label } from 'tamagui'
@@ -71,7 +71,7 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                             title="Username"
                             placeholder='Enter Username'
                             value={filterParams.username}
-                            handleChangeText={(value) => updateFilterParams('username', value)}
+                            onChangeText={(value) => updateFilterParams('username', value)}
                         />
                         <YStack gap="$2">
                             <Text className='text-base text-white font-firamedium'>Age</Text>
@@ -108,7 +108,7 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                             placeholder='Anywhere'
                             keyBoardType='numeric'
                             value={filterParams.distance}
-                            handleChangeText={(value) => updateFilterParams('distance', value)}
+                            onChangeText={(value) => updateFilterParams('distance', value)}
                         />
                     </YStack>
                     <CustomButton title='Apply' handlePress={applyFilter} />

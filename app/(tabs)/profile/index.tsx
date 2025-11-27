@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, ScrollView, View, Alert } from 'react-native';
+import { Text, TouchableOpacity, ScrollView, View } from 'react-native';
 import { XStack, Avatar, Sheet, } from 'tamagui';
 import { Link, router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
           headerStyle: { backgroundColor: '#1A1A1A' }
         }}
       />
-      <ScrollView className='h-full bg-[#1A1A1A]'>
+      <ScrollView className='h-full '>
         <View className='h-full p-4'>
           <XStack alignItems="center" gap="$4">
             <Avatar circular size="$5">
@@ -233,7 +233,7 @@ export default function ProfileScreen() {
           exitStyle={{ opacity: 0 }}
         />
         <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-          <View className='bg-[#1A1A1A] flex-row items-center  h-12 relative' >
+          <View className=' flex-row items-center  h-12 relative' >
             <View className='px-4' style={{ zIndex: 10 }}>
               <TouchableOpacity onPress={() => setIsSubscriptionModalOpen(false)} className='z-10 flex items-center  pr-4'>
                 <Ionicons name="close-circle" size={24} color="#ffffff" />

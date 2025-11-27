@@ -93,7 +93,7 @@ const MyDislikes = () => {
     }, []);
 
     return (
-        <View className='bg-[#1A1A1A] h-full'>
+        <View className=' h-full'>
             <FlatList
                 className='p-1'
                 data={users}

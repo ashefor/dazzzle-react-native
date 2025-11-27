@@ -1,25 +1,20 @@
-import { View, Image, Text, KeyboardAvoidingView, Platform, ScrollView, Keyboard, TouchableOpacity, FlatList } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import icons from '@/constants/icons';
-import { YStack, ListItem, XStack, Sheet } from 'tamagui';
-import FormField from './FormField';
+import { View, Text, Platform, TouchableOpacity, Dimensions, InteractionManager } from 'react-native';
+import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ListItem, XStack } from 'tamagui';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { CountryPhoneCode } from '@/models/general';
 import { useAppSelector } from '@/hooks/reduxHooks';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { countryCodes } from '@/constants/constants';
+import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { Feather } from '@expo/vector-icons';
 
-const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
-    // const country_phone_codes = useGeneralConfig()?.country_phone_codes;
-            const { loading, appConfig } = useAppSelector(state => state.app);
-    const [country, setCountry] = React.useState('');
+
+const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
+    const { appConfig } = useAppSelector(state => state.app);
     const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>(countryCodes);
-    const [selectedCountryCode, setSelectedCountryCode] = React.useState(countryCode);
-    const [showCountryPicker, setShowCountryPicker] = React.useState(false)
-    const [countrySheetPosition, setCountrySheetPosition] = React.useState(0);
-    const [snapPoints, setSnapPoints] = useState([65, 85]);
-        const insets = useSafeAreaInsets();
+    const [search, setSearch] = useState('');
+    const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     useEffect(() => {
         if (appConfig?.country_phone_codes) {
@@ -27,107 +22,157 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: {countryCode: s
         }
     }, [appConfig?.country_phone_codes])
 
+
     useEffect(() => {
-        setSelectedCountryCode(countryCode)
-    }, [countryCode])
+        const items = appConfig?.country_phone_codes || [];
+        if (items) {
+            const lower = search.toLowerCase();
+            const filtered = items.filter((country) => country!.name.toLowerCase().includes(search.toLowerCase()))
+            setFilteredCountryCodes(filtered);
+        }
+    }, [search, appConfig?.country_phone_codes]);
 
     const selectCountryCode = (country: string) => {
-        Keyboard.dismiss();
-        setSelectedCountryCode(country);
-        onCountryCodeSelect(country);
-        setShowCountryPicker(false);
-        setCountry('')
+        searchBottomSheetModalRef.current?.dismiss();
+        InteractionManager.runAfterInteractions(() => {
+            onCountryCodeSelect(country);
+        });
     }
 
-    const filterCountries = (text: string) => {
-        setCountry(text)
-        if (text.length > 0) {
-            const filtered = appConfig?.country_phone_codes!.filter((country) => country!.name.toLowerCase().includes(text.toLowerCase()))
-            setCountrySheetPosition(1)
-            // setSnapPoints([65, 85, filtered.length * 50])
-            setFilteredCountryCodes(filtered!)
-        } else {
-            setCountrySheetPosition(0)
-            setFilteredCountryCodes(appConfig?.country_phone_codes || [])
-            setSnapPoints([65, 85])
-        }
-    }
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            // onPress={handleBlur}
+            />
+        ),
+        []
+    );
 
-    useEffect(() => {
-        const showSubscription = Keyboard.addListener("keyboardWillShow", () => setCountrySheetPosition(1));
-        const hideSubscription = Keyboard.addListener("keyboardWillHide", () => setCountrySheetPosition(0));
+    const MAX_HEIGHT_PX = useMemo(() => {
+        return Dimensions.get("screen").height * 0.8
+    }, [])
 
-        return () => {
-            showSubscription.remove();
-            hideSubscription.remove();
-        };
-    }, []);
+    const renderHeaderHandle = useCallback(
+        (props: BottomSheetHandleProps) => (
+            <BottomSheetHandle
+                {...props}
+            >
+                <View className="py-4 relative">
+
+                    <View className=' w-full'>
+                        <TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
+                            position: 'absolute',
+                            top: '50%',
+                            transform: [
+                                { translateY: '-50%' }
+                            ],
+                            left: 16,
+                            zIndex: 10,
+                            backgroundColor: 'white'
+                        }}>
+                            <Ionicons name="close-circle" size={24} color="black" />
+                        </TouchableOpacity>
+                        <Text className='font-firabold text-black text-base mx-auto text-center'>Select Country</Text>
+                    </View>
+                </View>
+                <View className='py-5 px-4'>
+                   <BottomSheetTextInput
+                            onChangeText={setSearch}
+                            clearButtonMode='while-editing' style={{
+                                height: 48,
+                                borderRadius: 8,
+                                borderWidth: 1,
+                                flex: 1,
+                                fontFamily: 'PlusJakartaSans_400Regular',
+                                fontSize: 14,
+                                borderColor: '#A6A6A9',
+                                padding: 12,
+                            }} placeholder='Search' 
+                            />
+                </View>
+            </BottomSheetHandle>
+        ),
+        []
+    );
+
+    const renderItem = useCallback(
+        ({ index, item }: { index: number, item: any }) => {
+            const isSelected = item.phone_code.toString() == countryCode;
+            return (
+                (
+                    <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className={`rounded-lg  text-black ${isSelected ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`}>
+                        <XStack gap="$3" alignItems='center' justifyContent='flex-start' flexWrap='wrap'>
+                            <Text className='text-lg text-black'>(+{item.phone_code})</Text>
+                            <Text className='text-lg text-black flex-1' style={{ wordWrap: 'break-word' }}>{item.name}</Text>
+                        </XStack>
+                    </ListItem>
+                )
+            )
+        }, [countryCode]
+    )
+
     return (
         <>
-            <TouchableOpacity className='flex-row items-center justify-end gap-0.5 min-w-[50px]' onPress={() => setShowCountryPicker(true)}>
-                <Text className='text-base text-white font-firaregular'>{selectedCountryCode ? `(+${selectedCountryCode})` : ''}</Text>
+            <TouchableOpacity className='flex-row items-center justify-end gap-0.5 min-w-[50px]' onPress={() => searchBottomSheetModalRef.current?.present()}>
+                <Text className='text-base text-black font-firaregular'>{countryCode ? `(+${countryCode})` : ''}</Text>
                 <Ionicons name="chevron-down" size={14} color="#A9A9A9" />
             </TouchableOpacity>
 
-            <Sheet
-                forceRemoveScrollEnabled={showCountryPicker}
-                modal={true}
-                open={showCountryPicker}
-                disableDrag={true}
-                snapPoints={snapPoints}
-                snapPointsMode={'percent'}
-                dismissOnSnapToBottom
-                position={countrySheetPosition}
-                onPositionChange={setCountrySheetPosition}
-                zIndex={100_000}
-                animation="medium"
+            <BottomSheetModal
+                ref={searchBottomSheetModalRef}
+                enableDynamicSizing={false}
+                maxDynamicContentSize={MAX_HEIGHT_PX}
+                snapPoints={['80%']}
+                enablePanDownToClose={true}
+                bottomInset={16}
+                handleIndicatorStyle={{
+                    backgroundColor: "red",
+                    display: "none"
+                }}
+                handleStyle={{ padding: 0 }}
+                detached={true}
+                style={{
+                    marginHorizontal: 16,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 6,
+                    elevation: 6,
+                    backgroundColor: 'yellow',
+                    borderRadius: 28,
+                }}
+                backgroundStyle={{
+                    borderRadius: 28,
+                }}
+                backdropComponent={renderBackdrop}
+                handleComponent={renderHeaderHandle}
+                keyboardBehavior="extend"
+                enableBlurKeyboardOnGesture
+                keyboardBlurBehavior='restore'
+                onDismiss={() => setSearch('')}
+                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
             >
-                <Sheet.Overlay
-                onPress={() => setShowCountryPicker(false)}
-                    animation="medium"
-                    enterStyle={{ opacity: 0 }}
-                    exitStyle={{ opacity: 0 }}
-                />
-                <Sheet.Frame paddingBottom="$5" gap="$5" backgroundColor={'#1A1A1A'}>
-                    <XStack className='bg-[#1A1A1A] p-4 pb-0' gap="$2">
-                        <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowCountryPicker(false) }} className=' absolute top-4 left-4 z-10 flex items-center justify-center pr-4'>
-                            <Ionicons name="close-circle" size={24} color="#ffffff" />
-                        </TouchableOpacity>
-                        <Text className='font-firabold text-white text-base mx-auto'>Select Country</Text>
-                    </XStack>
-                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-                        <View className='px-4'>
-                            <FormField placeholder='Search' handleChangeText={(event) => filterCountries(event)} />
-                        </View>
-                        <FlatList
-                        contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: insets.bottom + 16 }}
-                        keyExtractor={(item, index) => `${item.phone_code}-${index}`}
-                        ItemSeparatorComponent={() => <View className='h-2' />}
-                        data={filteredCountryCodes}
-                        renderItem={({ item, index }) => (
-                            <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className='bg-gray-800 rounded-lg  text-white'>
-                                <XStack gap="$3" alignItems='center'>
-                                    <Text className='text-lg text-white'>(+{item.phone_code})</Text>
-                                    <Text className='text-lg text-white'>{item.name}</Text>
-                                </XStack>
-                            </ListItem>
-                        )}
-                        />
-                        {/* <ScrollView className='p-4 flex-1' contentContainerStyle={{ flexGrow: 1 }}>
-                            <YStack gap="$2">
-                                {filteredCountryCodes.map((country, index) => (
-                                    <ListItem onPress={() => selectCountryCode(country.phone_code.toString())} key={index} className='bg-gray-800 rounded-lg  text-white'>
-                                        <XStack gap="$3" alignItems='center'>
-                                            <Text className='text-lg text-white'>(+{country.phone_code})</Text>
-                                            <Text className='text-lg text-white'>{country.name}</Text>
-                                        </XStack>
-                                    </ListItem>
-                                ))}
-                            </YStack>
-                        </ScrollView> */}
-                    </KeyboardAvoidingView>
-                </Sheet.Frame>
-            </Sheet>
+
+                <BottomSheetFlatList
+                    ItemSeparatorComponent={() => <View className='h-2' />}
+                    style={{ marginBottom: 20 }}
+                    contentContainerStyle={{
+                        paddingTop: 16,
+                        paddingHorizontal: 16,
+                        paddingBottom: 28,
+                        borderRadius: 28,
+                    }} data={filteredCountryCodes}
+                    renderItem={renderItem}
+                    keyExtractor={(_, index) => index.toString()} 
+                    ListEmptyComponent={() => <View className='h-40 w-full flex-col justify-center items-center gap-2'>
+                        <Feather name="search" size={48} color="black" />
+                        <Text className='text-center text-black text-base font-firaregular'>No country found</Text>
+                    </View>}
+                    />
+            </BottomSheetModal>
         </>
     )
 }

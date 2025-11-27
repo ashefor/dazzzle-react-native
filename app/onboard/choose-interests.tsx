@@ -4,7 +4,7 @@ import { Link, router } from 'expo-router'
 import { YStack, Progress, ScrollView, Sheet } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import { Interest, ReactionCodes } from '@/models/general'
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -88,7 +88,7 @@ const OnboardChooseInterests = () => {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
             >
-                <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full'>
+                <View style={{ paddingBottom: insets.bottom }} className=' h-full'>
                     <View className='px-4'>
                         <Progress size="$3" value={progress}>
                             <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
@@ -140,7 +140,7 @@ const OnboardChooseInterests = () => {
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-                    <View className='bg-[#1A1A1A] flex-row items-center p-4 pb-0 space-x-1' >
+                    <View className=' flex-row items-center p-4 pb-0 space-x-1' >
                         <TouchableOpacity onPress={() => setHasFinished(false)} className='z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />
                         </TouchableOpacity>

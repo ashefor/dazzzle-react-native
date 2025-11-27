@@ -5,8 +5,8 @@ import { WalletTransaction } from "@/models/subscription";
 import axiosRequest from "@/utils/axios";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import { Fragment, useEffect, useState } from "react"
-import { FlatList, View, Text, TouchableOpacity, Alert, RefreshControl } from "react-native"
+import { Fragment, useEffect, useState } from "react";
+import { FlatList, View, Text, TouchableOpacity, Alert, RefreshControl } from "react-native";
 import { Sheet } from "tamagui";
 
 export interface FinancialTransaction {
@@ -128,7 +128,7 @@ const WalletTransactions = () => {
                         exitStyle={{ opacity: 0 }}
                     />
                     <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-                        <View className='bg-[#1A1A1A] flex-row items-center  h-12 relative' >
+                        <View className=' flex-row items-center  h-12 relative' >
                             <View className='px-4' style={{ zIndex: 10 }}>
                                 <TouchableOpacity onPress={() => setSheetOpen(false)} className='z-10 flex items-center  pr-4'>
                                     <Ionicons name="close-circle" size={24} color="#ffffff" />

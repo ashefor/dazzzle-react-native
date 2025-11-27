@@ -1,5 +1,5 @@
-import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground, ActivityIndicator, RefreshControl, useWindowDimensions, TouchableOpacity } from 'react-native'
-import React, { Fragment, useCallback, useEffect, useState } from 'react'
+import { View, Text, FlatList, TouchableWithoutFeedback, ImageBackground, ActivityIndicator, RefreshControl, useWindowDimensions, TouchableOpacity } from 'react-native';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user';
 import { router, Stack } from 'expo-router';
@@ -101,7 +101,7 @@ const BlockedUsers = () => {
                         </TouchableOpacity>
                     }}
                 />
-         <View className='bg-[#1A1A1A] h-full'>
+         <View className=' h-full'>
              <FlatList
                  className='p-1'
                  data={users}

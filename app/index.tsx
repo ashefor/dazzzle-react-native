@@ -6,7 +6,6 @@ import { View, Text, ImageBackground } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
 import dayjs from 'dayjs';
-import { signUserOut } from '@/redux/thunks/authActions';
 
 
 export default function HomeScreen() {
@@ -70,7 +69,7 @@ export default function HomeScreen() {
         return <Redirect href="./landing" />
       }
     } else {
-      return <View className='h-full bg-[#1A1A1A] flex items-center justify-center p-5'>
+      return <View className='h-full  flex items-center justify-center p-5'>
         <Text className='text-white'>
           Unable to load settings
         </Text>

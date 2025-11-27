@@ -1,21 +1,20 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Sheet, XStack } from 'tamagui'
-import dayjs, { Dayjs } from 'dayjs'
-import Ionicons from '@expo/vector-icons/Ionicons'
+import React, { JSX, useCallback, useEffect, useRef, useState } from 'react'
+import dayjs from 'dayjs'
 import DateTimePicker, { DateType } from 'react-native-ui-datepicker'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
+import { Ionicons } from '@expo/vector-icons'
 
 const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBirthSelected: (selectedCountry: string) => void, dateOfBirth: string }) => {
     const [birthday, setBirthday] = useState<DateType>();
-    const [showDatePicker, setShowDatePicker] = useState(false);
     // const age18yearsFromNow = dayjs().add(18, 'year').format('YYYY-MM-DD');
     const atLeast18YearsOld = dayjs().subtract(18, 'year').format('YYYY-MM-DD');
-    const insets = useSafeAreaInsets();
+    const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     const emitSelectedDate = () => {
         onDateOfBirthSelected(birthday ? dayjs(birthday).format('YYYY-MM-DD') : '');
-        setShowDatePicker(false)
+        searchBottomSheetModalRef.current?.dismiss();
     }
 
     useEffect(() => {
@@ -26,21 +25,108 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
         }
     }, [dateOfBirth])
 
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            // onPress={handleBlur}
+            />
+        ),
+        []
+    );
+
     return (
         <>
             <View className="space-y-2">
-                <Text className='text-base text-white font-firamedium'>Birthday</Text>
-                <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
+                <Text className='text-base text-black font-firamedium'>Birthday</Text>
+                <View className='border border-[#CCC] w-full px-4 bg-[#F2F2F7] rounded-md focus:border-secondary items-center flex-row'>
                     <View
-                        className='flex-1 flex-row space-x-3 h-12 items-center font-firaregular text-white divide divide-x divide-[#A9A9A9]'>
-                        <TouchableOpacity className='flex-row items-center gap-0.5 flex-1 h-full' onPress={() => setShowDatePicker(true)}>
-                            <Text className='text-base text-white font-firaregular'>{birthday ? dayjs(birthday).format('DD MMM YYYY') : 'Select date'}</Text>
-                            {/* <Text className='text-base text-white font-firaregular'>{birthday ? birthday.toString() : 'Select date'}</Text> */}
+                        className='flex-1 flex-row space-x-3 h-12 items-center font-firaregular text-black divide divide-x divide-[#A9A9A9]'>
+                        <TouchableOpacity className='flex-row items-center gap-0.5 flex-1 h-full' onPress={() => searchBottomSheetModalRef.current?.present()}>
+                            <Text className='text-base text-black font-firaregular'>{birthday ? dayjs(birthday).format('DD MMM YYYY') : 'Select date'}</Text>
+                            {/* <Text className='text-base text-black font-firaregular'>{birthday ? birthday.toString() : 'Select date'}</Text> */}
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
-            <Sheet
+            <BottomSheetModal
+                ref={searchBottomSheetModalRef}
+                enableDynamicSizing
+                enablePanDownToClose={true}
+                bottomInset={16}
+                handleIndicatorStyle={{
+                    backgroundColor: "red",
+                    display: "none"
+                }}
+                handleStyle={{ padding: 0 }}
+                detached={true}
+                style={{
+                    marginHorizontal: 16,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 6,
+                    elevation: 6,
+                    backgroundColor: 'yellow',
+                    borderRadius: 28,
+                }}
+                backgroundStyle={{
+                    borderRadius: 28,
+                }}
+                backdropComponent={renderBackdrop}
+                keyboardBehavior="extend"
+                keyboardBlurBehavior='restore'
+            >
+
+                <BottomSheetView>
+                    <View className="py-4 relative">
+
+                        <View className=' w-full'>
+                            <TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
+                                position: 'absolute',
+                                top: '50%',
+                                transform: [
+                                    { translateY: '-50%' }
+                                ],
+                                left: 16,
+                                zIndex: 10,
+                                backgroundColor: 'white'
+                            }}>
+                                <Ionicons name="close-circle" size={24} color="black" />
+                            </TouchableOpacity>
+                            <Text className='font-firabold text-black text-base mx-auto text-center'>Select Date of Birth</Text>
+                        </View>
+                    </View>
+                    <View style={{
+                        paddingTop: 8,
+                        paddingHorizontal: 12,
+                        paddingBottom: 28,
+                        flex: 1
+                    }}>
+                        <DateTimePicker
+                            calendarTextStyle={{ fontSize: 16 }}
+                            headerTextStyle={{ fontSize: 16 }}
+                            weekDaysTextStyle={{ fontSize: 16 }}
+                            selectedItemColor='#DF3FE5'
+                            maxDate={atLeast18YearsOld}
+                            headerButtonColor="#1A1A1A"
+                            monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
+                            yearContainerStyle={{ backgroundColor: '#1A1A1A' }}
+                            mode="single"
+                            date={birthday}
+                            onChange={(params) => setBirthday(params.date)}
+                        />
+                        <View className='flex-row items-center justify-end'>
+                            <TouchableOpacity className='py-2 px-4 border border-primary rounded-full' onPress={emitSelectedDate}>
+                                <Text className='text-base text-primary font-firaregular'>Done</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </BottomSheetView>
+            </BottomSheetModal>
+            {/* <Sheet
                 forceRemoveScrollEnabled={showDatePicker}
                 modal={true}
                 open={showDatePicker}
@@ -84,7 +170,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                         </View>
                     </View>
                 </Sheet.Frame>
-            </Sheet>
+            </Sheet> */}
         </>
     )
 }

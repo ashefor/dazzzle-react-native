@@ -1,19 +1,19 @@
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
 import { Form, YStack, XStack, Sheet, } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import Ionicons from '@expo/vector-icons/Ionicons';
-import * as WebBrowser from 'expo-web-browser';
+import Ionicons from '@expo/vector-icons/Ionicons'
+import * as WebBrowser from 'expo-web-browser'
 import { isValidEmail } from '@/utils/validators'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
-import Checkbox from 'expo-checkbox';
+import Checkbox from 'expo-checkbox'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type SigUpForm = {
     username: string;
@@ -25,6 +25,7 @@ type SigUpForm = {
 
 const SignIn = () => {
     const [isFormValid, setIsFormValid] = useState(false);
+    const insets = useSafeAreaInsets();
     const { show, hide } = useLoader();
     const [hasCreatedAccount, setHasCreatedAccount] = useState(false);
     const [errors, setErrors] = useState<SigUpForm | Record<string, string>>({});
@@ -119,17 +120,17 @@ const SignIn = () => {
     }
     return (
         <>
-            <SafeAreaView style={{ flex: 1 }} className='bg-primary h-full'>
+            <View style={{ flex: 1 }} className='h-full'>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                        <View className='w-full min-h-[85vh] justify-center px-4 my-6'>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}>
+                        <View className='w-full h-full justify-center my-6' style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>
                             <Form
                                 gap="$7"
                             >
                                 <YStack>
                                     <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                    <Text className='text-2xl text-white font-semibold mt-10 font-firabold'>Create an Account</Text>
-                                    <Text className='text-sm text-white font-semibold font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
+                                    <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Create an Account</Text>
+                                    <Text className='text-sm text-black font-semibold font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
                                 </YStack>
                                 <YStack gap="$3">
                                     <YStack gap="$1">
@@ -137,7 +138,7 @@ const SignIn = () => {
                                             title="Username"
                                             value={form.username}
                                             placeholder='Enter username'
-                                            handleChangeText={(text: string) => handleInputChange('username', text)}
+                                            onChangeText={(text: string) => handleInputChange('username', text)}
                                         />
                                         {hasTyped.username && errors.username && <Text className='text-xs text-red-500 font-firaregular'>{errors.username}</Text>}
                                     </YStack>
@@ -146,7 +147,7 @@ const SignIn = () => {
                                             title="Email"
                                             value={form.email}
                                             placeholder='Enter email'
-                                            handleChangeText={(text: string) => handleInputChange('email', text)}
+                                            onChangeText={(text: string) => handleInputChange('email', text)}
                                         />
                                         {hasTyped.email && errors.email && <Text className='text-xs text-red-500 font-firaregular'>{errors.email}</Text>}
                                     </YStack>
@@ -156,7 +157,7 @@ const SignIn = () => {
                                             value={form.password}
                                             placeholder='Enter password'
                                             secureTextEntry
-                                            handleChangeText={(text: string) => handleInputChange('password', text)}
+                                            onChangeText={(text: string) => handleInputChange('password', text)}
                                         />
                                         {hasTyped.password && errors.password && <Text className='text-xs text-red-500 font-firaregular'>{errors.password}</Text>}
                                     </YStack>
@@ -166,38 +167,27 @@ const SignIn = () => {
                                             value={form.repeat_password}
                                             placeholder='Confirm password'
                                             secureTextEntry
-                                            handleChangeText={(text: string) => handleInputChange('repeat_password', text)}
+                                            onChangeText={(text: string) => handleInputChange('repeat_password', text)}
                                         />
                                         {hasTyped.repeat_password && errors.repeat_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.repeat_password}</Text>}
                                     </YStack>
                                 </YStack>
                                 <YStack>
                                     <XStack alignItems="center" gap="$3">
-                                        {/* <Checkbox checked={form.accepted_terms} onCheckedChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} size="$4" className='bg-primary border-2 border-white'>
+                                        {/* <Checkbox checked={form.accepted_terms} onCheckedChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} size="$4" className='bg-primary border-2 border-black'>
                                             <Checkbox.Indicator>
                                                 <MaterialCommunityIcons name="check-bold" size={18} color="#ffffff" />
                                             </Checkbox.Indicator>
                                         </Checkbox> */}
                                         <Checkbox value={form.accepted_terms} onValueChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} />
-
-                                        {/* <BouncyCheckbox
-                                        isChecked={form.accepted_terms}
-  size={25}
-  fillColor="#DD3FE5"
-  unFillColor="#1A1A1A"
-  text="Custom Checkbox"
-  iconStyle={{ borderColor: "white" }}
-  innerIconStyle={{ borderWidth: 2 }}
-  onPress={(checked: boolean) => handleInputChange('accepted_terms', checked)}
-/> */}
                                         <View className='flex flex-wrap flex-1 flex-row gap-1'>
-                                            <Text className='text-base text-white font-firaregular'>I accept all</Text>
+                                            <Text className='text-base text-black font-firaregular'>I accept all</Text>
                                             <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
-                                                <Text className='text-base text-tertiary font-firaregular'>terms and conditions</Text>
+                                                <Text className='text-base text-primary font-firaregular underline'>terms and conditions</Text>
                                             </TouchableHighlight>
-                                            <Text className='text-base text-white font-firaregular'>and</Text>
+                                            <Text className='text-base text-black font-firaregular'>and</Text>
                                             <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
-                                                <Text className='text-base text-tertiary font-firaregular'>privacy policy</Text>
+                                                <Text className='text-base text-primary font-firaregular underline'>privacy policy</Text>
                                             </TouchableHighlight>
                                         </View>
                                     </XStack>
@@ -208,15 +198,15 @@ const SignIn = () => {
                                 </Form.Trigger>
                             </Form>
                             <View className='justify-center pt-5 flex-row gap-2'>
-                                <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
+                                <Text className='text-sm text-black font-firaregular'>Already have an account?</Text>
                                 <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
-                                    <Text className='text-sm text-tertiary font-firaregular underline'>Sign In</Text>
+                                    <Text className='text-sm text-primary font-firaregular underline'>Sign In</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
-            </SafeAreaView>
+            </View>
             <Sheet
                 forceRemoveScrollEnabled={hasCreatedAccount}
                 modal={true}
@@ -235,7 +225,7 @@ const SignIn = () => {
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-                    <View className='bg-[#1A1A1A] flex-row items-center p-4 pb-0 space-x-1' >
+                    <View className=' flex-row items-center p-4 pb-0 space-x-1' >
                         <TouchableOpacity onPress={() => setHasCreatedAccount(false)} className='z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />
                         </TouchableOpacity>

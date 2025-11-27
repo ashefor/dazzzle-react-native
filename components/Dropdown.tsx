@@ -106,19 +106,19 @@
 // }
 
 // export default Dropdown
-import { 
-    View, 
-    Text, 
-    Platform, 
-    TouchableOpacity, 
-    FlatList, 
-    Modal, 
-    TouchableWithoutFeedback, 
-    Dimensions 
+import {
+    View,
+    Text,
+    Platform,
+    TouchableOpacity,
+    FlatList,
+    Modal,
+    TouchableWithoutFeedback,
+    Dimensions
 } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { XStack, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OptionItem = {
@@ -218,7 +218,7 @@ const Dropdown = ({
                                 <FlatList
                                     keyExtractor={(item, index) => index.toString()}
                                     // ListHeaderComponent={() => (
-                                    //     <XStack className='bg-[#1a1a1a] pb-4' alignItems='center' justifyContent='center'>
+                                    //     <XStack className=' pb-4' alignItems='center' justifyContent='center'>
                                     //         <Text className='text-white text-lg font-firamedium'>Select one </Text>
                                     //     </XStack>
                                     // )}

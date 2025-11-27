@@ -1,11 +1,10 @@
-import { Text, View, TouchableOpacity, StyleSheet, GestureResponderEvent, ViewStyle, TextStyle } from 'react-native'
-import React, { forwardRef } from 'react'
-import { LinearGradient } from 'expo-linear-gradient';
+import { Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import React, { forwardRef } from 'react';
 
 
 interface CustomButtonProps {
   title: string;
-  handlePress: (event: GestureResponderEvent) => void;
+  handlePress: () => void;
   wrapperStyles?: ViewStyle;
   containerStyles?: string;
   textStyles?: TextStyle;

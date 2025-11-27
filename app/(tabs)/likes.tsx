@@ -3,7 +3,7 @@ import MyDislikes from '@/components/MyDislikes';
 import MyLikes from '@/components/MyLikes';
 import WhoLikesMe from '@/components/WhoLikesMe';
 import { Stack } from 'expo-router';
-import React from 'react'
+import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { TabView, SceneMap, NavigationState, Route, SceneRendererProps, TabBar, TabDescriptor } from 'react-native-tab-view';
 
@@ -88,7 +88,7 @@ const Likes = () => {
                        },
                     }}
                 />
-                {/* <View className='p-4 bg-[#1A1A1A]'>
+                {/* <View className='p-4 '>
                 <Text className='text-white font-firaregular'>{pageDetails.description}</Text>
                 </View> */}
                 <TabView
@@ -104,7 +104,7 @@ const Likes = () => {
             onIndexChange={_handleIndexChange}
             initialLayout={{ width: Dimensions.get('window').width }}
             renderTabBar={renderTabBar}
-            className='bg-[#1A1A1A] shadow-none'
+            className=' shadow-none'
             style={styles.container}
         />
         </>

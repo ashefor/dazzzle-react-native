@@ -1,36 +1,111 @@
-import { Image, InputModeOptions, Platform, ReturnKeyType, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
-import Icons from '@/constants/icons';
+import { NativeSyntheticEvent, Platform, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Animated from 'react-native-reanimated';
 
-const FormField = ({title, value, secureTextEntry, handleChangeText, otherStyles, keyBoardType, returnKeyType, placeholder, ...props}: {title?: string, value?: string, secureTextEntry?: boolean, handleChangeText: (value: string) => void, otherStyles?: string, keyBoardType?: InputModeOptions, returnKeyType?: ReturnKeyType, placeholder?: string}) => {
-    const [showPassword, setShowPassword] = useState(false);
+
+interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
+  title: string;
+  leftIcon?: React.ReactElement | null;
+  secureTextEntry?: boolean;
+  errorMessage?: string | null;
+  showCustomError?: boolean;
+  containerStyle?: StyleProp<ViewStyle> | undefined;
+  inputStyle?: StyleProp<TextStyle> | undefined;
+  labelStyle?: StyleProp<TextStyle> | undefined;
+  value: string, isValid?: boolean,
+  showErrorIcon?: boolean;
+}
+
+
+const FormField: React.FC<CustomTextInputProps> = ({
+  title,
+  leftIcon,
+  onChangeText,
+  secureTextEntry = false,
+  placeholder,
+  containerStyle,
+  inputStyle,
+  labelStyle,
+  showCustomError,
+  errorMessage,
+  onBlur,
+  value,
+  isValid,
+  showErrorIcon,
+  ...restProps
+}) => {
+  const [isTouched, setIsTouched] = React.useState<boolean>(false);
+  const [isSecureTextEntry, setIsSecureTextEntry] = React.useState<boolean>(true);
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  const labelColor = "#333";
+
+  function getBorderColor() {
+    if (!isTouched) return "#ccc";
+    if (isFocused) return "#DD3FE5";
+    return showError() ? '#8E1F0B' : "#ccc";
+  }
+
+  function getLabelColor() {
+    if (!isTouched) return labelColor;
+    if (isFocused) return "#DD3FE5";
+    return showError() ? '#8E1F0B' : labelColor;
+  }
+
+  function getTextColor() {
+    if (!isTouched) return "#303030";
+    return showError() ? '#8E1F0B' : "#303030";
+  }
+
+  function showError() {
+    return showCustomError != undefined ? showCustomError && isTouched : (!isValid) && isTouched;
+  }
+
+  const handleFocus = () => setIsFocused(true);
+
+  const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    setIsTouched(true);
+    setIsFocused(false);
+    onBlur && onBlur(e);
+  };
+
 
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
-      {title && <Text className='text-base text-white font-firamedium capitalize'>{title}</Text>}
-      <View className='border border-transparent w-full px-4 bg-[#5B5B5B] rounded-md focus:border-secondary items-center flex-row'>
-        <TextInput
-        style={{lineHeight: Platform.OS == 'ios' ? 0 : undefined}}
-        className='flex-1 h-12 font-firaregular text-white text-base'
-        defaultValue={value}
-        inputMode={keyBoardType || 'text'}
-        onChangeText={handleChangeText}
-        autoCapitalize='none'
-        placeholder={placeholder}
-        placeholderTextColor={"#fbfbfb73"}
-        selectionColor={'#DD3FE5'}
-        returnKeyType={returnKeyType || 'done'}
-        secureTextEntry={(title === 'Password' || secureTextEntry) && !showPassword}
-        {...props}
-        />
-        {(title === 'Password' || secureTextEntry) && (
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}> 
-          <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={24} color="white" />
-            {/* <Image source={showPassword ? Icons.eye : Icons.eyeHide} className='w-6 h-6' resizeMode='contain'/> */}
-          </TouchableOpacity>
-        )}
+    <View className='space-y-1'>
+      <View className={`space-y-2 ${containerStyle}`}>
+        {title && <Text className="text-black text-sm font-firaregular" style={{ color: getLabelColor() }}>{title}</Text>}
+        <View className='border w-full px-4 bg-[#F2F2F7] rounded-md focus:border-primary items-center flex-row' style={{ borderColor: getBorderColor() }}>
+          <TextInput
+            style={{ lineHeight: Platform.OS == 'ios' ? 0 : undefined }}
+            className='flex-1 h-12 font-firaregular text-black text-base'
+            value={value}
+            onChangeText={onChangeText}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            autoComplete='off'
+            autoCorrect={false}
+            autoCapitalize="none"
+            importantForAutofill='no'
+            placeholderTextColor={"#5B5B5B3A"}
+            selectionColor={'#DD3FE5'}
+            secureTextEntry={secureTextEntry && isSecureTextEntry}
+            {...restProps}
+          />
+          {(secureTextEntry) && (
+            <TouchableOpacity onPress={() => setIsSecureTextEntry(!isSecureTextEntry)}>
+              <Ionicons name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} size={24} color="black" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
+      {showError() && (
+        <Animated.View className='flex-row gap-x-2 items-center'>
+          <Text className='text-xs text-red-500 font-firaregular'>
+            {errorMessage ? errorMessage : 'Invalid input'}
+          </Text>
+        </Animated.View>
+      )}
     </View>
   )
 }

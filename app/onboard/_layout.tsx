@@ -1,7 +1,6 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import React from 'react'
-import { router, Stack } from 'expo-router'
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import { Stack } from 'expo-router'
 
 const AuthLayout = () => {
   return (
@@ -11,11 +10,10 @@ const AuthLayout = () => {
         headerStyle: {
           backgroundColor: '#1A1A1A'
         },
-        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-          <ArrowBackIcon />
-        </TouchableOpacity>
-      }}>
-        <Stack.Screen name='bio-data' options={{
+        headerShown: false,
+      }}
+      >
+        {/* <Stack.Screen name='bio-data' options={{
           headerLeft: () => <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')} className='flex items-center justify-center pr-4 w-9 h-8'>
             <ArrowBackIcon />
           </TouchableOpacity>
@@ -24,7 +22,7 @@ const AuthLayout = () => {
           headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
             <ArrowBackIcon />
           </TouchableOpacity>
-        }} />
+        }} /> */}
       </Stack>
     </>
   )

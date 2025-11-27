@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, TextInput, Pressable, Keyboard, FlatList, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, TextInput, Keyboard, FlatList, Alert } from 'react-native'
 import React, { memo, useCallback, useEffect, useState } from 'react'
 import { YStack, XStack, Form, Sheet, ListItem } from 'tamagui'
 import Feather from '@expo/vector-icons/Feather'
@@ -8,8 +8,8 @@ import CustomButton from './CustomButton'
 import FormField from './FormField'
 import { UserProfileData, UserSpecificationsData } from '@/models/user'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
-import DateOfBirthPicker from './DateOfBirthPicker';
-import axiosRequest from '@/utils/axios';
+import DateOfBirthPicker from './DateOfBirthPicker'
+import axiosRequest from '@/utils/axios'
 import SelectPicker from './SelectPicker'
 import { educationOptions, preferredLanguageOptions, relationshipStatusOptions, workStatusOptions } from '@/constants/constants'
 import Toast from './toast/toast'
@@ -290,8 +290,8 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame gap="$5" backgroundColor={'#1A1A1A'}>
-                    <SafeAreaView className='bg-[#1A1A1A] h-full'>
-                        <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                    <SafeAreaView className=' h-full'>
+                        <View className=' flex-row items-center justify-center px-4 py-3 relative'>
                             <TouchableOpacity onPress={() => setEditBioDataModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
                                 <Ionicons name="close" size={24} color="#ffffff" />
                             </TouchableOpacity>
@@ -305,13 +305,13 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                                             title="First Name"
                                             value={basicInfoForm.first_name}
                                             placeholder='Enter first name'
-                                            handleChangeText={(text: string) => updateBasicInfoForm('first_name', text)}
+                                            onChangeText={(text: string) => updateBasicInfoForm('first_name', text)}
                                         />
                                         <FormField
                                             title="Last Name"
                                             value={basicInfoForm.last_name}
                                             placeholder='Enter last name'
-                                            handleChangeText={(text: string) => updateBasicInfoForm('last_name', text)}
+                                            onChangeText={(text: string) => updateBasicInfoForm('last_name', text)}
                                         />
                                         <View className='space-y-2'>
                                             <Text className='text-base text-white font-firamedium'>Bio</Text>
@@ -391,7 +391,7 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame paddingBottom="$5" gap="$1" backgroundColor={'#1A1A1A'}>
-                    <View className='bg-[#1A1A1A] p-4 flex-row justify-center'>
+                    <View className=' p-4 flex-row justify-center'>
                         <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowRelationShipTypePicker(false) }} className=' absolute top-4 left-4 z-10 flex items-center justify-center pr-4'>
                             <Ionicons name="close-circle" size={24} color="#ffffff" />
                         </TouchableOpacity>
@@ -433,8 +433,8 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                 />
 
                 <Sheet.Frame paddingBottom="$5" gap="$1" backgroundColor={'#1A1A1A'}>
-                    <View className='bg-[#1A1A1A] flex-1'>
-                        <View className='bg-[#1A1A1A] p-4'>
+                    <View className=' flex-1'>
+                        <View className=' p-4'>
                             <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowInterestPicker(false) }} className='absolute top-4 left-4 z-10 flex items-center justify-center pr-4'>
                                 <Ionicons name="close-circle" size={24} color="#ffffff" />
                             </TouchableOpacity>
@@ -566,8 +566,8 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
 //                     exitStyle={{ opacity: 0 }}
 //                 />
 //                 <Sheet.Frame gap="$5" backgroundColor={'#1A1A1A'}>
-//                     <SafeAreaView className='bg-[#1A1A1A] h-full'>
-//                         <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+//                     <SafeAreaView className=' h-full'>
+//                         <View className=' flex-row items-center justify-center px-4 py-3 relative'>
 //                             <TouchableOpacity onPress={() => setEditSpecificationModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
 //                                 <Ionicons name="close" size={24} color="#ffffff" />
 //                             </TouchableOpacity>

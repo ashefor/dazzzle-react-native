@@ -1,9 +1,6 @@
-import { View, Text, LayoutRectangle, ScrollView, Dimensions, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native'
-import React, { useState } from 'react'
-import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, SizableText, styled, XStack, RadioGroup, SizeTokens, Label } from 'tamagui'
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import FormField from '@/components/FormField';
-import CustomButton from '@/components/CustomButton';
+import { View, LayoutRectangle } from 'react-native';
+import React from 'react';
+import { StackProps, YStack, TabLayout, TabsTabProps, Tabs, AnimatePresence, SizableText, styled } from 'tamagui';
 import UsersBasicFilter from '@/components/UsersBasicFilter';
 
 const AnimatedYStack = styled(YStack, {
@@ -214,7 +211,7 @@ const TabsAdvancedBackground = () => {
 const FilterUsers = () => {
     
     return (
-        <View className='bg-[#1A1A1A] h-full px-4'>
+        <View className=' h-full px-4'>
             {/* <TabsAdvancedBackground /> */}
         {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
            

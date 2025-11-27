@@ -1,8 +1,6 @@
-import { View, Text, ScrollView, TouchableHighlight, TouchableOpacity, Switch } from 'react-native'
-import React, { Fragment, useEffect, useState } from 'react'
-import { Checkbox, Label, XStack, YStack } from 'tamagui';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import React, { Fragment, useEffect, useState } from 'react';
+import { XStack, YStack } from 'tamagui';
 import CustomButton from '@/components/CustomButton';
 import { getItem, setItem } from '@/utils/asyncStorage';
 import Toast from '@/components/toast/toast';
@@ -59,7 +57,7 @@ const settings = () => {
                     </TouchableOpacity>
                 }}
             />
-            <View className='bg-[#1A1A1A] h-full'>
+            <View className=' h-full'>
                 <ScrollView>
                     <View className='px-4 py-5'>
                         <View className='mb-5'>

@@ -81,7 +81,7 @@ const OnboardRelationshipType = () => {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-            <View style={{ paddingBottom: insets.bottom }} className='bg-[#1A1A1A] h-full'>
+            <View style={{ paddingBottom: insets.bottom }} className=' h-full'>
                 <View className='px-4'>
                     <Progress size="$3" value={progress}>
                         <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />

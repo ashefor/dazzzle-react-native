@@ -1,38 +1,23 @@
-import { FontAwesome6 } from "@expo/vector-icons"
-import * as React from "react"
 import Svg, { Path } from "react-native-svg"
+import * as React from "react"
 const ArrowBackIcon = (props: any) => (
-  // <Svg
-  //   xmlns="http://www.w3.org/2000/svg"
-  //   width={8}
-  //   height={14}
-  //   fill="none"
-  //   {...props}
-  // >
-  //   <Path
-  //     stroke="#fff"
-  //     strokeLinecap="round"
-  //     strokeLinejoin="round"
-  //     strokeWidth={1.5}
-  //     d="M7 1S1 5.419 1 7c0 1.581 6 6 6 6"
-  //   />
-  // </Svg>
-  // <Svg
-  //   xmlns="http://www.w3.org/2000/svg"
-  //   fill="none"
-  //   stroke="#fff"
-  //   strokeWidth={1.5}
-  //   viewBox="0 0 24 24"
-  //   {...props}
-  // >
-  //   <Path
-  //     strokeLinecap="round"
-  //     strokeLinejoin="round"
-  //     d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-  //   />
-  // </Svg>
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={24}
+    height={24}
+    fill="none"
+    {...props}
+  >
+    <Path
+      stroke="#141B34"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1.5}
+      d="M15 6s-6 4.419-6 6c0 1.581 6 6 6 6"
+    />
+  </Svg>
 
-  <FontAwesome6 name="angle-left" size={24} color="white" />
+  // <FontAwesome6 name="angle-left" size={24} color="" />
 )
 export default ArrowBackIcon
 

@@ -1,7 +1,6 @@
 import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, RefreshControl, ActivityIndicator, Alert } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import images from '@/constants/images'
 import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
 import { LikedUserProfile } from '@/models/user'
@@ -125,7 +124,7 @@ const MutualLikes = () => {
     }
 
     return (
-        <View className='bg-[#1A1A1A] h-full'>
+        <View className=' h-full'>
             <FlatList
                 className='p-1'
                 data={users}

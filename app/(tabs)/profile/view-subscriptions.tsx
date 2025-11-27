@@ -1,11 +1,11 @@
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { View, Text, ScrollView } from "react-native";
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs';
 
 const ViewSubscriptions = () => {
   const { currentSubscription, isActive } = useAppSelector(state => state.subscription);
     return (
-        <ScrollView className='h-full bg-[#1A1A1A]'>
+        <ScrollView className='h-full '>
             <View className='h-full p-4'>
                 <View className="p-4 bg-[#FFFFFF1A] rounded-lg">
                     <Text className="text-white text-sm font-firamedium">Active Subscription</Text>

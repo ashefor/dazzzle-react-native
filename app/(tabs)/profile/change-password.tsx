@@ -1,4 +1,4 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native'
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import CustomButton from '@/components/CustomButton';
 import FormField from '@/components/FormField';
@@ -92,7 +92,7 @@ const ChangePasswordScreen = () => {
                         </TouchableOpacity>
                     }}
                 />
-                 <View className='bg-[#1A1A1A] h-full'>
+                 <View className=' h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
                 <ScrollView>
                     <View className='px-4 py-5'>
@@ -104,7 +104,7 @@ const ChangePasswordScreen = () => {
                                         placeholder='Enter username'
                                         value={form.current_password}
                                         secureTextEntry
-                                        handleChangeText={(text: string) => handleInputChange('current_password', text)}
+                                        onChangeText={(text: string) => handleInputChange('current_password', text)}
                                     />
                                     {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
                                 </YStack>
@@ -114,7 +114,7 @@ const ChangePasswordScreen = () => {
                                         placeholder='Enter username'
                                         value={form.new_password}
                                         secureTextEntry
-                                        handleChangeText={(text: string) => handleInputChange('new_password', text)}
+                                        onChangeText={(text: string) => handleInputChange('new_password', text)}
                                     />
                                     {hasTyped.new_password && errors.new_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_password}</Text>}
                                 </YStack>
@@ -124,7 +124,7 @@ const ChangePasswordScreen = () => {
                                         value={form.new_password_confirmation}
                                         placeholder='Enter password'
                                         secureTextEntry
-                                        handleChangeText={(text: string) => handleInputChange('new_password_confirmation', text)}
+                                        onChangeText={(text: string) => handleInputChange('new_password_confirmation', text)}
                                     />
                                     {hasTyped.new_password_confirmation && errors.new_password_confirmation && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_password_confirmation}</Text>}
                                 </YStack>

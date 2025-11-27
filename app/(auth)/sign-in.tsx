@@ -1,158 +1,95 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {router } from 'expo-router'
-import { useGlobalContext } from '@/context/GlobalProvider'
+import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { Form, YStack } from 'tamagui'
+import { YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import { isValidUsernameOrEmail } from '@/utils/validators'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
+import * as yup from 'yup'
+import { Formik } from 'formik'
 
 const SignIn = () => {
     const dispatch = useAppDispatch();
-    const { loading, isProfileCompleted, userInfo, error } = useAppSelector(state => state.auth);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [status, setStatus] = useState<'off' | 'submitting' | 'submitted'>('off');
-    const [isFormValid, setIsFormValid] = useState(false);
-    const [form, setForm] = useState({
-        email_or_username: '',
-        password: ''
-    })
-    const [hasTyped, setHasTyped] = useState<{ email_or_username: boolean; password: boolean }>({
-        email_or_username: false,
-        password: false
-    });
+    const { loading } = useAppSelector(state => state.auth);
 
-    useEffect(() => {
-        if (hasTyped.email_or_username || hasTyped.password) {
-            const timer = setTimeout(validateForm, 300); // Delay validation after typing
-            return () => clearTimeout(timer);
-        }
-    }, [form.email_or_username, form.password])
-
-    const validateForm = () => {
-        let errors: { [key: string]: string } = {};
-        if (!isValidUsernameOrEmail(form.email_or_username) || !form.email_or_username) {
-            errors.email_or_username = 'Email or username is required';
-        }
-        if (!form.password || form.password.length < 6) {
-            errors.password = 'Password is required';
-        }
-        setErrors(errors);
-        setIsFormValid(Object.keys(errors).length === 0);
-    }
-
-    const handleInputChange = (field: string, value: string) => {
-        setForm(prev => ({ ...prev, [field]: value }));
-
-        // Mark field as touched
-        setHasTyped(prev => ({ ...prev, [field]: true }));
-    };
-
-    const submit = async () => {
-        if (!isFormValid) {
-            return Alert.alert('Error', 'Please fill in all fields')
-        }
-        // setIsSubmitting(true);
-        // try {
-        //     const {data} = await axiosRequest.post(API_URL + '/user/login-process', form);
-        //     const authApiResponse = data as AuthApiResponse;
-        //     console.log('authApiResponse', authApiResponse);
-        //     const user = authApiResponse.data.auth_info;
-        //     const token = authApiResponse.data.access_token;
-        //     const isProfileComplete = authApiResponse && authApiResponse.data && authApiResponse.data.auth_info? authApiResponse.data.auth_info.isProfileComplete : false;
-        //     await setItem('dazzzle-user', user);
-        //     await setItem('dazzzle-token', token);
-        //     setUser(user);
-        //     setToken(token);
-        //     if (isProfileComplete) {
-        //         const isPremium = user.profile.is_premium;
-        //         const userSubscription = authApiResponse.data.userSubscription; 
-        //         if (isPremium || userSubscription) {
-        //             await setItem('profileCompletion', 'completed');
-        //             router.replace('/(tabs)/discover');
-        //         } else {
-        //             router.replace('../subscription');
-        //         }
-        //     } else {
-        //         await setItem('profileCompletion', 'incomplete');
-        //         router.replace('/onboard/bio-data');
-        //     }
-        //     setIsSubmitting(false);
-        // } catch (error: any) {
-        //     setIsSubmitting(false);
-        //     Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');
-        // } finally {
-        //     setIsSubmitting(false);
-        // }
-        dispatch(userLogin(form));
-    }
-
-    useEffect(() => {
-        if (error) {
-            Alert.alert('Error', error ? error : 'Failed to log in');
-        }
-    },[error])
-
-    useEffect(() => {
-        if (userInfo) {
-            if (isProfileCompleted) {
-                if (userInfo.is_premium) {
-                    router.replace('/(tabs)/discover');
+    const logUserIn = async ({ password, email_or_username }: { password: string; email_or_username: string }) => {
+        try {
+            const { user, isProfileComplete } = await dispatch(userLogin({ email_or_username, password })).unwrap();
+            if (user) {
+                if (!isProfileComplete) {
+                    if (user.is_premium) {
+                        router.replace('/(tabs)/discover');
+                    } else {
+                        router.replace('/paywall');
+                    }
                 } else {
-                    router.replace('/paywall');
+                    router.replace('/onboard');
                 }
-            } else {
-                router.replace('/onboard/bio-data');
             }
+        } catch (error) {
+            Alert.alert('Error', error ? String(error) : 'Failed to log in');
         }
-    }, [userInfo, isProfileCompleted])
+    }
 
     return (
-        <SafeAreaView style={{ flex: 1 }} className='bg-primary h-full'>
+        <SafeAreaView style={{ flex: 1 }} className=' h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                    <View className='w-full min-h-[85vh] justify-center px-4 my-6'>
-                        <Form
-                            gap="$7"
-                        >
-                            <YStack>
-                                <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                <Text className='text-2xl text-white font-semibold mt-10 font-firabold'>Sign In</Text>
-                                <Text className='text-sm text-white font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
-                            </YStack>
-                            <YStack gap="$3">
-                                <YStack gap="$1">
-                                    <FormField
-                                        title="Username"
-                                        value={form.email_or_username}
-                                        placeholder='Enter username'
-                                        handleChangeText={(text: string) => handleInputChange("email_or_username", text)}
-                                    />
-                                    {hasTyped.email_or_username && errors.email_or_username && <Text className='text-xs text-red-500 font-firaregular'>{errors.email_or_username}</Text>}
-                                </YStack>
-                                <YStack gap="$1">
-                                    <FormField
-                                        title="Password"
-                                        value={form.password}
-                                        placeholder='Enter password'
-                                        handleChangeText={(text: string) => handleInputChange("password", text)}
-                                    />
-                                    {hasTyped.password && errors.password && <Text className='text-xs text-red-500 font-firaregular'>{errors.password}</Text>}
-                                </YStack>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+                    <View className='w-full h-full justify-between'>
+                         <Formik
+                        initialValues={{ password: '', email_or_username: '' }}
+                        onSubmit={logUserIn}
+                        validationSchema={signInValidationSchema}
+                    >
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {
+                            return (
+                                <View className='flex-1 '>
+                                    <YStack>
+                                        <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
+                                        <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
+                                        <Text className='text-sm text-black font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
+                                    </YStack>
+                                    <YStack gap="$3" mt={20} mb={20}>
+                                        <FormField
+                                                editable={!loading}
+                                                title="Username"
+                                                placeholder='Enter username'
+                                                onChangeText={handleChange('email_or_username')}
+                                                onBlur={handleBlur('email_or_username')}
+                                                showCustomError={errors.email_or_username ? true : false}
+                                                errorMessage={errors.email_or_username}
+                                                value={values.email_or_username}
+                                            />
+                                        <FormField
+                                                title="Password"
+                                                editable={!loading}
+                                                placeholder='Enter password'
+                                                onChangeText={handleChange('password')}
+                                                onBlur={handleBlur('password')}
+                                                secureTextEntry
+                                                showCustomError={errors.password ? true : false}
+                                                value={values.password}
+                                                errorMessage={errors.password}
+                                            />
 
-                            </YStack>
-                            <Form.Trigger asChild disabled={status !== 'off'}>
-                                <CustomButton disabled={loading} title={loading ? 'Loading...' : 'Sign In'} handlePress={submit} />
-                            </Form.Trigger>
-                        </Form>
+                                    </YStack>
+                                    <View className='mt-auto'>
+                                        <CustomButton disabled={loading || !isValid} title={loading ? 'Loading...' : 'Sign In'} handlePress={handleSubmit} />
+                                    </View>
+
+                                </View>
+                            )
+                        }}
+
+
+                    </Formik>
                         <View className='justify-center pt-5 flex-row gap-2'>
-                            <Text className='text-sm text-white font-firaregular'>Don't have an account?</Text>
+                            <Text className='text-sm text-black font-firaregular'>Don't have an account?</Text>
                             <TouchableOpacity onPress={() => router.replace('/(auth)/sign-up')}>
-                                <Text className='text-sm text-tertiary font-firaregular underline'>Create an Account</Text>
+                                <Text className='text-sm text-primary font-firaregular underline'>Create an Account</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -164,4 +101,16 @@ const SignIn = () => {
 
 export default SignIn
 
-const styles = StyleSheet.create({})
+const signInValidationSchema = yup.object().shape({
+    password: yup
+        .string()
+        .min(8, ({ min }) => `Password must be at least ${min} characters`)
+        .required('Password is required'),
+    email_or_username: yup
+        .string()
+        .matches(
+            /^(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|[A-Z0-9._-]{3,30})$/i,
+            "Please enter a valid email or username"
+        )
+        .required("Username is required"),
+})

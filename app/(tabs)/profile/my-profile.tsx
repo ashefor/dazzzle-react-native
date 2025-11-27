@@ -1,5 +1,5 @@
-import { Text, View, TouchableOpacity, Alert, SafeAreaView as SafeAreaViewIOS, Pressable, Platform } from 'react-native';
-import React, { Fragment, useCallback, useEffect, useState } from 'react'
+import { Text, View, TouchableOpacity, Alert } from 'react-native';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import { Avatar, XStack, YStack } from 'tamagui';
 import { router, Stack } from 'expo-router';
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
@@ -106,7 +106,7 @@ const MyProfile = () => {
 
     const HeaderComponent = () => {
         return (
-            userInfo ? <View className='bg-[#1A1A1A] h-full relative' style={{ pointerEvents: 'box-none' }}>
+            userInfo ? <View className=' h-full relative' style={{ pointerEvents: 'box-none' }}>
                 <YStack >
                     <View className='py-5 px-4'>
                         <YStack gap="$5">

@@ -123,8 +123,8 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
                     exitStyle={{ opacity: 0 }}
                 />
                 <Sheet.Frame gap="$5" backgroundColor={'#1A1A1A'}>
-                    <View style={{paddingTop: insets.top, paddingBottom: insets.bottom}} className='bg-[#1A1A1A] h-full'>
-                        <View className='bg-[#1A1A1A] flex-row items-center justify-center px-4 py-3 relative'>
+                    <View style={{paddingTop: insets.top, paddingBottom: insets.bottom}} className=' h-full'>
+                        <View className=' flex-row items-center justify-center px-4 py-3 relative'>
                             <TouchableOpacity onPress={() => setEditSpecificationModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
                                 <Ionicons name="close" size={24} color="#ffffff" />
                             </TouchableOpacity>
@@ -144,7 +144,7 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
                                             title={key.split('_').join(' ')}
                                             value={value}
                                             placeholder={`Enter ${key.split('_').join(' ')}`}
-                                            handleChangeText={(text: string) => updateForm(key, text)}
+                                            onChangeText={(text: string) => updateForm(key, text)}
                                         />
                                                 // <FormField key={index} label={key.split('_').join(' ')} value={value} onChange={(value) => updateForm(key, value)}/>
                                             )
