@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -46,38 +46,43 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
   isLoading = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const position = new Animated.ValueXY();
-  const rotate = position.x.interpolate({
+  
+  // Use useRef to persist Animated.ValueXY across renders - prevents memory leak
+  const position = useRef(new Animated.ValueXY()).current;
+  
+  // Memoize interpolations to prevent recreation on every render
+  const rotate = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: ["-10deg", "0deg", "10deg"],
     extrapolate: "clamp",
-  });
+  }), []);
 
-  const likeOpacity = position.x.interpolate({
+  const likeOpacity = useMemo(() => position.x.interpolate({
     inputRange: [0, SCREEN_WIDTH / 4],
     outputRange: [0, 1],
     extrapolate: "clamp",
-  });
+  }), []);
 
-  const dislikeOpacity = position.x.interpolate({
+  const dislikeOpacity = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 4, 0],
     outputRange: [1, 0],
     extrapolate: "clamp",
-  });
+  }), []);
 
-  const nextCardOpacity = position.x.interpolate({
+  const nextCardOpacity = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: [1, 0.5, 1],
     extrapolate: "clamp",
-  });
+  }), []);
 
-  const nextCardScale = position.x.interpolate({
+  const nextCardScale = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: [1, 0.9, 1],
     extrapolate: "clamp",
-  });
+  }), []);
 
-  const panResponder = PanResponder.create({
+  // Memoize PanResponder to prevent recreation on every render
+  const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => !isLoading,
     onPanResponderMove: (_, gesture) => {
       position.setValue({ x: gesture.dx, y: gesture.dy });
@@ -91,7 +96,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
         resetPosition();
       }
     },
-  });
+  }), [isLoading]);
 
   const forceSwipeLeft = () => {
     Animated.timing(position, {

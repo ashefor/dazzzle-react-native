@@ -1,20 +1,28 @@
 // SkeletonPlaceholder.js
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { ViewStyle } from 'tamagui';
 // import LinearGradient from 'react-native-linear-gradient';
 
 const SkeletonPlaceholder = ({ style }: { style?: ViewStyle }) => {
-  const animatedValue = new Animated.Value(0);
+  // Use useRef to persist the animated value across renders
+  const animatedValue = useRef(new Animated.Value(0)).current;
 
-  Animated.loop(
-    Animated.timing(animatedValue, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    })
-  ).start();
+  // Start animation in useEffect with proper cleanup
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    );
+    animation.start();
+    
+    // Cleanup: stop animation when component unmounts
+    return () => animation.stop();
+  }, [animatedValue]);
 
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
