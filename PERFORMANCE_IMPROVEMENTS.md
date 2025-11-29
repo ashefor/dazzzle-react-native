@@ -349,7 +349,7 @@ export const logger = {
 
 ```typescript
 interface User {
-  _id: number;
+  _id: string;
   username: string;
   // ... other fields
 }
@@ -428,7 +428,7 @@ export const extractErrorMessage = (response: ApiResponse): string | null => {
   }
   if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
     return message;
-  }
+  };
   return null;
 };
 ```
