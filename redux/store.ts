@@ -15,6 +15,7 @@ export const store = configureStore({
     },
 });
 
+// Initialize store from async storage
 const initializeStore = async () => {
     const token = await getItem('dazzzle-token');
     const user = await getItem('dazzzle-user');
@@ -24,7 +25,8 @@ const initializeStore = async () => {
     store.dispatch(setActiveSubscription(userSubscription));
 };
 
-initializeStore();
+// Export the initialization promise to allow components to wait for it
+export const storeInitializationPromise = initializeStore();
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

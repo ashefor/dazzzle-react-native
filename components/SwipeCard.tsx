@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -46,38 +46,74 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
   isLoading = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const position = new Animated.ValueXY();
-  const rotate = position.x.interpolate({
+  
+  // Use useRef to persist Animated.ValueXY across renders - prevents memory leak
+  const position = useRef(new Animated.ValueXY()).current;
+  
+  // Memoize interpolations to prevent recreation on every render
+  // position is stable (useRef), so empty dependency array is correct
+  const rotate = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: ["-10deg", "0deg", "10deg"],
     extrapolate: "clamp",
-  });
+  }), [position]);
 
-  const likeOpacity = position.x.interpolate({
+  const likeOpacity = useMemo(() => position.x.interpolate({
     inputRange: [0, SCREEN_WIDTH / 4],
     outputRange: [0, 1],
     extrapolate: "clamp",
-  });
+  }), [position]);
 
-  const dislikeOpacity = position.x.interpolate({
+  const dislikeOpacity = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 4, 0],
     outputRange: [1, 0],
     extrapolate: "clamp",
-  });
+  }), [position]);
 
-  const nextCardOpacity = position.x.interpolate({
+  const nextCardOpacity = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: [1, 0.5, 1],
     extrapolate: "clamp",
-  });
+  }), [position]);
 
-  const nextCardScale = position.x.interpolate({
+  const nextCardScale = useMemo(() => position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: [1, 0.9, 1],
     extrapolate: "clamp",
-  });
+  }), [position]);
 
-  const panResponder = PanResponder.create({
+  const forceSwipeLeft = useCallback(() => {
+    Animated.timing(position, {
+      toValue: { x: -SCREEN_WIDTH, y: 0 },
+      duration: 250,
+      useNativeDriver: false,
+    }).start(() => {
+      onSwipeLeft();
+      position.setValue({ x: 0, y: 0 });
+    });
+  }, [position, onSwipeLeft]);
+
+  const forceSwipeRight = useCallback(() => {
+    Animated.timing(position, {
+      toValue: { x: SCREEN_WIDTH, y: 0 },
+      duration: 250,
+      useNativeDriver: false,
+    }).start(() => {
+      onSwipeRight();
+      position.setValue({ x: 0, y: 0 });
+    });
+  }, [position, onSwipeRight]);
+
+  const resetPosition = useCallback(() => {
+    Animated.spring(position, {
+      toValue: { x: 0, y: 0 },
+      friction: 4,
+      useNativeDriver: false,
+    }).start();
+  }, [position]);
+
+  // Memoize PanResponder to prevent recreation on every render
+  const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => !isLoading,
     onPanResponderMove: (_, gesture) => {
       position.setValue({ x: gesture.dx, y: gesture.dy });
@@ -91,37 +127,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
         resetPosition();
       }
     },
-  });
-
-  const forceSwipeLeft = () => {
-    Animated.timing(position, {
-      toValue: { x: -SCREEN_WIDTH, y: 0 },
-      duration: 250,
-      useNativeDriver: false,
-    }).start(() => {
-      onSwipeLeft();
-      position.setValue({ x: 0, y: 0 });
-    });
-  };
-
-  const forceSwipeRight = () => {
-    Animated.timing(position, {
-      toValue: { x: SCREEN_WIDTH, y: 0 },
-      duration: 250,
-      useNativeDriver: false,
-    }).start(() => {
-      onSwipeRight();
-      position.setValue({ x: 0, y: 0 });
-    });
-  };
-
-  const resetPosition = () => {
-    Animated.spring(position, {
-      toValue: { x: 0, y: 0 },
-      friction: 4,
-      useNativeDriver: false,
-    }).start();
-  };
+  }), [isLoading, position, forceSwipeLeft, forceSwipeRight, resetPosition]);
 
   const handleNextImage = () => {
     // if (currentImageIndex < profile.images.length - 1) {

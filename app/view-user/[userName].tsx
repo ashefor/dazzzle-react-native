@@ -26,6 +26,274 @@ const SafeArea = Platform.OS === 'ios' ? SafeAreaViewIOS : SafeAreaViewAndroid;
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeArea);
 
+// Moved outside of component to prevent recreation on every render
+const AnimatedYStack = styled(YStack, {
+    flex: 1,
+    x: 0,
+    opacity: 1,
+
+    animation: '100ms',
+    variants: {
+        // 1 = right, 0 = nowhere, -1 = left
+        direction: {
+            ':number': (direction) => ({
+                enterStyle: {
+                    x: direction > 0 ? -25 : 25,
+                    opacity: 0,
+                },
+                exitStyle: {
+                    zIndex: 0,
+                    x: direction < 0 ? -25 : 25,
+                    opacity: 0,
+                },
+            }),
+        },
+    } as const,
+});
+
+// Moved outside of component to prevent recreation on every render
+const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
+    return (
+        <YStack
+            position="absolute"
+            backgroundColor="$color5"
+            opacity={0.7}
+            animation="100ms"
+            enterStyle={{
+                opacity: 0,
+            }}
+            exitStyle={{
+                opacity: 0,
+            }}
+            {...(active && {
+                backgroundColor: '$color8',
+                opacity: 0.6,
+            })}
+            {...props}
+        />
+    )
+};
+
+// TabsAdvancedBackground Props interface
+interface TabsAdvancedBackgroundProps {
+    userDetails: SingleUserDetails | null;
+}
+
+// Moved outside of component to prevent recreation on every render
+const TabsAdvancedBackground: React.FC<TabsAdvancedBackgroundProps> = ({ userDetails }) => {
+    const [tabState, setTabState] = React.useState<{
+        currentTab: string
+        intentAt: TabLayout | null
+        activeAt: TabLayout | null
+        prevActiveAt: TabLayout | null
+    }>({
+        activeAt: null,
+        currentTab: 'profile',
+        intentAt: null,
+        prevActiveAt: null,
+    })
+
+    const setCurrentTab = (currentTab: string) => setTabState({ ...tabState, currentTab })
+    const setIntentIndicator = (intentAt: LayoutRectangle | null) => setTabState({ ...tabState, intentAt })
+    const setActiveIndicator = (activeAt: LayoutRectangle | null) =>
+        setTabState({ ...tabState, prevActiveAt: tabState.activeAt, activeAt })
+    const { activeAt, intentAt, prevActiveAt, currentTab } = tabState
+
+    // 1 = right, 0 = nowhere, -1 = left
+    const direction = (() => {
+        if (!activeAt || !prevActiveAt || activeAt.x === prevActiveAt.x) {
+            return 0
+        }
+        return activeAt.x > prevActiveAt.x ? -1 : 1
+    })()
+
+    const handleOnInteraction: TabsTabProps['onInteraction'] = (type, layout) => {
+        if (type === 'select') {
+            setActiveIndicator(layout)
+        } else {
+            setIntentIndicator(layout)
+        }
+    }
+
+    return (
+        <Tabs
+            backgroundColor={"$colorTransparent"}
+            value={currentTab}
+            onValueChange={setCurrentTab}
+            orientation="horizontal"
+            size="$4"
+            marginTop="$3"
+            flexDirection="column"
+            activationMode="manual"
+            borderRadius="$4"
+            position="relative"
+        >
+            <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
+                <AnimatePresence>
+                    {intentAt && (
+                        <TabsRovingIndicator
+                            className='bg-black text-white rounded-[40px]'
+                            borderRadius="$4"
+                            width={intentAt.width}
+                            height={intentAt.height}
+                            x={intentAt.x}
+                            y={intentAt.y}
+                        />
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {activeAt && (
+                        <TabsRovingIndicator
+                            className='bg-black text-white rounded-[40px]'
+                            theme="active"
+                            width={activeAt.width}
+                            height={activeAt.height}
+                            x={activeAt.x}
+                            y={activeAt.y}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <Tabs.List
+                    unstyled
+                    disablePassBorderRadius
+                    loop={false}
+                    gap="$2"
+                    backgroundColor={"$colorTransparent"}
+                    justifyContent="space-between"
+                >
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$3"
+                        marginVertical="$1.5"
+                        marginHorizontal="$1.5"
+                        value="profile"
+                        flex={1}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={50}
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className={`font-firamedium text-white`}>Profile</SizableText>
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$3"
+                        marginVertical="$1.5"
+                        marginHorizontal="$1.5"
+                        value="photos"
+                        flex={1}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={50}
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className={`font-firamedium text-white`}>Photos</SizableText>
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        unstyled
+                        paddingVertical="$2"
+                        paddingHorizontal="$3"
+                        marginVertical="$1.5"
+                        marginHorizontal="$1.5"
+                        value="interest"
+                        flex={1}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={50}
+                        onInteraction={handleOnInteraction}
+                    >
+                        <SizableText
+                            className={`font-firamedium text-white`}>Interests</SizableText>
+                    </Tabs.Tab>
+                </Tabs.List>
+            </View>
+
+            <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
+                <AnimatedYStack key={currentTab}>
+                    <Tabs.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
+                        {currentTab === 'profile' && <BasicInfo userProfileData={userDetails?.userProfileData} userSpecificationData={userDetails?.userSpecificationData} />}
+                        {currentTab === 'photos' && userDetails && <UserPhotos userPhotos={userDetails.photosData} />}
+                        {currentTab === 'interest' && userDetails && <UserInterests interests={userDetails.userProfileData.interest} />}
+                    </Tabs.Content>
+                </AnimatedYStack>
+            </AnimatePresence>
+        </Tabs>
+    )
+};
+
+// UserMoreActionsPopover Props interface
+interface UserMoreActionsPopoverProps extends PopoverProps {
+    Icon?: any;
+    Name?: string;
+    shouldAdapt?: boolean;
+    userDetails: SingleUserDetails | null;
+    onBlockUser: () => void;
+    onUnblockUser: () => void;
+}
+
+// Moved outside of component to prevent recreation on every render
+const UserMoreActionsPopover: React.FC<UserMoreActionsPopoverProps> = ({
+    Icon,
+    userDetails,
+    onBlockUser,
+    onUnblockUser,
+    ...props
+}) => {
+    return (
+        <Popover size="$2" allowFlip {...props} placement="bottom-end">
+            <Popover.Trigger asChild>
+                <Button unstyled>
+                    <Ionicons name="ellipsis-vertical-sharp" size={24} color="#ffffff" />
+                </Button>
+            </Popover.Trigger>
+
+            <Popover.Content
+                unstyled
+                enterStyle={{ y: -10, opacity: 0 }}
+                exitStyle={{ y: -10, opacity: 0 }}
+                elevate
+                animation={[
+                    'quick',
+                    {
+                        opacity: {
+                            overshootClamping: true,
+                        },
+                    },
+                ]}
+            >
+                <YStack>
+                    <Popover.Close asChild>
+                        <YGroup alignSelf="center" width={240} size="$4" separator={<Separator />}>
+                            {userDetails && !userDetails.blockByMeUser && <YGroup.Item>
+                                <ListItem className='bg-[#5B5B5B]' onPress={onBlockUser}>
+                                    <Text className='text-base text-white'> Block @{userDetails?.userData.userName}
+                                    </Text>
+                                </ListItem>
+                            </YGroup.Item>}
+                            {userDetails && userDetails.blockByMeUser && <YGroup.Item>
+                                <ListItem className='bg-[#5B5B5B]' onPress={onUnblockUser}>
+                                    <Text className='text-base text-white'> Unblock @{userDetails?.userData.userName}
+                                    </Text>
+                                </ListItem>
+                            </YGroup.Item>}
+                            <YGroup.Item>
+                                <ListItem className='bg-[#5B5B5B]'>
+                                    <Text className='text-base text-white'>Report</Text>
+                                </ListItem>
+                            </YGroup.Item>
+                        </YGroup>
+                    </Popover.Close>
+                </YStack>
+            </Popover.Content>
+        </Popover>
+    )
+};
+
 const User = () => {
     const { userName } = useLocalSearchParams();
       const dispatch = useAppDispatch();
@@ -46,30 +314,6 @@ const User = () => {
         outputRange: [0, 1], // From invisible to fully visible
         extrapolate: 'clamp',
     });
-
-    const AnimatedYStack = styled(YStack, {
-        flex: 1,
-        x: 0,
-        opacity: 1,
-
-        animation: '100ms',
-        variants: {
-            // 1 = right, 0 = nowhere, -1 = left
-            direction: {
-                ':number': (direction) => ({
-                    enterStyle: {
-                        x: direction > 0 ? -25 : 25,
-                        opacity: 0,
-                    },
-                    exitStyle: {
-                        zIndex: 0,
-                        x: direction < 0 ? -25 : 25,
-                        opacity: 0,
-                    },
-                }),
-            },
-        } as const,
-    })
 
     const fetchUserDetails = async () => {
         try {
@@ -176,239 +420,6 @@ const User = () => {
             { text: 'Block', style: 'destructive', onPress: () => handleBlockUser() },
         ]);
 
-    const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
-        return (
-            <YStack
-                position="absolute"
-                backgroundColor="$color5"
-                opacity={0.7}
-                animation="100ms"
-                enterStyle={{
-                    opacity: 0,
-                }}
-                exitStyle={{
-                    opacity: 0,
-                }}
-                {...(active && {
-                    backgroundColor: '$color8',
-                    opacity: 0.6,
-                })}
-                {...props}
-            />
-        )
-    }
-
-    const TabsAdvancedBackground = () => {
-        const [tabState, setTabState] = React.useState<{
-            currentTab: string
-            /**
-             * Layout of the Tab user might intend to select (hovering / focusing)
-             */
-            intentAt: TabLayout | null
-            /**
-             * Layout of the Tab user selected
-             */
-            activeAt: TabLayout | null
-            /**
-             * Used to get the direction of activation for animating the active indicator
-             */
-            prevActiveAt: TabLayout | null
-        }>({
-            activeAt: null,
-            currentTab: 'profile',
-            intentAt: null,
-            prevActiveAt: null,
-        })
-
-        const setCurrentTab = (currentTab: string) => setTabState({ ...tabState, currentTab })
-        const setIntentIndicator = (intentAt: LayoutRectangle | null) => setTabState({ ...tabState, intentAt })
-        const setActiveIndicator = (activeAt: LayoutRectangle | null) =>
-            setTabState({ ...tabState, prevActiveAt: tabState.activeAt, activeAt })
-        const { activeAt, intentAt, prevActiveAt, currentTab } = tabState
-
-        // 1 = right, 0 = nowhere, -1 = left
-        const direction = (() => {
-            if (!activeAt || !prevActiveAt || activeAt.x === prevActiveAt.x) {
-                return 0
-            }
-            return activeAt.x > prevActiveAt.x ? -1 : 1
-        })()
-
-        const handleOnInteraction: TabsTabProps['onInteraction'] = (type, layout) => {
-            if (type === 'select') {
-                setActiveIndicator(layout)
-            } else {
-                setIntentIndicator(layout)
-            }
-        }
-
-        return (
-            <Tabs
-                // className='bg-transparent mt-5'
-                        backgroundColor={"$colorTransparent"}
-                value={currentTab}
-                onValueChange={setCurrentTab}
-                orientation="horizontal"
-                size="$4"
-                marginTop="$3"
-                flexDirection="column"
-                activationMode="manual"
-                borderRadius="$4"
-                position="relative"
-            >
-                <View className='justify-between w-full bg-[#5B5B5B] rounded-[50px]'>
-                <AnimatePresence>
-                        {intentAt && (
-                            <TabsRovingIndicator
-                                className='bg-black text-white rounded-[40px]'
-                                borderRadius="$4"
-                                width={intentAt.width}
-                                height={intentAt.height}
-                                x={intentAt.x}
-                                y={intentAt.y}
-                            />
-                        )}
-                    </AnimatePresence>
-                    <AnimatePresence>
-                        {activeAt && (
-                            <TabsRovingIndicator
-                                className='bg-black text-white rounded-[40px]'
-                                theme="active"
-                                width={activeAt.width}
-                                height={activeAt.height}
-                                x={activeAt.x}
-                                y={activeAt.y}
-                            />
-                        )}
-                    </AnimatePresence>
-
-                    <Tabs.List
-                        unstyled
-                        disablePassBorderRadius
-                        loop={false}
-                        gap="$2"
-                        backgroundColor={"$colorTransparent"}
-                        justifyContent="space-between"
-                    >
-                        <Tabs.Tab
-                            unstyled
-                            paddingVertical="$2"
-                            paddingHorizontal="$3"
-                            marginVertical="$1.5"
-                            marginHorizontal="$1.5"
-                            value="profile"
-                            flex={1}
-                            justifyContent='center'
-                            alignItems='center'
-                            borderRadius={50}
-                            onInteraction={handleOnInteraction}
-                        >
-                            <SizableText
-                                className={`font-firamedium text-white`}>Profile</SizableText>
-                        </Tabs.Tab>
-                        <Tabs.Tab
-                            unstyled
-                            paddingVertical="$2"
-                            paddingHorizontal="$3"
-                            marginVertical="$1.5"
-                            marginHorizontal="$1.5"
-                            value="photos"
-                            flex={1}
-                            justifyContent='center'
-                            alignItems='center'
-                            borderRadius={50}
-                            onInteraction={handleOnInteraction}
-                        >
-                            <SizableText
-                                className={`font-firamedium text-white`}>Photos</SizableText>
-                        </Tabs.Tab>
-                        <Tabs.Tab
-                            unstyled
-                            paddingVertical="$2"
-                            paddingHorizontal="$3"
-                            marginVertical="$1.5"
-                            marginHorizontal="$1.5"
-                            value="interest"
-                            flex={1}
-                            justifyContent='center'
-                            alignItems='center'
-                            borderRadius={50}
-                            onInteraction={handleOnInteraction}
-                        >
-                            <SizableText
-                                className={`font-firamedium text-white`}>Interests</SizableText>
-                        </Tabs.Tab>
-                    </Tabs.List>
-                </View>
-
-                <AnimatePresence exitBeforeEnter custom={{ direction }} initial={false}>
-                    <AnimatedYStack key={currentTab}>
-                        <Tabs.Content value={currentTab} forceMount flex={1} className='mt-6' justifyContent="center">
-                            {currentTab === 'profile' && <BasicInfo userProfileData={userDetails?.userProfileData} userSpecificationData={userDetails?.userSpecificationData} />}
-                            {currentTab === 'photos' && <UserPhotos userPhotos={userDetails!.photosData} />}
-                            {currentTab === 'interest' && <UserInterests interests={userDetails!.userProfileData.interest} />}
-                        </Tabs.Content>
-                    </AnimatedYStack>
-                </AnimatePresence>
-            </Tabs>
-        )
-    }
-
-
-    const UserMoreActionsPopover = ({
-        Icon,
-        ...props
-    }: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean }) => {
-        return (
-            <Popover size="$2" allowFlip {...props} placement="bottom-end">
-                <Popover.Trigger asChild>
-                    <Button unstyled>
-                        <Ionicons name="ellipsis-vertical-sharp" size={24} color="#ffffff" />
-                    </Button>
-                </Popover.Trigger>
-
-                <Popover.Content
-                    unstyled
-                    enterStyle={{ y: -10, opacity: 0 }}
-                    exitStyle={{ y: -10, opacity: 0 }}
-                    elevate
-                    animation={[
-                        'quick',
-                        {
-                            opacity: {
-                                overshootClamping: true,
-                            },
-                        },
-                    ]}
-                >
-                    <YStack>
-                        <Popover.Close asChild>
-                            <YGroup alignSelf="center" width={240} size="$4" separator={<Separator />}>
-                                {userDetails && !userDetails.blockByMeUser && <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]' onPress={createBlockNotificationAlert}>
-                                        <Text className='text-base text-white'> Block @{userDetails?.userData.userName}
-                                        </Text>
-                                    </ListItem>
-                                </YGroup.Item>}
-                                {userDetails && userDetails.blockByMeUser && <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]' onPress={unblockUser}>
-                                        <Text className='text-base text-white'> Unblock @{userDetails?.userData.userName}
-                                        </Text>
-                                    </ListItem>
-                                </YGroup.Item>}
-                                <YGroup.Item>
-                                    <ListItem className='bg-[#5B5B5B]'>
-                                        <Text className='text-base text-white'>Report</Text>
-                                    </ListItem>
-                                </YGroup.Item>
-                            </YGroup>
-                        </Popover.Close>
-                    </YStack>
-                </Popover.Content>
-            </Popover>
-        )
-    }
-
     const hasUserLikedOrDisliked = (likeData: {like: number, _id: number}[] | {like: number, _id: number}) => {
         if (likeData && Array.isArray(likeData)) {
             return likeData.some((like) => like.like == 1)
@@ -418,21 +429,6 @@ const User = () => {
             return false
         }
     }
-
-    // const UserMoreActionsPopover = () => {
-    //     return (
-    //         <Menu>
-    //   <MenuTrigger text='Select action' />
-    //   <MenuOptions>
-    //     <MenuOption onSelect={() => alert(`Save`)} text='Save' />
-    //     <MenuOption onSelect={() => alert(`Delete`)} >
-    //       <Text style={{color: 'red'}}>Delete</Text>
-    //     </MenuOption>
-    //     <MenuOption onSelect={() => alert(`Not called`)} disabled={true} text='Disabled' />
-    //   </MenuOptions>
-    // </Menu>
-    //     )
-    // }
 
     const hasUserLiked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
         if (likeData && Array.isArray(likeData)) {
@@ -480,6 +476,9 @@ const User = () => {
                                 <Animated.Text style={[styles.title, { opacity: headerOpacity }]} className='font-firabold text-center'>{userDetails?.userData.first_name} {userDetails?.userData.last_name}</Animated.Text>
                                 {userDetails && !userDetails.isBlockUser && <UserMoreActionsPopover
                                     placement="bottom"
+                                    userDetails={userDetails}
+                                    onBlockUser={createBlockNotificationAlert}
+                                    onUnblockUser={unblockUser}
                                 />}
                             </Animated.View>
                         </View>
@@ -535,7 +534,7 @@ const User = () => {
                                         <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} is blocked</Text>
                                     </View> : userDetails.isBlockUser ? <View>
                                         <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} has blocked you</Text>
-                                    </View> : <TabsAdvancedBackground />}
+                                    </View> : <TabsAdvancedBackground userDetails={userDetails} />}
                                 </View>
                             </YStack>
                         ) :
