@@ -1,15 +1,18 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text, ActivityIndicator, Alert, Platform } from "react-native";
-import SwipeCard from "@/components/SwipeCard";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import CustomButton from "@/components/CustomButton";
 import { clearSwipeError } from "@/redux/slices/usersSlice";
 import { fetchProfilesAsync, swipeLeftAsync, swipeRightAsync } from "@/redux/thunks/swipeActions";
-import { Stack } from "expo-router";
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import axiosRequest from '@/utils/axios';
+import { useUsersFeed } from "@/hooks/useUsersFeed";
+import { sendSwipe, UserCard } from "@/components/folder/api";
+import { SwiperStack, SwiperStackHandle } from "@/components/SwiperStack";
+import { ActionButtons } from "@/components/ActionButtons";
+import Header from "@/components/Header";
 
 
 Notifications.setNotificationHandler({
@@ -68,12 +71,45 @@ async function registerForPushNotificationsAsync() {
   }
 }
 export default function DiscoverScreen() {
+  const {
+    topCard,
+    nextCards,
+    queueLength,
+    loadingInitial,
+    errorInitial,
+    popTop,
+    prefetchNextBatch,
+  } = useUsersFeed();
+  const swiperRef = useRef<SwiperStackHandle | null>(null);
+
   const dispatch = useAppDispatch();
   const { profiles, currentIndex, loading, swipeLoading, swipeError } = useAppSelector((state) => state.users);
    const [expoPushToken, setExpoPushToken] = useState('');
     const [notification, setNotification] = useState<Notifications.Notification | undefined>(
       undefined
     );
+
+  const handleSwiped = useCallback(
+    async (direction: "left" | "right", user: UserCard) => {
+      // Optimistic removal
+      popTop();
+
+      // Fire-and-forget API
+      sendSwipe({ userId: user.id.toString(), direction }).catch(() => {});
+
+      // Encourage next prefetch cycle if needed (optional redundant safety)
+      if (queueLength <= 8) {
+        prefetchNextBatch();
+      }
+    },
+    [popTop, queueLength, prefetchNextBatch]
+  );
+
+  const handleKeepTop = useCallback((_user: UserCard) => {
+    // no-op when snap back
+  }, []);
+
+
 
   // Fetch profiles when component mounts
   useEffect(() => {
@@ -177,47 +213,58 @@ export default function DiscoverScreen() {
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF4C6D" />
-        <Text style={styles.loadingText}>Loading profiles...</Text>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color="#FF4C6D" />
+  //       <Text style={styles.loadingText}>Loading profiles...</Text>
+  //     </View>
+  //   );
+  // }
 
+  const showInitialLoader = !topCard && loadingInitial;
   return (
-    <Fragment>
-      <Stack.Screen options={{
-        headerStyle: { backgroundColor: '#1A1A1A' },
-        headerShadowVisible: false,
-        // headerRight: () => <TouchableOpacity className='flex items-center justify-center pr-4 w-9 h-8'>
-        //         <Image source={icons.menu} className='w-6 h-6' resizeMode='contain' />
-        //     </TouchableOpacity>
-      }} />
-      <View className="flex-1 items-center bg-primary justify-center">
-        {currentIndex < profiles.length ? (
-          <SwipeCard
-            profile={profiles[currentIndex]}
-            onSwipeLeft={handleSwipeLeft}
-            onSwipeRight={handleSwipeRight}
-            isLoading={swipeLoading}
-          />
+    <View style={styles.container}>
+      <Header.Default 
+      leftContent={<Text className="text-2xl font-semibold">Encounter 🔥</Text>}
+      />
+      <View style={styles.content}>
+        {errorInitial && showInitialLoader && <Text style={styles.error}>{errorInitial}</Text>}
+
+        {showInitialLoader ? (
+          <View style={styles.loaderWrap}>
+            <ActivityIndicator />
+          </View>
         ) : (
-          renderNoMoreProfiles()
+          <>
+            <SwiperStack
+              ref={swiperRef}
+              top={topCard}
+              below={nextCards}
+              onSwiped={handleSwiped}
+              onKeepTop={handleKeepTop}
+              onInfo={() => {}}
+            />
+            <ActionButtons
+              onDislike={() => swiperRef.current?.swipeLeft()}
+              onLike={() => swiperRef.current?.swipeRight()}
+              onInfo={() => swiperRef.current?.peekInfo()}
+              disabled={!topCard}
+            />
+          </>
         )}
       </View>
-    </Fragment>
+     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F8F8F8",
-  },
+  
+  container: { flex: 1, backgroundColor: "#fff" },
+  content: { flex: 1, paddingTop: 8, marginTop: 32, justifyContent: "flex-start" },
+  loaderWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
+  error: { color: "#f66", textAlign: "center", marginVertical: 8 },
+
   loadingContainer: {
     flex: 1,
     alignItems: "center",

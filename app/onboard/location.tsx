@@ -9,7 +9,7 @@ import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete"
+// import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete"
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import { OnboardPagesProps } from '.'
@@ -120,7 +120,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                                 onFail={(error) => console.error(error)}
                             /> */}
 
-                            <GooglePlacesAutocomplete
+                            {/* <GooglePlacesAutocomplete
                                 placeholder="Search location"
                                 searchInputStyle={{ backgroundColor: 'transparent', margin: 0, fontSize: 16 } as any}
                                 containerStyle={{ flex: 0, borderRadius: 5, padding: 0 }}
@@ -128,7 +128,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                                 apiKey={GOOGLE_MAPS_API_KEY}
                                 onPlaceSelected={(data) => fetchLocationFromPlacesApi(data.placeId)}
                                 onSearchError={(error) => console.error(error)}
-                            />
+                            /> */}
 
                             {location && <View className='mt-4 mb-8 space-y-2'>
                                 <Text className='text-xs text-white font-firamedium'>Selected Location</Text>

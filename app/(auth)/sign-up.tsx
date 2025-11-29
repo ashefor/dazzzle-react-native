@@ -1,19 +1,20 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { Form, YStack, XStack, Sheet, } from 'tamagui'
+import { YStack, XStack, Sheet } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import * as WebBrowser from 'expo-web-browser'
-import { isValidEmail } from '@/utils/validators'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import Checkbox from 'expo-checkbox'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as yup from 'yup'
+import { Formik } from 'formik'
 
 type SigUpForm = {
     username: string;
@@ -22,78 +23,22 @@ type SigUpForm = {
     repeat_password: string;
     accepted_terms: boolean;
 }
-
 const SignIn = () => {
-    const [isFormValid, setIsFormValid] = useState(false);
     const insets = useSafeAreaInsets();
     const { show, hide } = useLoader();
     const [hasCreatedAccount, setHasCreatedAccount] = useState(false);
-    const [errors, setErrors] = useState<SigUpForm | Record<string, string>>({});
-    const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
-    const [form, setForm] = useState<SigUpForm>({
-        email: '',
-        password: '',
-        username: '',
-        repeat_password: '',
-        accepted_terms: false
-    })
+    const [email, setEmail] = useState('');
 
-    const updateForm = useCallback(<K extends keyof SigUpForm>(key: K, value: SigUpForm[K]) => {
-        setForm({
-            ...form,
-            [key]: value
-        })
-    }, [form])
 
     const _handlePressButtonAsync = async (link: string) => {
         await WebBrowser.openBrowserAsync(link);
     };
 
-    const handleInputChange = (field: keyof SigUpForm, value: string | boolean) => {
-        updateForm(field, value);
 
-        // Mark field as touched
-        setHasTyped(prev => ({ ...prev, [field]: true }));
-    };
-
-    const validateForm = () => {
-        let errors: { [key: string]: string } = {};
-        if (!isValidEmail(form.email) || !form.email) {
-            errors.email = 'Valid email is required';
-        }
-        if (!form.password || form.password.length < 6) {
-            errors.password = 'Password is required';
-        }
-        if (!form.username || form.username.length < 3) {
-            errors.username = 'Username is required';
-        }
-        if (!form.repeat_password || form.repeat_password.length < 6) {
-            errors.repeat_password = 'Password is required';
-        }
-        if (form.password !== form.repeat_password) {
-            errors.repeat_password = 'Passwords do not match';
-        }
-        if (!form.accepted_terms) {
-            errors.accepted_terms = 'You must accept the terms and conditions';
-        }
-        setErrors(errors);
-        setIsFormValid(Object.keys(errors).length === 0);
-    }
-
-    useEffect(() => {
-        if (hasTyped.email || hasTyped.username || hasTyped.repeat_password || hasTyped.password || hasTyped.accepted_terms) {
-            const timer = setTimeout(validateForm, 300); // Delay validation after typing
-            return () => clearTimeout(timer);
-        }
-    }, [form]);
-
-    const submit = async () => {
-        if (!isFormValid) {
-            return Alert.alert('Error', 'Please fill in all fields')
-        }
+    const createAccount = async (formValues: SigUpForm) => {
         try {
             show();
-            const response: any = await axiosRequest.post('/user/process-sign-up', form);
+            const response: any = await axiosRequest.post('/user/process-sign-up', formValues);
             hide();
             if (response.reaction === ReactionCodes.SUCCESS) {
                 setHasCreatedAccount(true);
@@ -108,7 +53,7 @@ const SignIn = () => {
         try {
             setHasCreatedAccount(false);
             show();
-            const response: any = await axiosRequest.post('/user/process-resend-activation-mail', { email: form.email });
+            const response: any = await axiosRequest.post('/user/process-resend-activation-mail', { email });
             hide();
             if (response.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Verification email sent successfully');
@@ -122,81 +67,86 @@ const SignIn = () => {
         <>
             <View style={{ flex: 1 }} className='h-full'>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                    <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}>
-                        <View className='w-full h-full justify-center my-6' style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>
-                            <Form
-                                gap="$7"
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+                        <View className='w-full h-full py-16 justify-center'>
+                            <Formik
+                                initialValues={{ password: '', username: '', repeat_password: '', email: '', accepted_terms: false }}
+                                onSubmit={createAccount}
+                                validationSchema={signUpValidationSchema}
                             >
-                                <YStack>
-                                    <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                    <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Create an Account</Text>
-                                    <Text className='text-sm text-black font-semibold font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
-                                </YStack>
-                                <YStack gap="$3">
-                                    <YStack gap="$1">
-                                        <FormField
-                                            title="Username"
-                                            value={form.username}
-                                            placeholder='Enter username'
-                                            onChangeText={(text: string) => handleInputChange('username', text)}
-                                        />
-                                        {hasTyped.username && errors.username && <Text className='text-xs text-red-500 font-firaregular'>{errors.username}</Text>}
-                                    </YStack>
-                                    <YStack gap="$1">
-                                        <FormField
-                                            title="Email"
-                                            value={form.email}
-                                            placeholder='Enter email'
-                                            onChangeText={(text: string) => handleInputChange('email', text)}
-                                        />
-                                        {hasTyped.email && errors.email && <Text className='text-xs text-red-500 font-firaregular'>{errors.email}</Text>}
-                                    </YStack>
-                                    <YStack gap="$1">
-                                        <FormField
-                                            title="Password"
-                                            value={form.password}
-                                            placeholder='Enter password'
-                                            secureTextEntry
-                                            onChangeText={(text: string) => handleInputChange('password', text)}
-                                        />
-                                        {hasTyped.password && errors.password && <Text className='text-xs text-red-500 font-firaregular'>{errors.password}</Text>}
-                                    </YStack>
-                                    <YStack gap="$1">
-                                        <FormField
-                                            title="Confirm Password"
-                                            value={form.repeat_password}
-                                            placeholder='Confirm password'
-                                            secureTextEntry
-                                            onChangeText={(text: string) => handleInputChange('repeat_password', text)}
-                                        />
-                                        {hasTyped.repeat_password && errors.repeat_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.repeat_password}</Text>}
-                                    </YStack>
-                                </YStack>
-                                <YStack>
-                                    <XStack alignItems="center" gap="$3">
-                                        {/* <Checkbox checked={form.accepted_terms} onCheckedChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} size="$4" className='bg-primary border-2 border-black'>
-                                            <Checkbox.Indicator>
-                                                <MaterialCommunityIcons name="check-bold" size={18} color="#ffffff" />
-                                            </Checkbox.Indicator>
-                                        </Checkbox> */}
-                                        <Checkbox value={form.accepted_terms} onValueChange={(checked: boolean) => handleInputChange('accepted_terms', checked)} />
-                                        <View className='flex flex-wrap flex-1 flex-row gap-1'>
-                                            <Text className='text-base text-black font-firaregular'>I accept all</Text>
-                                            <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
-                                                <Text className='text-base text-primary font-firaregular underline'>terms and conditions</Text>
-                                            </TouchableHighlight>
-                                            <Text className='text-base text-black font-firaregular'>and</Text>
-                                            <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
-                                                <Text className='text-base text-primary font-firaregular underline'>privacy policy</Text>
-                                            </TouchableHighlight>
+                                {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
+                                    return (
+                                        <View className='flex-1 '>
+                                            <YStack>
+                                                <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
+                                                <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Create an Account</Text>
+                                                <Text className='text-sm text-black font-semibold font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
+                                            </YStack>
+                                            <YStack gap="$3" mt={20} mb={20}>
+                                                <FormField
+                                                    title="Username"
+                                                    placeholder=''
+                                                    onChangeText={handleChange('username')}
+                                                    onBlur={handleBlur('username')}
+                                                    showCustomError={errors.username ? true : false}
+                                                    errorMessage={errors.username}
+                                                    value={values.username}
+                                                />
+                                                <FormField
+                                                    title="Email"
+                                                    placeholder=''
+                                                    onChangeText={(t) => {
+                                                        handleChange('email')(t);
+                                                        setEmail(t);
+                                                    }}
+                                                    onBlur={handleBlur('email')}
+                                                    showCustomError={errors.email ? true : false}
+                                                    errorMessage={errors.email}
+                                                    value={values.email}
+                                                    keyboardType='email-address'
+                                                />
+                                                <FormField
+                                                    title="Password"
+                                                    placeholder=''
+                                                    onChangeText={handleChange('password')}
+                                                    onBlur={handleBlur('password')}
+                                                    showCustomError={errors.password ? true : false}
+                                                    errorMessage={errors.password}
+                                                    value={values.password}
+                                                    secureTextEntry
+                                                />
+                                                <FormField
+                                                    title="Confirm Password"
+                                                    placeholder=''
+                                                    onChangeText={handleChange('repeat_password')}
+                                                    onBlur={handleBlur('repeat_password')}
+                                                    showCustomError={errors.repeat_password ? true : false}
+                                                    errorMessage={errors.repeat_password}
+                                                    value={values.repeat_password}
+                                                    secureTextEntry
+                                                />
+                                                <XStack alignItems="center" gap="$3" py={10}>
+                                                    <Checkbox value={values.accepted_terms} onValueChange={(checked: boolean) => setFieldValue('accepted_terms', checked)} />
+                                                    <View className='flex flex-wrap flex-1 flex-row gap-1'>
+                                                        <Text className='text-base text-black font-firaregular'>I accept all</Text>
+                                                        <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
+                                                            <Text className='text-base text-primary font-firaregular underline'>terms and conditions</Text>
+                                                        </TouchableHighlight>
+                                                        <Text className='text-base text-black font-firaregular'>and</Text>
+                                                        <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
+                                                            <Text className='text-base text-primary font-firaregular underline'>privacy policy</Text>
+                                                        </TouchableHighlight>
+                                                    </View>
+                                                </XStack>
+                                            </YStack>
+                                            
+                                            <View className='mt-auto'>
+                                                <CustomButton title='Register' disabled={!isValid} handlePress={handleSubmit} />
+                                            </View>
                                         </View>
-                                    </XStack>
-                                    {hasTyped.accepted_terms && errors.accepted_terms && <Text className='text-xs text-red-500 font-firaregular'>{errors.accepted_terms}</Text>}
-                                </YStack>
-                                <Form.Trigger asChild>
-                                    <CustomButton title='Register' handlePress={submit} />
-                                </Form.Trigger>
-                            </Form>
+                                    )
+                                }}
+                            </Formik>
                             <View className='justify-center pt-5 flex-row gap-2'>
                                 <Text className='text-sm text-black font-firaregular'>Already have an account?</Text>
                                 <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
@@ -251,4 +201,25 @@ const SignIn = () => {
 
 export default SignIn
 
-const styles = StyleSheet.create({})
+const signUpValidationSchema = yup.object().shape({
+    username: yup.string().required('Full name is required'),
+    email: yup
+        .string()
+        .email("Please enter valid email")
+        .required('Email is required'),
+    password: yup
+        .string()
+        .matches(/\w*[a-z]\w*/, "Password must have a small letter")
+        .matches(/\w*[A-Z]\w*/, "Password must have a capital letter")
+        .matches(/\d/, "Password must have a number")
+        .matches(/[!@#$%^&*()\-_"=+{}; :,<.>]/, "Password must have a special character")
+        .min(8, ({ min }) => `Password must be at least ${min} characters`)
+        .required('Password is required'),
+    repeat_password: yup
+        .string()
+        .oneOf([yup.ref('password')], 'Passwords do not match')
+        .required('Confirm password is required'),
+        accepted_terms: yup
+        .boolean()
+        .oneOf([true], 'You must accept the terms and conditions'),
+})

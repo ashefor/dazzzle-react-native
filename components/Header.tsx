@@ -19,7 +19,7 @@ const Default = (props: CustomHeaderProps) => {
     const { title, rightContent, leftContent } = props;
     const insets = useSafeAreaInsets();
     return (
-        <View className="bg-primary" style={{ paddingTop: insets.top }}>
+        <View className="bg-white" style={{ paddingTop: insets.top }}>
             {/* <SafeArea /> */}
             <View>
                 <View style={[styles.header]}>

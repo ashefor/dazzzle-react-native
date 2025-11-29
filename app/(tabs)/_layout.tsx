@@ -13,9 +13,10 @@ export default function TabLayout() {
     <Tabs
     initialRouteName='discover'
       screenOptions={{
-        tabBarActiveTintColor: '#DD3FE5',
+        // tabBarActiveTintColor: '#DD3FE5',
+         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#1A1A1A',
+          // backgroundColor: '#1A1A1A',
         },
         // headerShown: false,
         tabBarButton: HapticTab,

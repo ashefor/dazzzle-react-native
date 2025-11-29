@@ -11,9 +11,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import { AntDesign, FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import icons from "@/constants/icons";
 import { router } from "expo-router";
+import CloseIcon from "./icons/CloseIcon";
+import HeartIcon from "./icons/HeartIcon";
+import InformationCircleIcon from "./icons/InformationCircleIcon";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -179,7 +180,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
         <View />
       </TouchableOpacity> */}
 
-      <View style={styles.infoContainer}>
+      {/* <View style={styles.infoContainer}>
         <View style={styles.nameAgeContainer}>
           <Text style={styles.nameText}>{profile.username}</Text>
           <Text style={styles.ageText}>{profile.userAge}</Text>
@@ -189,7 +190,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
         {profile.isPremiumUser && <MaterialCommunityIcons name="crown-circle-outline" size={24} color="#FFD700" />}
         </View>
         <Text style={styles.distanceText}>{profile.countryName}</Text>        
-      </View>
+      </View> */}
 
       <View style={styles.actionsContainer}>
         <TouchableOpacity
@@ -200,7 +201,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           {isLoading ? (
             <ActivityIndicator size="small" color="#FF3B30" />
           ) : (
-            <FontAwesome name="close" size={36} color="#aeb11a" />
+            <CloseIcon width={26} height={26} fill="#EB4242" />
           )}
         </TouchableOpacity>
         <TouchableOpacity
@@ -212,7 +213,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           disabled={isLoading}
         >
           {/* <Info size={24} color="#6C7A9C" /> */}
-          <Ionicons name="information-circle-outline" size={32} color="black" />
+          <InformationCircleIcon width={40} height={40} fill="black" />
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.likeButton]}
@@ -223,7 +224,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
             <ActivityIndicator size="small" color="#FF4C6D" />
           ) : (
             // <AntDesign name="heart" size={24} color="#FF4C6D" />
-            <Ionicons name="heart" size={36} color="#EB4242" />
+            <HeartIcon width={26} height={24} fill="#DD3FE5" />
+            
           )}
         </TouchableOpacity>
       </View>
@@ -364,20 +366,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FCE6FD"
   },
   likeButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    // width: 64,
+    // height: 64,
+    borderRadius: 30,
   },
   dislikeButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    // width: 64,
+    // height: 64,
+    borderRadius: 30,
+    backgroundColor: "#FCE6FD"
   },
   infoButton: {
     marginHorizontal: 16,
+    backgroundColor: "#FFF"
   },
   likeContainer: {
     position: "absolute",

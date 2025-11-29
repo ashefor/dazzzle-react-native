@@ -38,22 +38,22 @@ const SignIn = () => {
         <SafeAreaView style={{ flex: 1 }} className=' h-full'>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
                 <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
-                    <View className='w-full h-full justify-between'>
-                         <Formik
-                        initialValues={{ password: '', email_or_username: '' }}
-                        onSubmit={logUserIn}
-                        validationSchema={signInValidationSchema}
-                    >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {
-                            return (
-                                <View className='flex-1 '>
-                                    <YStack>
-                                        <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                        <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
-                                        <Text className='text-sm text-black font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
-                                    </YStack>
-                                    <YStack gap="$3" mt={20} mb={20}>
-                                        <FormField
+                    <View className='w-full h-full py-16 justify-between'>
+                        <Formik
+                            initialValues={{ password: '', email_or_username: '' }}
+                            onSubmit={logUserIn}
+                            validationSchema={signInValidationSchema}
+                        >
+                            {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {
+                                return (
+                                    <View className='flex-1 '>
+                                        <YStack>
+                                            <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
+                                            <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
+                                            <Text className='text-sm text-black font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
+                                        </YStack>
+                                        <YStack gap="$3" mt={20} mb={20}>
+                                            <FormField
                                                 editable={!loading}
                                                 title="Username"
                                                 placeholder='Enter username'
@@ -63,7 +63,7 @@ const SignIn = () => {
                                                 errorMessage={errors.email_or_username}
                                                 value={values.email_or_username}
                                             />
-                                        <FormField
+                                            <FormField
                                                 title="Password"
                                                 editable={!loading}
                                                 placeholder='Enter password'
@@ -75,17 +75,17 @@ const SignIn = () => {
                                                 errorMessage={errors.password}
                                             />
 
-                                    </YStack>
-                                    <View className='mt-auto'>
-                                        <CustomButton disabled={loading || !isValid} title={loading ? 'Loading...' : 'Sign In'} handlePress={handleSubmit} />
+                                        </YStack>
+                                        <View className='mt-auto'>
+                                            <CustomButton disabled={loading || !isValid} title={loading ? 'Loading...' : 'Sign In'} handlePress={handleSubmit} />
+                                        </View>
+
                                     </View>
-
-                                </View>
-                            )
-                        }}
+                                )
+                            }}
 
 
-                    </Formik>
+                        </Formik>
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <Text className='text-sm text-black font-firaregular'>Don't have an account?</Text>
                             <TouchableOpacity onPress={() => router.replace('/(auth)/sign-up')}>
