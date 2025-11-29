@@ -113,7 +113,7 @@ const UserList: React.FC<UserListProps> = ({
 
     useEffect(() => {
         fetchUsers(endpoint, false);
-    }, []);
+    }, [fetchUsers]);
 
     const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => (
         <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
@@ -141,7 +141,7 @@ const UserList: React.FC<UserListProps> = ({
         </TouchableWithoutFeedback>
     ), [numColumns, showActionButton, createActionAlert]);
 
-    const keyExtractor = useCallback((item: LikedUserProfile) => item._uid, []);
+    const keyExtractor = useCallback((item: LikedUserProfile, index: number) => `${item._uid}-${item._id}-${index}`, []);
 
     const ListEmptyComponent = useCallback(() => (
         !loading ? (
