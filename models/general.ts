@@ -87,3 +87,68 @@ export interface SuccessReponse {
 export interface GenericSuccessReponse extends ApiResponse {
   data: SuccessReponse;
 }
+
+export interface PlaceAutocompletePrediction {
+    description: string;
+    matched_substrings: Array<{
+        length: number;
+        offset: number;
+    }>;
+    place_id: string;
+    reference: string;
+    structured_formatting: {
+        main_text: string;
+        main_text_matched_substrings: Array<{
+            length: number;
+            offset: number;
+        }>;
+        secondary_text: string;
+    };
+    terms: Array<{
+        offset: number;
+        value: string;
+    }>;
+    types: string[];
+}
+
+export interface FormattedAddress {
+    streetNumber?: string;
+    streetName: string;
+    unitNumber?: string; // usually from user input
+    city: string;
+    state: string;
+    postalCode?: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+    address: string; // original formatted address or description
+}
+
+export interface PlaceDetails {
+    address_components: AddressComponent[];
+    adr_address: string;
+    geometry: {
+        location: {
+            lat: number;
+            lng: number;
+        };
+        viewport: {
+            northeast: {
+                lat: number;
+                lng: number;
+            };
+            southwest: {
+                lat: number;
+                lng: number;
+            };
+        };
+    };
+    name: string;
+    place_id: string;
+}
+
+export interface AddressComponent {
+    long_name: string;
+    short_name: string;
+    types: string[]; // You can restrict this with specific string union types if needed
+}

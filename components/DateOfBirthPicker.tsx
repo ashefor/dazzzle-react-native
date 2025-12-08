@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import DateTimePicker, { DateType } from 'react-native-ui-datepicker'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
-import { Ionicons } from '@expo/vector-icons'
+import { Feather, Ionicons } from '@expo/vector-icons'
 
 const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBirthSelected: (selectedCountry: string) => void, dateOfBirth: string }) => {
     const [birthday, setBirthday] = useState<DateType>();
@@ -40,30 +40,25 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
     return (
         <>
             <View className="space-y-2">
-                <Text className='text-base text-black font-firamedium'>Birthday</Text>
-                <View className='border border-[#CCC] w-full px-4 bg-[#F2F2F7] rounded-md focus:border-secondary items-center flex-row'>
-                    <View
-                        className='flex-1 flex-row space-x-3 h-12 items-center font-firaregular text-black divide divide-x divide-[#A9A9A9]'>
-                        <TouchableOpacity className='flex-row items-center gap-0.5 flex-1 h-full' onPress={() => searchBottomSheetModalRef.current?.present()}>
-                            <Text className='text-base text-black font-firaregular'>{birthday ? dayjs(birthday).format('DD MMM YYYY') : 'Select date'}</Text>
+                <Text className='text-sm text-black font-firamedium'>Birthday</Text>
+                 <TouchableOpacity className='px-4 h-14 bg-[#F2F2F7] rounded-xl focus:border-primary flex-row items-center justify-between gap-0.5 flex-1 border border-[#cccccc80]' onPress={() => searchBottomSheetModalRef.current?.present()}>
+                            <Text className='text-sm text-black font-firaregular flex-1'>{birthday ? dayjs(birthday).format('DD MMM YYYY') : 'Select date'}</Text>
                             {/* <Text className='text-base text-black font-firaregular'>{birthday ? birthday.toString() : 'Select date'}</Text> */}
+                            <Feather name="calendar" size={20} color="#666" />
                         </TouchableOpacity>
-                    </View>
-                </View>
             </View>
             <BottomSheetModal
                 ref={searchBottomSheetModalRef}
                 enableDynamicSizing
                 enablePanDownToClose={true}
-                bottomInset={16}
                 handleIndicatorStyle={{
                     backgroundColor: "red",
                     display: "none"
                 }}
+                stackBehavior="push"
                 handleStyle={{ padding: 0 }}
                 detached={true}
                 style={{
-                    marginHorizontal: 16,
                     shadowColor: "#000",
                     shadowOffset: { width: 0, height: 6 },
                     shadowOpacity: 0.1,
@@ -76,8 +71,6 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                     borderRadius: 28,
                 }}
                 backdropComponent={renderBackdrop}
-                keyboardBehavior="extend"
-                keyboardBlurBehavior='restore'
             >
 
                 <BottomSheetView>
@@ -112,8 +105,8 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                             selectedItemColor='#DF3FE5'
                             maxDate={atLeast18YearsOld}
                             headerButtonColor="#1A1A1A"
-                            monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
-                            yearContainerStyle={{ backgroundColor: '#1A1A1A' }}
+                            // monthContainerStyle={{ backgroundColor: '#1A1A1A' }}
+                            // yearContainerStyle={{ backgroundColor: '#1A1A1A' }}
                             mode="single"
                             date={birthday}
                             onChange={(params) => setBirthday(params.date)}

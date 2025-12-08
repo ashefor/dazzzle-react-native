@@ -27,7 +27,8 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
     const submit = async () => {
         try {
             if (initialValues && initialValues.profile_picture_url) {
-                router.push('/onboard/location');
+                // router.push('/onboard/location');
+                goToNextPage?.();
             } else {
                 if (!image) {
                     Alert.alert('Error', 'Please select a profile picture')
@@ -82,7 +83,7 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
             <View className='p-4 space-y-4'>
                 <YStack>
                     <Text className='text-2xl text-black font-firabold'>Profile Picture</Text>
-                    <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
+                    <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                 </YStack>
                 <YStack>
                     <YStack>

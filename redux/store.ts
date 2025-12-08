@@ -5,14 +5,23 @@ import appSlice from "./slices/appSlice";
 import { getItem } from "@/utils/asyncStorage";
 import subscriptionSlice, { setActiveSubscription } from "./slices/subscriptionSlice";
 import usersSlice from "./slices/usersSlice";
+import chatsSlice from "./slices/chatsSlice";
+import messagesSlice from "./slices/messagesSlice";
+import encounterSlice from "./slices/encounterSlice";
 
 export const store = configureStore({
     reducer: {
         auth: authSlice,
         app: appSlice,
         subscription: subscriptionSlice,
-        users: usersSlice
+        users: usersSlice,
+        chats: chatsSlice,
+        messages: messagesSlice,
+        encounter: encounterSlice,
     },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+        serializableCheck: false,
+    }),
 });
 
 const initializeStore = async () => {
@@ -24,7 +33,9 @@ const initializeStore = async () => {
     store.dispatch(setActiveSubscription(userSubscription));
 };
 
-initializeStore();
+// initializeStore();
+export const initializeStorePromise = initializeStore();
+
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

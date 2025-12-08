@@ -34,6 +34,8 @@ export const fetchAppConfig = createAsyncThunk(
             }
             return generalConfigSettings;
         } catch (error: any) {
+            console.error('Error fetching app configuration:', error);
+            console.error('Error fetching app configuration message:', error.message);
             if (error.response && error.response.data.message) {
                 return rejectWithValue(error.response.data.message)
             } else {

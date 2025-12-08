@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View, Text, ActivityIndicator, Alert, Platform } from "react-native";
+import { StyleSheet, View, Text, ActivityIndicator, Alert, Platform, TouchableOpacity } from "react-native";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import CustomButton from "@/components/CustomButton";
 import { clearSwipeError } from "@/redux/slices/usersSlice";
-import { fetchProfilesAsync, swipeLeftAsync, swipeRightAsync } from "@/redux/thunks/swipeActions";
+import { fetchProfilesAsync } from "@/redux/thunks/swipeActions";
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -12,7 +12,10 @@ import { useUsersFeed } from "@/hooks/useUsersFeed";
 import { sendSwipe, UserCard } from "@/components/folder/api";
 import { SwiperStack, SwiperStackHandle } from "@/components/SwiperStack";
 import { ActionButtons } from "@/components/ActionButtons";
-import Header from "@/components/Header";
+import { router } from "expo-router";
+import NavBar from "@/components/NavBar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import NotificationIcon from "@/components/icons/NotificationIcon";
 
 
 Notifications.setNotificationHandler({
@@ -71,6 +74,7 @@ async function registerForPushNotificationsAsync() {
   }
 }
 export default function DiscoverScreen() {
+  const insets = useSafeAreaInsets();
   const {
     topCard,
     nextCards,
@@ -84,10 +88,10 @@ export default function DiscoverScreen() {
 
   const dispatch = useAppDispatch();
   const { profiles, currentIndex, loading, swipeLoading, swipeError } = useAppSelector((state) => state.users);
-   const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-      undefined
-    );
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+    undefined
+  );
 
   const handleSwiped = useCallback(
     async (direction: "left" | "right", user: UserCard) => {
@@ -95,7 +99,7 @@ export default function DiscoverScreen() {
       popTop();
 
       // Fire-and-forget API
-      sendSwipe({ userId: user.id.toString(), direction }).catch(() => {});
+      sendSwipe({ userId: user.id.toString(), direction }).then((res) => { }).catch((e) => console.log('swipe send error', e));
 
       // Encourage next prefetch cycle if needed (optional redundant safety)
       if (queueLength <= 8) {
@@ -107,6 +111,14 @@ export default function DiscoverScreen() {
 
   const handleKeepTop = useCallback((_user: UserCard) => {
     // no-op when snap back
+  }, []);
+
+  const handleInfo = useCallback((_user: UserCard) => {
+    // Show modal or navigate to detail screen
+    router.navigate({
+      pathname: '/[userName]',
+      params: { userName: _user.username }
+    });
   }, []);
 
 
@@ -125,7 +137,7 @@ export default function DiscoverScreen() {
     }
   }, [swipeError, dispatch]);
 
-   useEffect(() => {
+  useEffect(() => {
     registerForPushNotificationsAsync()
       .then(token => setExpoPushToken(token ?? ''))
       .catch((error: any) => {
@@ -166,31 +178,6 @@ export default function DiscoverScreen() {
     }
   };
 
-  const handleSwipeLeft = () => {
-    if (currentIndex < profiles.length) {
-      const userId = profiles[currentIndex].id;
-      dispatch(swipeLeftAsync(userId.toString()));
-    }
-  };
-
-  const handleSwipeRight = () => {
-    if (currentIndex < profiles.length) {
-      const userId = profiles[currentIndex].id;
-
-      // Dispatch the async action to record the like
-      dispatch(swipeRightAsync(userId.toString()))
-        .unwrap()
-        .then((result) => {
-          // If it's a match (30% chance in our mock), add to matches
-          if (result.isMatch || Math.random() < 0.3) {
-            // dispatch(addMatch(profiles[currentIndex]));
-          }
-        })
-        .catch(() => {
-          // Error is already handled by the useEffect above
-        });
-    }
-  };
 
   const handleRefresh = () => {
     dispatch(fetchProfilesAsync());
@@ -224,16 +211,20 @@ export default function DiscoverScreen() {
 
   const showInitialLoader = !topCard && loadingInitial;
   return (
-    <View style={styles.container}>
-      <Header.Default 
-      leftContent={<Text className="text-2xl font-semibold">Encounter 🔥</Text>}
-      />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => { }} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+        <NotificationIcon color={"#DD3FE5"} />
+      </TouchableOpacity>} />
       <View style={styles.content}>
         {errorInitial && showInitialLoader && <Text style={styles.error}>{errorInitial}</Text>}
 
         {showInitialLoader ? (
-          <View style={styles.loaderWrap}>
-            <ActivityIndicator />
+          // <View style={styles.loaderWrap}>
+          //   <ActivityIndicator />
+          // </View>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF4C6D" />
+            <Text style={styles.loadingText}>Loading profiles...</Text>
           </View>
         ) : (
           <>
@@ -243,7 +234,7 @@ export default function DiscoverScreen() {
               below={nextCards}
               onSwiped={handleSwiped}
               onKeepTop={handleKeepTop}
-              onInfo={() => {}}
+              onInfo={handleInfo}
             />
             <ActionButtons
               onDislike={() => swiperRef.current?.swipeLeft()}
@@ -254,14 +245,14 @@ export default function DiscoverScreen() {
           </>
         )}
       </View>
-     </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  
+
   container: { flex: 1, backgroundColor: "#fff" },
-  content: { flex: 1, paddingTop: 8, marginTop: 32, justifyContent: "flex-start" },
+  content: { flex: 1, paddingTop: 8, marginTop: 32, justifyContent: "flex-start", backgroundColor: "#fff" },
   loaderWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
   error: { color: "#f66", textAlign: "center", marginVertical: 8 },
 

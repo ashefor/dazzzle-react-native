@@ -1,13 +1,18 @@
 
-import ArrowBackIcon from "@/components/icons/ArrowBackIcon";
+import WalletIcon from "@/components/icons/WalletIcon";
+import NavBar from "@/components/NavBar";
 import SkeletonPlaceholder from "@/components/SkeletonLoader";
+import { useAppSelector } from "@/hooks/reduxHooks";
 import { WalletTransaction } from "@/models/subscription";
 import axiosRequest from "@/utils/axios";
-import { Ionicons } from "@expo/vector-icons";
-import { router, Stack } from "expo-router";
-import { Fragment, useEffect, useState } from "react";
-import { FlatList, View, Text, TouchableOpacity, Alert, RefreshControl } from "react-native";
-import { Sheet } from "tamagui";
+import { LinearGradient } from "expo-linear-gradient";
+import { JSX, useCallback, useEffect, useRef, useState } from "react";
+import { FlatList, View, Text, TouchableOpacity, Alert, RefreshControl, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import dayjs from 'dayjs';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import CustomButton from "@/components/CustomButton";
 
 export interface FinancialTransaction {
     _id: number
@@ -20,12 +25,91 @@ export interface FinancialTransaction {
     method: string
 }
 
+const SubscriptionCard = ({ planName, expiryDate }: { planName: string; expiryDate: string }) => {
+    return (
+        <LinearGradient
+            colors={['#D946EF', '#C026D3']} // Pink/Purple Gradient
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="rounded-2xl p-6 shadow-lg"
+            style={{ elevation: 10, shadowColor: '#D946EF', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 10 } }}
+        >
+            <View className="flex-row items-center mb-2">
+                <View>
+                    <Text className="text-white text-xl font-firabold capitalize">{planName}</Text>
+                    <Text className="text-white/80 text-sm font-firaregular">Expires On: {dayjs(expiryDate).format('ddd, MMM D, YYYY h:mm A')}</Text>
+                </View>
+            </View>
+        </LinearGradient>
+    )
+}
+
+const Skeleton = ({ style }: { style?: any }) => (
+    <SkeletonPlaceholder
+        style={StyleSheet.flatten([{ backgroundColor: '#F0F0F0' }, style])}
+    />
+);
+
+const TransactionSkeleton = () => (
+    <View className="flex-row items-center justify-between py-4 border-b border-gray-100">
+        <View className="flex-row items-center">
+            {/* Circle Icon Skeleton */}
+            <Skeleton
+                style={{ width: 48, height: 48, borderRadius: 24, marginRight: 16 }}
+            />
+
+            <View>
+                <Skeleton style={{ width: 120, height: 16, marginBottom: 8, borderRadius: 4 }} />
+                <Skeleton style={{ width: 80, height: 12, borderRadius: 4 }} />
+            </View>
+        </View>
+
+        {/* Amount Skeleton */}
+        <Skeleton style={{ width: 90, height: 14, borderRadius: 4 }} />
+    </View>
+);
+
+const TransactionListSkeleton = () => {
+    return (
+        <View>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((key) => (
+                <TransactionSkeleton key={key} />
+            ))}
+        </View>
+    );
+}
+
+const TransactionItem = ({ transaction, onPress }: { transaction: WalletTransaction; onPress: (transaction: any) => void }) => {
+    return (
+        <TouchableOpacity onPress={() => onPress(transaction.financialTransactionDetail)} style={{ minHeight: 44 }} className="py-4 flex flex-row gap-4 items-center border-b border-gray-100">
+            <View className="h-8 w-8 flex rounded-full items-center justify-center bg-[#FCE6FD]">
+                {/* <Ionicons name="wallet-outline" size={20} color="#E2E3DD" /> */}
+                <WalletIcon color={"#E2E3DD"} />
+            </View>
+            <View className="flex-1 flex flex-row justify-between items-start">
+                <View className="space-y-1">
+                    <Text className="text-sm font-firamedium">
+                        {transaction.formattedTransactionType}
+                    </Text>
+                    <Text className="text-xs text-[#AEAEB2] font-firaregular">{transaction.created_at}</Text>
+                </View>
+                <Text className="text">
+                    {transaction.credits}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    )
+}
+
+
 const WalletTransactions = () => {
     const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
     const [loading, setLoading] = useState(false);
+    const insets = useSafeAreaInsets();
     const [refreshing, setRefreshing] = useState(false);
-    const [isSheetOpen, setSheetOpen] = useState(false);
     const [singleFinancialTransaction, setSingleFinancialTransaction] = useState<FinancialTransaction | null>(null);
+    const { currentSubscription, isActive } = useAppSelector(state => state.subscription);
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
 
     const fetchWalletTransactions = async (refresh?: boolean) => {
@@ -39,6 +123,7 @@ const WalletTransactions = () => {
             }
             const { data } = await axiosRequest.get('credit-wallet/transaction-list');
             const transactions = data.data;
+            console.log('transactions', transactions);
             setTransactions(transactions);
             setLoading(false);
             setRefreshing(false)
@@ -53,204 +138,131 @@ const WalletTransactions = () => {
         fetchWalletTransactions();
     }, [])
 
+    const getSubscriptionPlanNameFromPlanId = (planId?: string) => {
+        return planId ? planId.split('_').join(' ') : 'Unknown';
+    }
+
     const viewSingleTransaction = (transaction?: FinancialTransaction | Array<any>) => {
+        console.log('transaction', transaction);
         if (transaction && Array.isArray(transaction)) {
             setSingleFinancialTransaction(null);
-            setSheetOpen(false);
+            // bottomSheetModalRef.current?.present();
         } else {
             setSingleFinancialTransaction(transaction as FinancialTransaction);
-            setSheetOpen(true);
+            bottomSheetModalRef.current?.present();
         }
     }
 
-    return (
-        <Fragment>
-            <Stack.Screen
-                options={{
-                    headerStyle: { backgroundColor: '#1A1A1A' },
-                    headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-                        <ArrowBackIcon />
-                    </TouchableOpacity>
-                }}
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            // onPress={handleBlur}
             />
-            <View className="bg-primary p-4">
-                {loading ? (
-                    ItemSkeleton()
-                ) :
-                    (
-                        <FlatList
-                            className="h-full"
-                            data={transactions}
-                            ItemSeparatorComponent={() => <View className="h-px bg-[#5B5B5B]" />}
-                            refreshControl={
-                                <RefreshControl
-                                tintColor="#fff"
-                                colors={['#fff']}
-                                    refreshing={refreshing}
-                                    onRefresh={() => fetchWalletTransactions(true)}
-                                />}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => viewSingleTransaction(item.financialTransactionDetail)} style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                                    <View className="rounded h-8 w-8 flex items-center justify-center bg-[#5B5B5B]">
-                                        <Ionicons name="wallet-outline" size={20} color="#E2E3DD" />
-                                    </View>
-                                    <View className="flex-1 flex flex-row justify-between items-start">
-                                        <View className="space-y-1">
-                                            <Text className="text-white text-xs">{item.created_at}</Text>
-                                            <Text className="text-white text-sm">
-                                                {item.formattedTransactionType}
-                                            </Text>
-                                        </View>
-                                        <Text className="text-white">
-                                            {item.credits}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                        />
-                    )}
+        ),
+        []
+    );
 
-                <Sheet
-                    forceRemoveScrollEnabled={isSheetOpen}
-                    modal={true}
-                    open={isSheetOpen}
-                    disableDrag={true}
-                    onOpenChange={setSheetOpen}
-                    snapPointsMode={'fit'}
-                    dismissOnSnapToBottom
-                    zIndex={100_000}
-                    animation="quicker"
-                >
-                    <Sheet.Overlay
-                        onPress={() => setSheetOpen(false)}
-                        animation="quicker"
-                        enterStyle={{ opacity: 0 }}
-                        exitStyle={{ opacity: 0 }}
-                    />
-                    <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-                        <View className=' flex-row items-center  h-12 relative' >
-                            <View className='px-4' style={{ zIndex: 10 }}>
-                                <TouchableOpacity onPress={() => setSheetOpen(false)} className='z-10 flex items-center  pr-4'>
-                                    <Ionicons name="close-circle" size={24} color="#ffffff" />
-                                </TouchableOpacity>
-                            </View>
-
-                            <Text className='absolute  text-white text-base font-firamedium flex w-full flex-row text-center justify-center items-center'>Financial Transaction</Text>
-                        </View>
-                        <View className='px-6 pb-10'>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Created At
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.created_at}
-                                </Text>
-                            </View>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Amount
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.amount}
-                                </Text>
-                            </View>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Currency
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.currency_code}
-                                </Text>
-                            </View>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Status
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.status}
-                                </Text>
-                            </View>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Method
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.method}
-                                </Text>
-                            </View>
-                            <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
-                                <Text className="text-white text-sm">
-                                    Mode
-                                </Text>
-                                <Text className="text-white">
-                                    {singleFinancialTransaction?.payment_mode}
-                                </Text>
-                            </View>
-                            <TouchableOpacity onPress={() => setSheetOpen(false)} className='mt-4 flex items-center justify-center self-center py-2 w-fit px-4'>
-                                <Text className='text-white text-sm font-firamedium'>Close</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Sheet.Frame>
-                </Sheet>
-            </View>
-        </Fragment>
-    )
-}
-
-const ItemSkeleton = () => {
     return (
-        <Fragment>
-            <View style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                <View className="rounded h-8 w-8 flex items-center justify-center">
-                    <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
-                </View>
-                <View className="flex-1 space-y-1">
-                    <SkeletonPlaceholder style={{ height: 8, width: '40%' }} />
-                    <SkeletonPlaceholder style={{ height: 10, width: '70%' }} />
-                </View>
-                <SkeletonPlaceholder style={{ height: 5, width: '10%' }} />
+        <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+            <NavBar title="Wallet Transactions" />
+            <View className="flex-1">
+                <FlatList
+                    className="h-full"
+                    ListHeaderComponent={
+                        <>
+                            <SubscriptionCard planName={getSubscriptionPlanNameFromPlanId(currentSubscription?.plan_id)} expiryDate={currentSubscription?.expiry_at!} />
+                            <Text className="text-base font-bold text-black mb-2 mt-6">Transactions</Text>
+                        </>
+                    }
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 20 }}
+                    data={transactions}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={(item) => item._uid}
+                    ListEmptyComponent={loading ? <TransactionListSkeleton /> : null}
+                    refreshControl={
+                        <RefreshControl
+                            tintColor="#fff"
+                            colors={['#fff']}
+                            refreshing={refreshing}
+                            onRefresh={() => fetchWalletTransactions(true)}
+                        />}
+                    renderItem={({ item }) => <TransactionItem transaction={item} onPress={viewSingleTransaction} />}
+                />
+
+                <BottomSheetModal
+                    ref={bottomSheetModalRef}
+                    enableDynamicSizing
+                    enablePanDownToClose={true}
+                    style={{
+                        borderRadius: 28,
+                    }}
+                    backgroundStyle={{
+                        borderRadius: 28,
+                    }}
+                    backdropComponent={renderBackdrop}
+                >
+
+                    <BottomSheetView>
+                        <View className='px-4 pb-10 pt-4'>
+                            <View className="mb-4">
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Created At
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.created_at}
+                                    </Text>
+                                </View>
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Amount
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.amount}
+                                    </Text>
+                                </View>
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Currency
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.currency_code}
+                                    </Text>
+                                </View>
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Status
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.status}
+                                    </Text>
+                                </View>
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Method
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.method}
+                                    </Text>
+                                </View>
+                                <View style={{ minHeight: 44 }} className="py-2 flex flex-row justify-between gap-4 items-center">
+                                    <Text className="text-black text-sm font-firaregular">
+                                        Mode
+                                    </Text>
+                                    <Text className="font-firamedium">
+                                        {singleFinancialTransaction?.payment_mode}
+                                    </Text>
+                                </View>
+                            </View>
+                            <CustomButton handlePress={() => bottomSheetModalRef.current?.dismiss()} title="Close" />
+                        </View>
+                    </BottomSheetView>
+                </BottomSheetModal>
             </View>
-            <View style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                <View className="rounded h-8 w-8 flex items-center justify-center">
-                    <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
-                </View>
-                <View className="flex-1 space-y-1">
-                    <SkeletonPlaceholder style={{ height: 8, width: '40%' }} />
-                    <SkeletonPlaceholder style={{ height: 10, width: '70%' }} />
-                </View>
-                <SkeletonPlaceholder style={{ height: 5, width: '10%' }} />
-            </View>
-            <View style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                <View className="rounded h-8 w-8 flex items-center justify-center">
-                    <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
-                </View>
-                <View className="flex-1 space-y-1">
-                    <SkeletonPlaceholder style={{ height: 8, width: '40%' }} />
-                    <SkeletonPlaceholder style={{ height: 10, width: '70%' }} />
-                </View>
-                <SkeletonPlaceholder style={{ height: 5, width: '10%' }} />
-            </View>
-            <View style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                <View className="rounded h-8 w-8 flex items-center justify-center">
-                    <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
-                </View>
-                <View className="flex-1 space-y-1">
-                    <SkeletonPlaceholder style={{ height: 8, width: '40%' }} />
-                    <SkeletonPlaceholder style={{ height: 10, width: '70%' }} />
-                </View>
-                <SkeletonPlaceholder style={{ height: 5, width: '10%' }} />
-            </View>
-            <View style={{ minHeight: 44 }} className="py-2 flex flex-row gap-4 items-center">
-                <View className="rounded h-8 w-8 flex items-center justify-center">
-                    <SkeletonPlaceholder style={{ height: '100%', width: '100%' }} />
-                </View>
-                <View className="flex-1 space-y-1">
-                    <SkeletonPlaceholder style={{ height: 8, width: '40%' }} />
-                    <SkeletonPlaceholder style={{ height: 10, width: '70%' }} />
-                </View>
-                <SkeletonPlaceholder style={{ height: 5, width: '10%' }} />
-            </View>
-        </Fragment>
+        </View>
     )
 }
 

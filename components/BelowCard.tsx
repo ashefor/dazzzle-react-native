@@ -1,16 +1,20 @@
-import React, { memo } from "react";
-import Animated, { useAnimatedStyle, interpolate, SharedValue } from "react-native-reanimated";
+import React, { memo, useEffect } from "react";
+import Animated, {
+    useAnimatedStyle,
+    interpolate,
+    SharedValue,
+    useSharedValue,
+    withSpring,
+} from "react-native-reanimated";
 import { StyleSheet } from "react-native";
-
-import { UserCard } from "./folder/api";
 import { Card } from "./UserCard";
+import { UserCard } from "./folder/api";
 
 type Props = {
   user: UserCard;
-  index: number; // logical depth (0 = directly under top)
+  index: number;
   tx: SharedValue<number>;
   exitX: number;
-  isExiting: boolean;
   cardWidth: number;
   cardHeight: number;
   borderRadius: number;
@@ -21,35 +25,57 @@ function BelowCardComponent({
   index,
   tx,
   exitX,
-  isExiting,
   cardWidth,
   cardHeight,
   borderRadius,
 }: Props) {
-  const depth = index + 1;
+  // We use a shared value for the index to animate it smoothly
+  // When index changes (e.g., 1 -> 0), this value will spring to the new number
+  const animatedIndex = useSharedValue(index);
+
+  useEffect(() => {
+    animatedIndex.value = withSpring(index, {
+      damping: 15,
+      stiffness: 150,
+      mass: 0.5, // Lightweight for fast response
+    });
+  }, [index]);
 
   const animatedStyle = useAnimatedStyle(() => {
+    // Calculate depth based on the ANIMATED index, not the discrete prop
+    const depth = animatedIndex.value + 1;
+    
     const baseScale = 1 - depth * 0.04;
     const baseTranslateY = depth * 14;
-    const moving = !isExiting;
 
-    const scale = moving
-      ?  interpolate(Math.abs(tx.value), [0, exitX], [baseScale, baseScale - 0.02])
-      : baseScale;
-    const translateY = moving
-      ? interpolate(Math.abs(tx.value), [0, exitX], [baseTranslateY, baseTranslateY + 4])
-      : baseTranslateY;
+    // Combine the smooth index transition with the drag parallax
+    // We limit the effect of tx so background cards don't move too aggressively
+    const parallaxScale = interpolate(
+      Math.abs(tx.value),
+      [0, exitX],
+      [0, 0.02] // Minor growth during swipe
+    );
+    
+    const parallaxY = interpolate(
+      Math.abs(tx.value),
+      [0, exitX],
+      [0, -4] // Minor lift during swipe
+    );
 
     return {
-      transform: [{ translateY }, { scale }],
+      transform: [
+        { translateY: baseTranslateY + parallaxY }, 
+        { scale: baseScale + parallaxScale }
+      ],
       opacity: 1,
+      zIndex: 10 - index, // Keep zIndex discreet to avoid sorting issues
     };
-  }, [isExiting, depth, exitX]);
+  }, [exitX, index]); // Dependency on index is just for zIndex update
 
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.belowCard, animatedStyle, { zIndex: 10 - index }]}
+      style={[styles.belowCard, animatedStyle]}
     >
       <Card
         user={user}

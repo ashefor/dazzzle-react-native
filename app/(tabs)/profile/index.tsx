@@ -1,40 +1,46 @@
-import { Text, TouchableOpacity, ScrollView, View } from 'react-native';
-import { XStack, Avatar, Sheet, } from 'tamagui';
-import { Link, router, Stack } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import AccessIcon from '@/components/icons/AccessIcon';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Fragment, useEffect, useState } from 'react';
+import { Text, TouchableOpacity, ScrollView, View, StyleSheet, Image } from 'react-native';
+import { router } from 'expo-router';
+import { Fragment, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { signUserOut } from '@/redux/thunks/authActions';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Feather, Octicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
+import { AntDesign, Feather } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { useLoader } from '@/context/loader/LoaderProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import NavBar from '@/components/NavBar';
+import { LinearGradient } from 'expo-linear-gradient';
+import ArrowForwardIcon from '@/components/icons/ArrowForwardIcon';
+import ExitIcon from '@/components/icons/ExitIcon';
+import IdCardIcon from '@/components/icons/IdCardIcon';
+import WalletIcon from '@/components/icons/WalletIcon';
+import UserBlockIcon from '@/components/icons/UserBlockIcon';
+import NotificationIcon from '@/components/icons/NotificationIcon';
+import LockIcon from '@/components/icons/LockIcon';
+import MailIcon from '@/components/icons/MailIcon';
+import ShieldIcon from '@/components/icons/ShieldIcon';
+import { fetchUserProfileData } from '@/redux/thunks/userActions';
 
 export default function ProfileScreen() {
-  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-      const { show, hide } = useLoader();
+  const insets = useSafeAreaInsets();
+  const { show, hide } = useLoader();
   const dispatch = useAppDispatch();
   const { userInfo, loggingOut } = useAppSelector(state => state.auth);
-  const { currentSubscription, isActive } = useAppSelector(state => state.subscription);
 
   const handleLogOut = async () => {
     dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
   }
 
   useEffect(() => {
-      if (loggingOut) {
-          show();
-      } else {
-          hide();
-      }
-  }, [loggingOut])
+    dispatch(fetchUserProfileData());
+  }, [])
 
-  const getSubscriptionPlanNameFromPlanId = (planId?: string) => {
-    return planId ? planId.split('_').join(' ') : 'Unknown';
-  }
+  useEffect(() => {
+    if (loggingOut) {
+      show();
+    } else {
+      hide();
+    }
+  }, [loggingOut])
 
   const openPrivacyPolicy = async () => {
     await WebBrowser.openBrowserAsync('https://dazzzle.org/privacy-policy');
@@ -50,209 +56,227 @@ export default function ProfileScreen() {
 
   return (
     <Fragment>
-      <Stack.Screen
-        options={{
-          headerTitle: 'Profile',
-          headerStyle: { backgroundColor: '#1A1A1A' }
-        }}
-      />
-      <ScrollView className='h-full '>
-        <View className='h-full p-4'>
-          <XStack alignItems="center" gap="$4">
-            <Avatar circular size="$5">
-              <Avatar.Image
-                accessibilityLabel="Nate Wienert"
-                src={userInfo?.profile_picture_url}
-              />
-              <Avatar.Fallback delayMs={600} backgroundColor="$blue10" />
-            </Avatar>
-            <View>
-              <Text className='text-xl text-white font-firasemibold'>{userInfo?.username}</Text>
-              <Link className='text-sm text-tertiary font-firaregular py-2' href='/profile/my-profile'>View Profile</Link>
-            </View>
-          </XStack>
-          <View className='mt-4'>
-            <View className=''>
-              <Text className='text-white my-3 font-firamedium text-sm'>Account</Text>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => setIsSubscriptionModalOpen(true)}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <MaterialCommunityIcons name="crown-circle-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Subscriptions</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
+      <View className='flex-1 bg-white' style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <NavBar
+          leftItem={<Text className='text-2xl text-primary font-firasemibold'>Profile</Text>}
+        />
+        <ScrollView className='h-full ' contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+          <View style={styles.cardContainer}>
+            <LinearGradient
+              colors={['#D946EF', '#A855F7']} // Pink to Purple gradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientCard}
+            >
+              <View style={styles.profileInfo}>
+                <Image
+                  source={{ uri: userInfo?.profile_picture_url }} // Placeholder image
+                  style={styles.avatar}
+                />
+                <View>
+                  <Text style={styles.profileName}>{userInfo?.full_name || userInfo?.first_name + ' ' + userInfo?.last_name}</Text>
+                  <Text style={styles.profileLocation}>{userInfo?.username}</Text>
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/profile/wallet-transactions')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Ionicons name="wallet-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Transactions</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-              {/* <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/profile/visitors')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Ionicons name="people-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Visitors</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity> */}
-              <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/profile/blocked-users')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Octicons name="blocked" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>My Blocked List</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/profile/settings')} activeOpacity={0.8}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-b-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    {/* <Ionicons name="notifications-outline" size={20} color="#E2E3DD" /> */}
-                    <Feather name="bell" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Notification Settings</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-            </View>
+              </View>
 
-            <View>
-              <Text className='text-white my-3 font-firamedium text-sm'>Security</Text>
-              <TouchableOpacity onPress={() => router.push('/profile/change-password')} activeOpacity={0.8}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <AccessIcon />
-                    <Text className='text-white text-base font-firamedium'>Change Password</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/profile/change-email')} activeOpacity={0.8}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-b-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    <MaterialCommunityIcons name="email-edit-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Change Email</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-            </View>
-            <View>
-              <Text className='text-white my-3 font-firamedium text-sm'>Legal</Text>
-              {/* <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Feather name="file-text" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Terms and Conditions</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity> */}
-              <TouchableOpacity activeOpacity={0.8} onPress={openPrivacyPolicy}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    <MaterialCommunityIcons name="shield-key-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Privacy Policy</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            <View>
-              <Text className='text-white my-3 font-firamedium text-sm'>More</Text>
-              <TouchableOpacity activeOpacity={0.8} onPress={openInstagram}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Ionicons name="logo-instagram" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Follow us on instagram</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-              {/* <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Coming Soon')}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-b-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Ionicons name="logo-tiktok" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Follow us on tiktok</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity> */}
-            </View>
-
-            <View className='mt-4'>
-              <TouchableOpacity activeOpacity={0.8} onPress={openContactUsPage}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] text-white border-b-white rounded-t-xl border-b-[0.5px]'>
-                  <View className='flex-row items-center space-x-2'>
-                    <Ionicons name="help-circle-outline" size={20} color="#E2E3DD" />
-                    <Text className='text-white text-base font-firamedium'>Help</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#E2E3DD" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleLogOut} activeOpacity={0.8}>
-                <View className='flex-row justify-between py-3 px-4 bg-[#5B5B5B] border-b-white rounded-b-xl'>
-                  <View className='flex-row items-center space-x-2'>
-                    {/* <MailIcon /> */}
-                    <MaterialIcons name="logout" size={24} color="#e34747" />
-                    <Text className='text-[#e34747] text-base font-firamedium'>Log Out</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
+              {/* <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>20</Text>
+                <Text style={styles.statLabel}>Likes</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>100</Text>
+                <Text style={styles.statLabel}>Views</Text>
+              </View>
+            </View> */}
+            </LinearGradient>
           </View>
+          <Section title="Account">
+            <MenuItem onPress={() => router.push('/profile/profile-settings')} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
+            <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet" />
+            <MenuItem onPress={() => router.push('/profile/blocked-users')} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
+            <MenuItem onPress={() => router.push('/profile/settings')} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
+          </Section>
+          <Section title="Security">
+            <MenuItem onPress={() => router.push('/profile/change-password')} icon={<LockIcon stroke={"#8E8E93"} />} label="Change Password" />
+            <MenuItem onPress={() => router.push('/profile/change-email')} icon={<MailIcon stroke={"#8E8E93"} />} label="Change Email" isLast />
+          </Section>
+
+          <Section title="Legal">
+            <MenuItem onPress={openPrivacyPolicy} icon={<ShieldIcon stroke={"#8E8E93"} />} label="Privacy Policy" isLast />
+          </Section>
+
+          <Section title="More">
+            <MenuItem onPress={openInstagram} icon={<AntDesign name="instagram" size={20} color="#8E8E93" />} label="Follow us on Instagram" />
+            <MenuItem onPress={openContactUsPage} icon={<Feather name="help-circle" size={20} color="#8E8E93" />} label="Help" isLast />
+          </Section>
+          <TouchableOpacity onPress={handleLogOut} style={styles.logoutButton}>
+            <ExitIcon stroke={"#FF383C"} />
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity className='h-[44px] w-full bg-red-600 flex items-center justify-center rounded-xl my-6'>
             <Text className='text-white text-base font-firamedium'>
               Delete My Account
             </Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
-      <Sheet
-        forceRemoveScrollEnabled={isSubscriptionModalOpen}
-        modal={true}
-        open={isSubscriptionModalOpen}
-        disableDrag={true}
-        onOpenChange={setIsSubscriptionModalOpen}
-        snapPointsMode={'fit'}
-        dismissOnSnapToBottom
-        zIndex={100_000}
-        animation="quicker"
-      >
-        <Sheet.Overlay
-          onPress={() => setIsSubscriptionModalOpen(false)}
-          animation="quicker"
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-          <View className=' flex-row items-center  h-12 relative' >
-            <View className='px-4' style={{ zIndex: 10 }}>
-              <TouchableOpacity onPress={() => setIsSubscriptionModalOpen(false)} className='z-10 flex items-center  pr-4'>
-                <Ionicons name="close-circle" size={24} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-
-            <Text className='absolute  text-white text-base font-firamedium flex w-full flex-row text-center justify-center items-center'>Current Subscription</Text>
-          </View>
-          <View className='px-6 pb-10'>
-            <View className="p-4 bg-[#FFFFFF1A] rounded-lg space-y-2">
-              <Text className="text-white text-xl font-firabold capitalize">{getSubscriptionPlanNameFromPlanId(currentSubscription?.plan_id)}</Text>
-              <Text className="text-white text-sm font-firaregular">Expires On: {dayjs(currentSubscription?.expiry_at).format('ddd, MMM D, YYYY h:mm A')}</Text>
-            </View>
-            <TouchableOpacity onPress={() => setIsSubscriptionModalOpen(false)} className='mt-4 flex items-center justify-center self-center py-2 w-fit px-4'>
-              <Text className='text-white text-sm font-firamedium'>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </Sheet.Frame>
-      </Sheet>
+        </ScrollView>
+      </View>
     </Fragment>
   );
 }
+
+const MenuItem = ({ icon, label, isLast, onPress }: { icon: React.ReactNode; label: string; isLast?: boolean; onPress?: () => void }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.menuItem, isLast && styles.menuItemLast]}>
+    <View style={styles.menuItemLeft}>
+      <View style={styles.iconContainer}>
+        {icon}
+      </View>
+      <Text style={styles.menuItemText}>{label}</Text>
+    </View>
+    <ArrowForwardIcon />
+
+  </TouchableOpacity>
+);
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <View style={styles.sectionContainer}>
+    <Text style={styles.sectionHeader}>{title}</Text>
+    <View style={styles.sectionBody}>
+      {children}
+    </View>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: '#FFFFFF',
+  // },
+  // Card Styles
+  cardContainer: {
+    marginBottom: 25,
+    borderRadius: 20,
+    overflow: 'hidden',
+    // Shadow for iOS
+    shadowColor: '#D946EF',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    // Elevation for Android
+    elevation: 10,
+  },
+  gradientCard: {
+    padding: 20,
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginBottom: 20,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: '#fff',
+    marginRight: 15,
+  },
+  profileName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Onest_500Medium',
+  },
+  profileLocation: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    marginTop: 2,
+    fontFamily: 'Onest_400Regular',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 15,
+    paddingVertical: 15,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statNumber: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    color: '#fff',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  // Section Styles
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Onest_500Medium',
+    color: '#111',
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+  sectionBody: {
+    backgroundColor: '#F2F2F7', // Very light grey for the group background
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  // Menu Item Styles
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  menuItemLast: {
+    borderBottomWidth: 0,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginRight: 12,
+    width: 24, // fixed width to align text even if icons differ slightly
+    alignItems: 'center',
+  },
+  menuItemText: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: '500',
+    fontFamily: 'Onest_500Medium',
+  },
+  // Logout Styles
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  logoutText: {
+    color: '#EF4444',
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Onest_500Medium',
+    marginLeft: 8,
+  },
+});

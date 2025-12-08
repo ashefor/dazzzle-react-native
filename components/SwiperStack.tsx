@@ -1,24 +1,25 @@
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    forwardRef,
-    useImperativeHandle,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
 } from "react";
-import { Dimensions, StyleSheet, View, Text } from "react-native";
+import { Dimensions, StyleSheet, View, Text, Platform } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withSpring,
-    withTiming,
-    runOnJS,
-    interpolate,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+  interpolate,
+  withSpring,
 } from "react-native-reanimated";
-import { UserCard } from "./folder/api";
 import { Card } from "./UserCard";
+import { StackedCard } from "./StackedCard";
+import { UserCard } from "./folder/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH - 32;
@@ -40,105 +41,167 @@ type Props = {
 };
 
 export const SwiperStack = forwardRef<SwiperStackHandle, Props>(
-  ({ top, below, onSwiped, onKeepTop, onInfo }, ref) => {
+  function SwiperStack({ top, below, onSwiped, onKeepTop, onInfo }, ref) {
+    // 1. Animation Hooks
     const tx = useSharedValue(0);
     const ty = useSharedValue(0);
     const rot = useSharedValue(0);
+    const isDragging = useSharedValue(false);
 
     const [exitingCard, setExitingCard] = useState<UserCard | null>(null);
-    const exitDirectionRef = useRef<"left" | "right" | null>(null);
+    const exTx = useSharedValue(0);
+    const exTy = useSharedValue(0);
+    const exRot = useSharedValue(0);
 
-    const thresholdX = useMemo(() => CARD_WIDTH * 0.25, []);
+    // 2. Local Deck Hooks
+    const [deck, setDeck] = useState<UserCard[]>([]);
+    const deckRef = useRef<UserCard[]>([]);
+
+    // Sync Props to Local Deck
+    useEffect(() => {
+      const incomingStack = top ? [top, ...below] : [...below];
+      setDeck((currentDeck) => {
+        let nextDeck = currentDeck;
+        if (currentDeck.length === 0) {
+          nextDeck = incomingStack;
+        } else {
+          const currentIds = new Set(currentDeck.map((c) => c.id));
+          if (top && !currentIds.has(top.id) && currentDeck.length > 0) {
+            nextDeck = incomingStack; // Hard refresh/reset
+          } else {
+             const newCards = incomingStack.filter((c) => !currentIds.has(c.id));
+             if (newCards.length > 0) {
+               nextDeck = [...currentDeck, ...newCards];
+             }
+          }
+        }
+        deckRef.current = nextDeck;
+        return nextDeck;
+      });
+    }, [top, below]);
+
+    const visibleDeck = deck.slice(0, 4);
+
+    // 3. Constants & Refs
+    const thresholdX = CARD_WIDTH * 0.25;
     const earlyBadgeThreshold = thresholdX * 0.4;
-    const exitX = useMemo(() => CARD_WIDTH * 1.2, []);
-    const exitY = useMemo(() => CARD_HEIGHT * 0.15, []);
+    const exitX = CARD_WIDTH * 1.2;
+    const exitY = CARD_HEIGHT * 0.15;
 
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+      return () => { isMountedRef.current = false; };
+    }, []);
+
+    // 4. Logic Callbacks
     const resetCard = useCallback(() => {
+      if (!isMountedRef.current) return;
       tx.value = withSpring(0, { damping: 15, stiffness: 200 });
       ty.value = withSpring(0, { damping: 15, stiffness: 200 });
       rot.value = withSpring(0, { damping: 15, stiffness: 200 });
-    }, [tx, ty, rot]);
+    }, []);
 
-    useEffect(() => {
-      // Ensure fresh neutral transforms for new top card
-      tx.value = 0;
-      ty.value = 0;
-      rot.value = 0;
-    }, [top?.id, tx, ty, rot]);
+    const completeSwipe = useCallback(() => {
+      if (!isMountedRef.current) return;
+      setExitingCard(null);
+    }, []);
 
-    const completeSwipe = useCallback(
-      (direction: "left" | "right", user: UserCard) => {
-        runOnJS(onSwiped)(direction, user);
-        setExitingCard(null);
-        exitDirectionRef.current = null;
-      },
-      [onSwiped]
-    );
+    const startExitAnimation = useCallback(
+      (direction: "left" | "right", cardToSwipe: UserCard) => {
+        if (!isMountedRef.current || exitingCard) return;
 
-    const fling = useCallback(
-      (direction: "left" | "right", user: UserCard) => {
-        if (exitingCard) return; // already animating
-        setExitingCard(user);
-        exitDirectionRef.current = direction;
+        setExitingCard(cardToSwipe);
+        exTx.value = tx.value;
+        exTy.value = ty.value;
+        exRot.value = rot.value;
+
+        setDeck((prev) => {
+          const next = prev.slice(1);
+          deckRef.current = next;
+          return next;
+        });
+
+        onSwiped(direction, cardToSwipe);
+
+        tx.value = 0;
+        ty.value = 0;
+        rot.value = 0;
+
         const sign = direction === "right" ? 1 : -1;
-        tx.value = withTiming(sign * exitX, { duration: 180 });
-        ty.value = withTiming(exitY, { duration: 180 });
-        rot.value = withTiming(sign * 15, { duration: 180 }, () => {
-          runOnJS(completeSwipe)(direction, user);
+        exTx.value = withTiming(sign * exitX, { duration: 200 });
+        exTy.value = withTiming(exitY, { duration: 200 });
+        exRot.value = withTiming(sign * 15, { duration: 200 }, () => {
+          if (isMountedRef.current) {
+            runOnJS(completeSwipe)();
+          }
         });
       },
-      [exitX, exitY, completeSwipe, tx, ty, rot, exitingCard]
+      [completeSwipe, exitingCard, exitX, exitY, onSwiped]
     );
 
-    const gesture = useMemo(
+    const handleGestureEnd = useCallback((willRight: boolean, willLeft: boolean) => {
+        const currentTop = deckRef.current[0];
+        if (!currentTop) return;
+
+        if (willRight) {
+            startExitAnimation("right", currentTop);
+        } else if (willLeft) {
+            startExitAnimation("left", currentTop);
+        } else {
+            resetCard();
+            onKeepTop(currentTop);
+        }
+    }, [startExitAnimation, resetCard, onKeepTop]);
+
+    const pan = useMemo(
       () =>
         Gesture.Pan()
+          .onBegin(() => {
+            if (isMountedRef.current) isDragging.value = true;
+          })
           .onUpdate((e) => {
-            if (exitingCard) return;
+            if (!isMountedRef.current) return;
             tx.value = e.translationX;
             ty.value = e.translationY;
             rot.value = e.translationX * 0.06;
           })
           .onEnd((e) => {
-            if (!top || exitingCard) return;
+            isDragging.value = false;
             const willRight = e.translationX > thresholdX || e.velocityX > 800;
             const willLeft = e.translationX < -thresholdX || e.velocityX < -800;
-            if (willRight) {
-              runOnJS(fling)("right", top);
-            } else if (willLeft) {
-              runOnJS(fling)("left", top);
-            } else {
-              runOnJS(resetCard)();
-              runOnJS(onKeepTop)(top);
-            }
+            runOnJS(handleGestureEnd)(willRight, willLeft);
+          })
+          .onFinalize(() => {
+            isDragging.value = false;
           }),
-      [top, thresholdX, fling, resetCard, onKeepTop, exitingCard]
+      [thresholdX, handleGestureEnd]
     );
 
-    // Imperative handle for buttons
     useImperativeHandle(
       ref,
       () => ({
         swipeLeft: () => {
-          if (top) fling("left", top);
+          if (deckRef.current[0] && !exitingCard) startExitAnimation("left", deckRef.current[0]);
         },
         swipeRight: () => {
-          if (top) fling("right", top);
+          if (deckRef.current[0] && !exitingCard) startExitAnimation("right", deckRef.current[0]);
         },
         peekInfo: () => {
-          if (top && !exitingCard) onInfo(top);
+          if (deckRef.current[0] && !exitingCard) onInfo(deckRef.current[0]);
         },
       }),
-      [fling, top, onInfo, exitingCard]
+      [exitingCard, startExitAnimation, onInfo]
     );
 
-    const topStyle = useAnimatedStyle(() => ({
+    // 5. Style Hooks (MUST BE CALLED EVERY RENDER)
+    const exitingStyle = useAnimatedStyle(() => ({
       transform: [
-        { translateX: tx.value },
-        { translateY: ty.value },
-        { rotateZ: `${rot.value}deg` },
-        { scale: interpolate(Math.abs(tx.value), [0, exitX], [1, 0.95]) },
+        { translateX: exTx.value },
+        { translateY: exTy.value },
+        { rotateZ: `${exRot.value}deg` },
       ],
+      zIndex: 10001,
+      elevation: Platform.OS === "android" ? 10001 : undefined,
     }));
 
     const likeBadgeStyle = useAnimatedStyle(() => {
@@ -165,58 +228,55 @@ export const SwiperStack = forwardRef<SwiperStackHandle, Props>(
       };
     });
 
-    const logicalBelow = below.slice(0, 3);
-    const belowAnimatedStyles = logicalBelow.map((_, idx) =>
-      useAnimatedStyle(
-        () => {
-          const depth = idx + 1;
-          const baseScale = 1 - depth * 0.04;
-          const baseTranslateY = depth * 14;
-          const moving = !exitingCard;
-          const scale = moving
-            ? interpolate(Math.abs(tx.value), [0, exitX], [baseScale, baseScale - 0.02])
-            : baseScale;
-          const translateY = moving
-            ? interpolate(Math.abs(tx.value), [0, exitX], [baseTranslateY, baseTranslateY + 4])
-            : baseTranslateY;
-          return { transform: [{ translateY }, { scale }], opacity: 1 };
-        },
-        [exitingCard]
-      )
-    );
-
-    const activeTopCard = exitingCard ?? top;
-    if (!activeTopCard) return <View style={{ height: CARD_HEIGHT }} />;
-
+    // 6. Render (No Early Return)
     return (
       <View style={{ height: CARD_HEIGHT }}>
-        {logicalBelow.map((card, idx) => (
-          <Animated.View
-            key={card.id}
-            pointerEvents="none"
-            style={[styles.belowCard, belowAnimatedStyles[idx], { zIndex: 10 - idx }]}
-          >
-            <Card user={card} width={CARD_WIDTH} height={CARD_HEIGHT} borderRadius={BORDER_RADIUS} />
-          </Animated.View>
-        ))}
+        {/* Only render gesture detector if we have cards, but View structure remains stable */}
+        {visibleDeck.length > 0 && (
+          <GestureDetector gesture={pan}>
+            <View style={StyleSheet.absoluteFill}>
+              {visibleDeck.map((card, index) => (
+                <React.Fragment key={card.id}>
+                  <StackedCard
+                    user={card}
+                    index={index}
+                    tx={tx}
+                    ty={ty}
+                    rot={rot}
+                    isDragging={isDragging}
+                    exitX={exitX}
+                    cardWidth={CARD_WIDTH}
+                    cardHeight={CARD_HEIGHT}
+                    borderRadius={BORDER_RADIUS}
+                  />
+                  {index === 0 && (
+                    <View style={styles.badgeContainer} pointerEvents="none">
+                       <Animated.View style={[styles.badge, styles.likeBadge, likeBadgeStyle]}>
+                          <Text style={styles.badgeText}>LIKE</Text>
+                       </Animated.View>
+                       <Animated.View style={[styles.badge, styles.dislikeBadge, dislikeBadgeStyle]}>
+                          <Text style={styles.badgeText}>DISLIKE</Text>
+                       </Animated.View>
+                    </View>
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+          </GestureDetector>
+        )}
 
-        <GestureDetector gesture={gesture}>
-          <Animated.View style={[styles.topCard, { zIndex: 999 }, topStyle]}>
+        {/* Exiting Overlay */}
+        {exitingCard && (
+          <Animated.View pointerEvents="none" style={[styles.topCard, exitingStyle]}>
             <Card
-              user={activeTopCard}
+              key={`exit-${exitingCard.id}`}
+              user={exitingCard}
               width={CARD_WIDTH}
               height={CARD_HEIGHT}
               borderRadius={BORDER_RADIUS}
             />
-
-            <Animated.View style={[styles.badge, styles.likeBadge, likeBadgeStyle]}>
-              <Text style={styles.badgeText}>LIKE</Text>
-            </Animated.View>
-            <Animated.View style={[styles.badge, styles.dislikeBadge, dislikeBadgeStyle]}>
-              <Text style={styles.badgeText}>DISLIKE</Text>
-            </Animated.View>
           </Animated.View>
-        </GestureDetector>
+        )}
       </View>
     );
   }
@@ -229,11 +289,10 @@ const styles = StyleSheet.create({
     right: 16,
     top: 0,
   },
-  belowCard: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    top: 0,
+  badgeContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
+    elevation: 1000,
   },
   badge: {
     position: "absolute",
@@ -244,12 +303,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   likeBadge: {
-    left: 24,
+    left: 40,
     borderColor: "#2ecc71",
     backgroundColor: "rgba(46,204,113,0.12)",
   },
   dislikeBadge: {
-    right: 24,
+    right: 40,
     borderColor: "#e74c3c",
     backgroundColor: "rgba(231,76,60,0.12)",
   },

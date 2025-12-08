@@ -70,8 +70,11 @@ const WhoLikesMe = () => {
 
     const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => {
         return (
-            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
-                <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+            <TouchableWithoutFeedback onPress={() => router.push({
+                pathname: '/[userName]',
+                params: { userName: item.username }
+            })} className='relative'>
+                <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                     <View className='w-full h-full rounded-xl overflow-hidden'>
                         <ImageBackground resizeMode='cover' className='h-full w-full rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.userImageUrl }}>
                             <View className='bg-black/[0.5] h-full flex flex-col justify-end p-4'>
@@ -105,10 +108,10 @@ const WhoLikesMe = () => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={refreshUsers}
-                        tintColor={'#fff'}
+                        tintColor={'#DD3FE5'}
                     />}
                 onEndReachedThreshold={0.5}
-                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'small'} color={'#fff'} /></View> : null}
+                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'small'} color={'#DD3FE5'} /></View> : null}
                 renderItem={renderItem}
             />
         </View>

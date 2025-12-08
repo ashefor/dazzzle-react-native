@@ -1,9 +1,10 @@
-import { Text, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import { Text, ScrollView } from 'react-native'
 import React, { useCallback, useState } from 'react'
-import MultiSlider from '@ptomasroos/react-native-multi-slider'
+// import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import { YStack, XStack, RadioGroup, SizeTokens, Label } from 'tamagui'
 import CustomButton from './CustomButton'
 import FormField from './FormField'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 
 export type BasicFilter = {
     username: string;
@@ -21,9 +22,7 @@ const RadioGroupItemWithLabel = (props: {
     const id = `radiogroup-${props.value}`
     return (
         <XStack alignItems="center" justifyContent='space-between' gap="$2">
-
-
-            <Label unstyled className='text-white text-sm font-firaregular flex-1' htmlFor={id}>
+            <Label unstyled className='text-black text-sm font-firaregular flex-1' htmlFor={id}>
                 {props.label}
             </Label>
             <RadioGroup.Item value={props.value} id={id} size={props.size}>
@@ -63,7 +62,7 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
 
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }}>
             <ScrollView className='px-4 py-2 h-full'>
                 <YStack gap="$7">
                     <YStack gap="$5">
@@ -74,9 +73,9 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                             onChangeText={(value) => updateFilterParams('username', value)}
                         />
                         <YStack gap="$2">
-                            <Text className='text-base text-white font-firamedium'>Age</Text>
+                            <Text className='text-sm text-black font-firaregular'>Age</Text>
                             <XStack alignItems='center' justifyContent='center'>
-                                <MultiSlider
+                                {/* <MultiSlider
                                     values={filterParams.age}
                                     min={18}
                                     max={60}
@@ -89,11 +88,11 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                                     selectedStyle={{ backgroundColor: '#DD3FE5' }}
                                     // onValuesChange={(values) => console.log(values)}
                                     onValuesChangeFinish={(values) => updateFilterParams('age', values)}
-                                />
+                                /> */}
                             </XStack>
                         </YStack>
                         <YStack gap="$2">
-                            <Text className='text-base text-white font-firamedium'>Gender</Text>
+                            <Text className='text-sm text-black font-firaregular'>Gender</Text>
                             <RadioGroup value={filterParams.looking_for} onValueChange={(value) => updateFilterParams('looking_for', value)} aria-labelledby="Select one item" defaultValue="all" name="form">
                                 <YStack gap="$3">
                                     <RadioGroupItemWithLabel size="$3" value="all" label="All" />
@@ -106,7 +105,7 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                         <FormField
                             title="Distance(km)"
                             placeholder='Anywhere'
-                            keyBoardType='numeric'
+                            keyboardType='numeric'
                             value={filterParams.distance}
                             onChangeText={(value) => updateFilterParams('distance', value)}
                         />

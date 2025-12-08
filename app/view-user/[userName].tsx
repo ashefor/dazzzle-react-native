@@ -14,7 +14,6 @@ import { SingleUserDetails } from '@/models/user';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { swipeLeftAsync, swipeRightAsync } from '@/redux/thunks/swipeActions';
 import { useAppDispatch } from '@/hooks/reduxHooks';
-import { MaterialTabBar, MaterialTabBarProps } from 'react-native-collapsible-tab-view';
 import axiosRequest from '@/utils/axios';
 
 
@@ -147,56 +146,6 @@ const User = () => {
         }
     }
 
-    const HeaderComponent = () => {
-        return (
-            userDetails ? (
-                            <YStack >
-                                <View className='py-5 px-4 space-y-2'>
-                                <YStack gap="$3">
-                                        <XStack alignItems="center" gap="$4" justifyContent='center'>
-                                            <View className='rounded-full relative'>
-                                                {userDetails.isPremiumUser && 
-                                                <MaterialCommunityIcons name="crown-circle-outline" size={24} color="#FFD700" style={{ position: 'absolute', right: 0, bottom: 5, zIndex: 5 }}/>
-                                                }
-                                                <Avatar className='' gap="$2" circular size="$10">
-                                                    <Avatar.Image
-                                                        accessibilityLabel="Nate Wienert"
-                                                        src={userDetails?.userData.profilePicture}
-                                                    />
-                                                    <Avatar.Fallback delayMs={600} backgroundColor="$black12" />
-                                                </Avatar>
-                                            </View>
-                                        </XStack>
-                                        <Text className='text-lg font-firasemibold text-center text-white'>
-                                            {userDetails?.userData.first_name} {userDetails?.userData.last_name} {userDetails?.userData.userAge && `(${userDetails?.userData.userAge})`}
-                                        </Text>
-                                        {userDetails?.userProfileData.aboutMe && <Text className='text-sm font-firaregular text-center text-white'>
-                                            {userDetails?.userProfileData.aboutMe}
-                                        </Text>}
-                                    </YStack>
-                                    {userDetails?.blockByMeUser ? <View className='mt-10 py-4'>
-                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} is blocked</Text>
-                                    </View> : userDetails.isBlockUser ? <View>
-                                        <Text className='text-lg font-firasemibold text-center text-white'>{userDetails?.userData.userName} has blocked you</Text>
-                                    </View> : <TabsAdvancedBackground />}
-                                </View>
-                            </YStack>
-                        ) :
-                null
-        )
-    }
-
-    const renderTabBar = (props: MaterialTabBarProps<any>) => {
-        return (
-            <MaterialTabBar
-                {...props}
-                indicatorStyle={{ backgroundColor: '#DD3FE5' }}
-                style={{ backgroundColor: '#1A1A1A', borderBottomWidth: 0, borderBottomColor: '#E4E4E7' }}
-                activeColor='#DD3FE5'
-                inactiveColor='#fff'
-            />
-        )
-    };
 
 
     const createBlockNotificationAlert = () =>

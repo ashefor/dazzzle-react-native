@@ -1,68 +1,44 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
+import React, { useState } from 'react'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { YStack, Progress } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
 import { useAppDispatch } from '@/hooks/reduxHooks'
 import { signUserOut } from '@/redux/thunks/authActions'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
+import { OnboardPagesProps } from '.'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const OnboardRelationshipType = () => {
+const RELATIONSHIP_OPTIONS = [
+    { id: '1', label: 'Fun\n&\nFriendship', image: Images.relType1 },
+    { id: '2', label: 'Serious\nRelationship', image: Images.relType2 },
+    { id: '3', label: 'Male\nFriends', image: Images.relType3 },
+    { id: '4', label: 'Female\nFriends', image: Images.relType4 },
+    { id: '5', label: 'Marriage Only', image: Images.relType5 },
+    { id: '6', label: 'Flirting Only', image: Images.relType6 },
+];
+
+const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
-    const [progress, setProgress] = React.useState(Math.ceil((3 / 5) * 100));
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
     const insets = useSafeAreaInsets();
-
-    useEffect(() => {
-        setTimeout(() => {
-            setProgress(Math.ceil((4 / 5) * 100))
-        }, 500);
-    }, [])
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const fetchUserProfileUpdateStatus = async () => {
-        try {
-            show();
-            const response: any = await axiosRequest.get('/profile/check-profile-updated');
-            hide();
-            const reaction = response.reaction;
-            const responseData = response.data;
-            if (reaction === ReactionCodes.SUCCESS) {
-                const profileData = responseData['profileInfo'];
-                console.log('profileData', responseData);
-                if (profileData) {
-
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchUserProfileUpdateStatus()
-    }, [])
 
     const handleLogOut = async () => {
         dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
     }
 
     const submit = async () => {
-        setIsSubmitting(true);
         try {
             show();
             const data: any = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
             hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Profile updated successfully');
-                router.push('/onboard/choose-interests');
+                goToNextPage?.();
             }
         } catch (error: any) {
             hide();
@@ -79,76 +55,48 @@ const OnboardRelationshipType = () => {
     };
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-            <View style={{ paddingBottom: insets.bottom }} className=' h-full'>
-                <View className='px-4'>
-                    <Progress size="$3" value={progress}>
-                        <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
-                    </Progress>
+        <View className='w-full h-full flex-1 space-y-4'>
+            <View className='px-4'>
+                <Text className='text-2xl text-black font-firabold'>Relationship Type</Text>
+                <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
+            </View>
+            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20, justifyContent: 'space-between' }} >
+                {selectedRelationshipTypes.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>}
+                <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
+                    {RELATIONSHIP_OPTIONS.map((item) => {
+                        const isSelected = selectedRelationshipTypes.includes(item.id);
+
+                        return (
+                            <Pressable
+                                key={item.id}
+                                onPress={() => chooseRelationshipType(item.id)}
+                                // 2. Dynamic styling based on selection
+                                className={`h-52 w-[48%] border rounded-[24px] p-4 flex flex-col items-center justify-center 
+                        ${isSelected ? 'bg-primary border-primary' : 'border-black bg-white'}`}
+                            >
+                                <Image
+                                    source={item.image}
+                                    className='w-20 h-20 rounded-full mb-4'
+                                    resizeMode="cover"
+                                />
+                                <Text className='text-base text-black font-firasemibold mt-2 text-center'>
+                                    {item.label}
+                                </Text>
+                            </Pressable>
+                        );
+                    })}
                 </View>
-                <View className='flex-1'>
-                    <View className='p-4 flex-1 space-y-4'>
-                        <YStack>
-                            <Text className='text-2xl text-white font-firabold'>Relationship Type</Text>
-                            <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
-                        </YStack>
-                        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }} >
-                            {selectedRelationshipTypes.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>}
-                            <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
-                                <Pressable onPress={() => chooseRelationshipType('1')} className={`h-52 w-[48.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('1') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType1} className='w-20 h-20 rounded-full mb-4 bg-red-500' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>Fun
-                                        &
-                                        Friendship</Text>
-                                </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('2')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('2') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType2} className='w-20 h-20 rounded-full mb-4' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Serious
-                                        Relationship
-                                    </Text>
-                                </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('3')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('3') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType3} className='w-20 h-20 rounded-full mb-4' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Male
-                                        Friends
-                                    </Text>
-                                </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('4')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('4') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType4} className='w-20 h-20 rounded-full mb-4' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Female
-                                        Friends
-                                    </Text>
-                                </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('5')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('5') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType5} className='w-20 h-20 rounded-full mb-4' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Marriage Only
-                                    </Text>
-                                </Pressable>
-                                <Pressable onPress={() => chooseRelationshipType('6')} className={`h-52 w-[46.5%] border rounded-[24px] p-4 flex flex-col items-center justify-center ${selectedRelationshipTypes.includes('6') ? 'bg-[#DF3FE5] border-[#DF3FE5]' : 'border-white'}`}>
-                                    <Image source={Images.relType6} className='w-20 h-20 rounded-full mb-4' />
-                                    <Text className='text-base text-white font-firasemibold mt-2 text-center'>
-                                        Flirting Only
-                                    </Text>
-                                </Pressable>
-                            </View>
-                            <YStack>
-                                <CustomButton disabled={selectedRelationshipTypes.length === 0} title='Next' handlePress={submit} />
-                                <View className='justify-center pt-5 flex-row gap-2'>
-                                    <TouchableOpacity onPress={handleLogOut}>
-                                        <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </YStack>
-                        </ScrollView>
+
+                <View>
+                    <CustomButton disabled={selectedRelationshipTypes.length === 0} title='Next' handlePress={submit} />
+                    <View className='justify-center pt-5 flex-row gap-2'>
+                        <TouchableOpacity onPress={handleLogOut}>
+                            <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </View>
-        </KeyboardAvoidingView>
+            </ScrollView>
+        </View>
     )
 }
 

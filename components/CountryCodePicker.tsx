@@ -8,6 +8,7 @@ import { countryCodes } from '@/constants/constants';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: string, onCountryCodeSelect: (selectedCountry: string) => void }) => {
@@ -15,6 +16,8 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
     const [filteredCountryCodes, setFilteredCountryCodes] = React.useState<CountryPhoneCode[]>(countryCodes);
     const [search, setSearch] = useState('');
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const insets = useSafeAreaInsets();
+    const [selectedCountryCode, setSelectedCountryCode] = useState<string>(countryCode);
 
     useEffect(() => {
         if (appConfig?.country_phone_codes) {
@@ -36,6 +39,7 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
         searchBottomSheetModalRef.current?.dismiss();
         InteractionManager.runAfterInteractions(() => {
             onCountryCodeSelect(country);
+            setSelectedCountryCode(country);
         });
     }
 
@@ -100,24 +104,24 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
 
     const renderItem = useCallback(
         ({ index, item }: { index: number, item: any }) => {
-            const isSelected = item.phone_code.toString() == countryCode;
+            const isSelected = item.phone_code.toString() == selectedCountryCode;
             return (
                 (
-                    <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className={`rounded-lg  text-black ${isSelected ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`}>
-                        <XStack gap="$3" alignItems='center' justifyContent='flex-start' flexWrap='wrap'>
-                            <Text className='text-lg text-black'>(+{item.phone_code})</Text>
-                            <Text className='text-lg text-black flex-1' style={{ wordWrap: 'break-word' }}>{item.name}</Text>
+                    <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className={`rounded-lg text-black ${isSelected ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`} py={"$3"}>
+                        <XStack gap="$3"  justifyContent='flex-start' flexWrap='wrap'>
+                            <Text className='text-base text-black'>(+{item.phone_code})</Text>
+                            <Text className='text-base text-black flex-1' style={{ wordWrap: 'break-word' }}>{item.name}</Text>
                         </XStack>
                     </ListItem>
                 )
             )
-        }, [countryCode]
+        }, [selectedCountryCode]
     )
 
     return (
         <>
             <TouchableOpacity className='flex-row items-center justify-end gap-0.5 min-w-[50px]' onPress={() => searchBottomSheetModalRef.current?.present()}>
-                <Text className='text-base text-black font-firaregular'>{countryCode ? `(+${countryCode})` : ''}</Text>
+                <Text className='text-sm text-black font-firaregular'>{selectedCountryCode ? `(+${selectedCountryCode})` : ''}</Text>
                 <Ionicons name="chevron-down" size={14} color="#A9A9A9" />
             </TouchableOpacity>
 
@@ -127,15 +131,12 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
                 maxDynamicContentSize={MAX_HEIGHT_PX}
                 snapPoints={['80%']}
                 enablePanDownToClose={true}
-                bottomInset={16}
                 handleIndicatorStyle={{
                     backgroundColor: "red",
                     display: "none"
                 }}
                 handleStyle={{ padding: 0 }}
-                detached={true}
                 style={{
-                    marginHorizontal: 16,
                     shadowColor: "#000",
                     shadowOffset: { width: 0, height: 6 },
                     shadowOpacity: 0.1,
@@ -147,6 +148,7 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
                 backgroundStyle={{
                     borderRadius: 28,
                 }}
+                stackBehavior="push"
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
                 keyboardBehavior="extend"
@@ -162,7 +164,7 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
                     contentContainerStyle={{
                         paddingTop: 16,
                         paddingHorizontal: 16,
-                        paddingBottom: 28,
+                        paddingBottom: 16 + insets.bottom,
                         borderRadius: 28,
                     }} data={filteredCountryCodes}
                     renderItem={renderItem}
@@ -177,4 +179,4 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
     )
 }
 
-export default CountryCodePicker
+export default React.memo(CountryCodePicker)

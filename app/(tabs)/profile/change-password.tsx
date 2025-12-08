@@ -1,14 +1,22 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import { View, ScrollView, Alert, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { JSX, useCallback, useRef } from 'react';
 import CustomButton from '@/components/CustomButton';
 import FormField from '@/components/FormField';
-import { Form, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import Toast from '@/components/toast/toast';
 import { ReactionCodes } from '@/models/general';
-import { router, Stack } from 'expo-router';
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon';
+import { router } from 'expo-router';
 import { useLoader } from '@/context/loader/LoaderProvider';
 import axiosRequest from '@/utils/axios';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as yup from 'yup';
+import NavBar from '@/components/NavBar';
+import { Formik } from 'formik';
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import LottieView from 'lottie-react-native';
+
 
 type ChangePasswordForm = {
     current_password: string;
@@ -16,60 +24,15 @@ type ChangePasswordForm = {
     new_password_confirmation: string;
 };
 const ChangePasswordScreen = () => {
+    const insets = useSafeAreaInsets();
     const { show, hide } = useLoader();
-    const [isFormValid, setIsFormValid] = useState(false);
-    const [errors, setErrors] = useState<ChangePasswordForm | Record<string, string>>({});
-    const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
-    const [form, setForm] = useState<ChangePasswordForm>({
-        current_password: '',
-        new_password: '',
-        new_password_confirmation: ''
-    })
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const animationRef = useRef<LottieView>(null);
 
-    const updateForm = useCallback(<K extends keyof ChangePasswordForm>(key: K, value: ChangePasswordForm[K]) => {
-        setForm({
-            ...form,
-            [key]: value
-        })
-    }, [form])
-
-    const handleInputChange = (field: keyof ChangePasswordForm, value: string) => {
-        // setForm(prev => ({ ...prev, [field]: value }));
-        updateForm(field, value);
-
-        // Mark field as touched
-        setHasTyped(prev => ({ ...prev, [field]: true }));
-    };
-
-    const validateForm = () => {
-        let errors: { [key: string]: string } = {};
-        if (!form.current_password || form.current_password.length < 6) {
-            errors.current_password = 'Password is required';
-        }
-        if (!form.new_password || form.new_password.length < 6) {
-            errors.new_password = 'Password is required';
-        }
-        if (!form.new_password_confirmation || form.new_password_confirmation.length < 6) {
-            errors.new_password_confirmation = 'Password is required';
-        }
-        if (form.new_password !== form.new_password_confirmation) {
-            errors.new_password_confirmation = 'Passwords do not match';
-        }
-        setErrors(errors);
-        setIsFormValid(Object.keys(errors).length === 0);
-    }
-
-    useEffect(() => {
-        if (hasTyped.current_password || hasTyped.new_password || hasTyped.new_password_confirmation) {
-            const timer = setTimeout(validateForm, 300); // Delay validation after typing
-            return () => clearTimeout(timer);
-        }
-    }, [form.current_password, form.new_password, form.new_password_confirmation])
-
-    const handleChangePassword = async () => {
+    const handleChangePassword = async (formValues: ChangePasswordForm) => {
         try {
             show();
-            const data: any = await axiosRequest.post('/profile/change-password-process', form);
+            const data: any = await axiosRequest.post('/profile/change-password-process', formValues);
             hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const response = data.data;
@@ -82,63 +45,153 @@ const ChangePasswordScreen = () => {
         }
     }
 
+
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            // onPress={handleBlur}
+            />
+        ),
+        []
+    );
+
+
     return (
-        <Fragment>
-            <Stack.Screen
-                    options={{
-                        headerStyle: { backgroundColor: '#1A1A1A' },
-                        headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-                            <ArrowBackIcon />
-                        </TouchableOpacity>
-                    }}
-                />
-                 <View className=' h-full'>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-                <ScrollView>
-                    <View className='px-4 py-5'>
-                        <Form gap="$7">
-                            <YStack gap="$4">
-                                <YStack gap="$1">
-                                    <FormField
-                                        title="Current Password"
-                                        placeholder='Enter username'
-                                        value={form.current_password}
-                                        secureTextEntry
-                                        onChangeText={(text: string) => handleInputChange('current_password', text)}
-                                    />
-                                    {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
-                                </YStack>
-                                <YStack gap="$1">
-                                    <FormField
-                                        title="New Password"
-                                        placeholder='Enter username'
-                                        value={form.new_password}
-                                        secureTextEntry
-                                        onChangeText={(text: string) => handleInputChange('new_password', text)}
-                                    />
-                                    {hasTyped.new_password && errors.new_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_password}</Text>}
-                                </YStack>
-                                <YStack gap="$1">
-                                    <FormField
-                                        title="Confirm Password"
-                                        value={form.new_password_confirmation}
-                                        placeholder='Enter password'
-                                        secureTextEntry
-                                        onChangeText={(text: string) => handleInputChange('new_password_confirmation', text)}
-                                    />
-                                    {hasTyped.new_password_confirmation && errors.new_password_confirmation && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_password_confirmation}</Text>}
-                                </YStack>
-                            </YStack>
-                            <Form.Trigger asChild>
-                                <CustomButton title='Save' handlePress={handleChangePassword} />
-                            </Form.Trigger>
-                        </Form>
+        <View className='flex-1 bg-white' style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+            <NavBar title='Change Password' />
+            <KeyboardAvoidingView behavior={"padding"}
+                 style={{ flex: 1 }} >
+                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+                    <View className='w-full h-full justify-center'>
+                        <Formik
+                            initialValues={{ current_password: '', new_password_confirmation: '', new_password: '', }}
+                            onSubmit={handleChangePassword}
+                            validationSchema={changePasswordValidationSchema}
+                        >
+                            {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
+                                return (
+                                    <View className='flex-1 '>
+                                        <YStack gap="$3" mb={20}>
+                                            <FormField
+                                                title="Current Password"
+                                                placeholder=''
+                                                secureTextEntry
+                                                onChangeText={handleChange('current_password')}
+                                                onBlur={handleBlur('current_password')}
+                                                showCustomError={errors.current_password ? true : false}
+                                                errorMessage={errors.current_password}
+                                                value={values.current_password}
+                                            />
+                                            <FormField
+                                                title="New Password"
+                                                placeholder=''
+                                                value={values.new_password}
+                                                secureTextEntry
+                                                onChangeText={handleChange('new_password')}
+                                                onBlur={handleBlur('new_password')}
+                                                showCustomError={errors.new_password ? true : false}
+                                                errorMessage={errors.new_password}
+                                            />
+                                            <FormField
+                                                title="Confirm Password"
+                                                placeholder=''
+                                                value={values.new_password_confirmation}
+                                                secureTextEntry
+                                                onChangeText={handleChange('new_password_confirmation')}
+                                                onBlur={handleBlur('new_password_confirmation')}
+                                                showCustomError={errors.new_password_confirmation ? true : false}
+                                                errorMessage={errors.new_password_confirmation}
+                                            />
+                                        </YStack>
+                                        <View className='mt-auto'>
+                                            <CustomButton title='Update Password' disabled={!isValid} handlePress={handleSubmit} />
+                                        </View>
+                                    </View>
+                                )
+                            }}
+                        </Formik>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+            <BottomSheetModal
+                ref={bottomSheetModalRef}
+                enableDynamicSizing
+                enablePanDownToClose={true}
+                style={{
+                    borderRadius: 28,
+                }}
+                backgroundStyle={{
+                    borderRadius: 28,
+                }}
+                backdropComponent={renderBackdrop}
+                onDismiss={() => router.back()}
+            >
+
+                <BottomSheetView>
+                    <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+                        <View style={styles.lottieContainer}>
+                            <LottieView
+                                ref={animationRef}
+                                source={require('../../../assets/checkmark.json')} // Point to your JSON file
+                                style={styles.lottie}
+                                autoPlay={true} // Set to true if you want it to loop or start immediately
+                                loop={true}     // Set to true if you want it to repeat
+                            />
+                        </View>
+                        <View className='mb-7'>
+                            <Text className='text-2xl font-semibold mb-2 text-center'>
+                                Successful!
+                            </Text>
+                            <Text className='text-base font-firaregular text-center'>
+                                Password changed successfully
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
+                            <Text className='text-base font-firamedium text-white'>
+                                Done
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </BottomSheetView>
+            </BottomSheetModal>
         </View>
-        </Fragment>
     )
 }
 
 export default ChangePasswordScreen
+
+const styles = StyleSheet.create({
+    lottieContainer: {
+        width: 120,
+        height: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 'auto'
+    },
+    lottie: {
+        width: '100%',
+        height: '100%',
+    },
+})
+
+const changePasswordValidationSchema = yup.object().shape({
+    current_password: yup
+        .string()
+        .min(6, ({ min }) => `Password must be at least ${min} characters`)
+        .required('Password is required'),
+    new_password: yup
+        .string()
+        .matches(/\w*[a-z]\w*/, "Password must have a small letter")
+        .matches(/\w*[A-Z]\w*/, "Password must have a capital letter")
+        .matches(/\d/, "Password must have a number")
+        .matches(/[!@#$%^&*()\-_"=+{}; :,<.>]/, "Password must have a special character")
+        .min(8, ({ min }) => `Password must be at least ${min} characters`)
+        .required('Password is required'),
+    new_password_confirmation: yup
+        .string()
+        .oneOf([yup.ref('new_password')], 'Passwords do not match')
+        .required('Confirm password is required'),
+})

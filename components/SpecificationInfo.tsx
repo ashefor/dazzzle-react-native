@@ -2,7 +2,7 @@ import { UserSpecification } from "@/models/user";
 import axiosRequest from "@/utils/axios";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useState, useCallback, useEffect } from "react";
-import { Alert, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
+import { Alert, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Text } from "react-native";
 import { YStack, XStack, Sheet, Form } from "tamagui";
 import CustomButton from "./CustomButton";
 import SelectPicker from "./SelectPicker";
@@ -130,7 +130,7 @@ const SpecificationData = ({ item, editable, onEditDone }: { item: UserSpecifica
                             </TouchableOpacity>
                             <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Edit {item.title}</Text>
                         </View>
-                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+                        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} >
                             <ScrollView className='px-4 py-2 h-full'>
                                 <Form gap="$7">
                                     <YStack gap="$3">

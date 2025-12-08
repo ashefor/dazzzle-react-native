@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Pressable, SafeAreaView, useAnimatedValue } from 'react-native';
+import { Text, StyleSheet, Animated, Pressable, useAnimatedValue } from 'react-native';
 import Toast, { ToastType } from './toast';
 
 

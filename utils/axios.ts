@@ -1,5 +1,4 @@
 // api.ts
-import { hideLoading, showLoading } from "@/redux/slices/appSlice";
 // import { store } from "@/redux/store";
 import axios, { AxiosRequestConfig } from "axios";
 import { getItem } from "./asyncStorage";

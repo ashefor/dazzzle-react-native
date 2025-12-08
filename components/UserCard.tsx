@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
 import type { UserCard } from "./folder/api";
+import LocationIcon from "./LocationIcon";
 
 type Props = {
   user: UserCard;
@@ -15,12 +16,14 @@ function CardComponent({ user, width, height, borderRadius = 24 }: Props) {
       <ImageBackground
         source={{ uri: user.profileImage }}
         resizeMode="cover"
-        style={[StyleSheet.absoluteFill, { borderRadius }]}
+        style={[StyleSheet.absoluteFill, { borderRadius, backgroundColor: "#E0E0E0" }]}
         imageStyle={{ borderRadius }}
       />
       <View style={styles.infoContainer}>
         <View style={styles.row}>
-          <Text style={styles.locationIcon}>⌖</Text>
+          <Text style={styles.locationIcon}>
+            <LocationIcon />
+          </Text>
           <Text style={styles.locationText}>{user.countryName}</Text>
         </View>
         <Text style={styles.nameText}>

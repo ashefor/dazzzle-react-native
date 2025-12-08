@@ -17,6 +17,7 @@ import { Formik } from 'formik'
 import Toast from '@/components/toast/toast'
 import { ReactionCodes } from '@/models/general'
 import axiosRequest from '@/utils/axios'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type FormValues = {
     first_name: string;
@@ -35,11 +36,12 @@ const defaultInitial: FormValues = {
     birthday: "",
     gender: "",
 };
-const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
+const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, onLogOut }) => {
     const initialValues: FormValues = { ...defaultInitial, ...pageData };
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
     const { loading, appConfig } = useAppSelector(state => state.app);
+    const insets = useSafeAreaInsets(); 
 
     const handleLogOut = async () => {
         dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
@@ -64,7 +66,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage })
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
             <View className='w-full h-full justify-between'>
                 <Formik
                     initialValues={initialValues}
@@ -77,7 +79,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage })
                             <View className='flex-1'>
                                 <YStack>
                                     <Text className='text-2xl text-black font-firabold'>Complete your profile</Text>
-                                    <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
+                                    <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                                 </YStack>
                                 <YStack gap="$3" mt={20} mb={20}>
                                     <FormField
@@ -124,7 +126,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage })
                                 <View className='mt-auto'>
                                     <CustomButton title='Next' handlePress={handleSubmit} />
                                     <View className='justify-center pt-5 flex-row gap-2'>
-                                        <TouchableOpacity onPress={() => handleLogOut()}>
+                                        <TouchableOpacity onPress={onLogOut}>
                                             <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
                                         </TouchableOpacity>
 

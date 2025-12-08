@@ -6,6 +6,7 @@ import HomeTabIcon from '@/components/HomeTabIcon';
 import ProfileTabIcon from '@/components/ProfileTabIcon';
 import MessagesTabIcon from '@/components/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
+import { Text } from 'react-native';
 
 export default function TabLayout() {
 
@@ -33,26 +34,20 @@ export default function TabLayout() {
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
-          tabBarIcon: ({ color, focused }) => <HomeTabIcon focused={focused} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="encounter"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Discover',
-          href: null,
-          // headerShown: true,
-          // headerShadowVisible: false,
-          // headerStyle: {
-          //   backgroundColor: '#1A1A1A'
-          // },
-          // headerRight: () => <XStack paddingRight={'$4'}>
-          //   <TouchableOpacity onPress={() => Alert.alert('Coming Soon')} className='flex items-center justify-center rounded-full'>
-          //     <Ionicons name="notifications-sharp" size={24} color="#ffffff" />
-          //   </TouchableOpacity>
-          // </XStack>,
           tabBarIcon: ({ color, focused }) => <HomeTabIcon focused={focused} />,
+          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Discover</Text>
         }}
       />
       <Tabs.Screen
@@ -60,6 +55,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, focused }) => <SearchTabIcon focused={focused} />,
+          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Search</Text>
         }}
       />
       <Tabs.Screen
@@ -67,31 +63,23 @@ export default function TabLayout() {
         options={{
           title: 'Likes',
           tabBarIcon: ({ color, focused }) => <LikeTabIcon focused={focused} />,
+          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Likes</Text>
         }}
       />
       <Tabs.Screen
         name="chats"
         options={{
           title: 'Chats',
-          headerShown: false,
           tabBarIcon: ({ color, focused }) => <MessagesTabIcon focused={focused} />,
+          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Chats</Text>
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          headerShown: false,
-          // // headerTitleAlign: 'left',
-          // headerStyle: {
-          //   backgroundColor: 'none'
-          // },
-          // headerTitleStyle: {
-          //   fontWeight: 700,
-          //   fontSize: 24,
-          //   fontFamily: "FiraSans_700Bold"
-          // },
-          tabBarIcon: ({ focused }) => <ProfileTabIcon focused={focused} />
+          tabBarIcon: ({ focused }) => <ProfileTabIcon focused={focused} />,
+          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Profile</Text>
         }}
       />
     </Tabs>

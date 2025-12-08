@@ -1,11 +1,10 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, ScrollView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { YStack, XStack, Sheet } from 'tamagui'
+import { YStack, XStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import Ionicons from '@expo/vector-icons/Ionicons'
 import * as WebBrowser from 'expo-web-browser'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
@@ -15,6 +14,8 @@ import { useLoader } from '@/context/loader/LoaderProvider'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as yup from 'yup'
 import { Formik } from 'formik'
+import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+
 
 type SigUpForm = {
     username: string;
@@ -65,10 +66,10 @@ const SignIn = () => {
     }
     return (
         <>
-            <View style={{ flex: 1 }} className='h-full'>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+            <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className='h-full'>
+                <KeyboardAvoidingView>
                     <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
-                        <View className='w-full h-full py-16 justify-center'>
+                        <View className='w-full h-full justify-center'>
                             <Formik
                                 initialValues={{ password: '', username: '', repeat_password: '', email: '', accepted_terms: false }}
                                 onSubmit={createAccount}
@@ -139,7 +140,7 @@ const SignIn = () => {
                                                     </View>
                                                 </XStack>
                                             </YStack>
-                                            
+
                                             <View className='mt-auto'>
                                                 <CustomButton title='Register' disabled={!isValid} handlePress={handleSubmit} />
                                             </View>
@@ -157,7 +158,7 @@ const SignIn = () => {
                     </ScrollView>
                 </KeyboardAvoidingView>
             </View>
-            <Sheet
+            {/* <Sheet
                 forceRemoveScrollEnabled={hasCreatedAccount}
                 modal={true}
                 open={hasCreatedAccount}
@@ -194,7 +195,7 @@ const SignIn = () => {
                         <CustomButton title="Log In" handlePress={() => router.replace('/(auth)/sign-in')} />
                     </View>
                 </Sheet.Frame>
-            </Sheet>
+            </Sheet> */}
         </>
     )
 }
@@ -219,7 +220,7 @@ const signUpValidationSchema = yup.object().shape({
         .string()
         .oneOf([yup.ref('password')], 'Passwords do not match')
         .required('Confirm password is required'),
-        accepted_terms: yup
+    accepted_terms: yup
         .boolean()
         .oneOf([true], 'You must accept the terms and conditions'),
 })

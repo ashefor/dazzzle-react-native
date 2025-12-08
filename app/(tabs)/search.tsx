@@ -2,13 +2,15 @@ import { View, Image, Modal, TouchableOpacity, useWindowDimensions, ImageBackgro
 import React, { useCallback, useEffect, useState } from 'react';
 import { XStack } from 'tamagui';
 import UsersBasicFilter, { BasicFilter } from '@/components/UsersBasicFilter';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import icons from '@/constants/icons';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ReactionCodes } from '@/models/general';
 import axiosRequest from '@/utils/axios';
 import { useLoader } from '@/context/loader/LoaderProvider';
+import NavBar from '@/components/NavBar';
+import FilterIcon from '@/components/icons/FilterIcon';
 
 interface FeaturedUser {
   _id: number
@@ -38,11 +40,11 @@ const FilterUsers = () => {
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<FeaturedUser[]>([]);
     const [refreshing, setRefreshing] = useState(false);
-    const [isFiltering, setIsFiltering] = useState(false);
     const [totalCount, setTotalCount] = useState(0);
     const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [filterParams, setFilterParams] = useState<BasicFilter | null>(null)
+    const insets = useSafeAreaInsets();
 
     const fetchLikedUsers = async () => {
         try {
@@ -151,8 +153,11 @@ const FilterUsers = () => {
 
     const renderItem = useCallback(({ item }: { item: FeaturedUser }) => {
         return (
-            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className=''>
-                <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+            <TouchableWithoutFeedback onPress={() => router.push({
+                pathname: '/[userName]',
+                params: { userName: item.username }
+            })} className=''>
+                <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                     <View className='flex-1 rounded-xl overflow-hidden'>
                         <ImageBackground resizeMode='cover' className=' rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.profileImage ? item.profileImage : item.userImageUrl ? item.userImageUrl : item.coverImage }}>
                             <View className='bg-black/[0.5] flex-1 justify-end p-4'>
@@ -167,15 +172,11 @@ const FilterUsers = () => {
     }, [])
 
     return (
-        <>
-            <Stack.Screen options={{
-                headerStyle: { backgroundColor: '#1A1A1A' },
-                headerShadowVisible: false,
-                headerRight: () => <TouchableOpacity onPress={() => setModalVisible(true)} className='flex items-center justify-center pr-4 w-9 h-8'>
-                    <Image source={icons.filter} className='w-6 h-6' resizeMode='contain' />
-                </TouchableOpacity>
-            }} />
-            <View className=' h-full'>
+       <View className='flex-1 bg-white' style={{ paddingTop: insets.top }}>
+        <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Search</Text>} rightItem={<TouchableOpacity onPress={() => setModalVisible(true)} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+                    <FilterIcon stroke={"#DD3FE5"}/>
+                </TouchableOpacity>}/>
+            <View className='flex-1 h-full'>
                 {filterParams && <XStack justifyContent='space-between' alignItems='center' className='px-4 py-2'>
                     <Text className='text-white'>Showing filter</Text>
                     <TouchableOpacity onPress={clearFilter} className='items-center justify-center'>
@@ -219,15 +220,15 @@ const FilterUsers = () => {
                         <View className=' flex-row items-center justify-center px-4 py-3 relative'>
                             <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
                                 {/* <Image source={icons.} className='w-6 h-6' resizeMode='contain' /> */}
-                                <Ionicons name="close" size={24} color="#ffffff" />
+                                <Ionicons name="close" size={24} />
                             </TouchableOpacity>
-                            <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Search filters</Text>
+                            <Text className='font-firabold text-black text-center flex-1 mx-auto text-base'>Search filters</Text>
                         </View>
                         <UsersBasicFilter filterUsers={filterUsers} />
                     </SafeAreaView>
                 </SafeAreaProvider>
             </Modal>
-        </>
+       </View>
 
     )
 }

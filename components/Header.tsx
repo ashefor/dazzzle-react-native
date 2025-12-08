@@ -42,7 +42,7 @@ const Normal = (props: CustomHeaderProps) => {
     const { title, rightContent, onLeftPress, disabled, defaultHref } = props;
     const insets = useSafeAreaInsets();
     return (
-        <View style={{ paddingTop: insets.top }} >
+        <View style={{ paddingTop: 0 }} >
             <View style={[styles.header]}>
                 {router.canGoBack() ? (
                     <TouchableOpacity
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         // height: 97,
         // paddingHorizontal: 16,
         // paddingVertical: 10,
-        minHeight: 44,
+        minHeight: 60,
         backgroundColor: 'transparent',
         borderBottomWidth: 0,
         borderBottomColor: '#ddd',

@@ -15,5 +15,8 @@ import relType5 from "../assets/images/relationship/5.jpg";
 import relType6 from "../assets/images/relationship/6.jpg";
 import coverPhoto from "../assets/images/cover-photo.jpg";
 import splash from "../assets/images/fullsplash.png";
+import newonboard3 from "../assets/images/onboard.png";
+import newonboard2 from "../assets/images/onboard2.png";
+import newonboard1 from "../assets/images/onboard1.png";
 
-export default { male, female, header, imagePlaceholder, onboard, splash, onboard3, coverPhoto, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6 };
+export default { male, female, header, imagePlaceholder, onboard, splash, onboard3, coverPhoto, onboard2, imageSelector, logo, relType1,relType2, relType3, relType4, relType5, relType6, newonboard1, newonboard2, newonboard3 };

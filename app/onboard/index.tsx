@@ -1,17 +1,21 @@
-import { Alert, StyleSheet, View, KeyboardAvoidingView } from 'react-native'
+import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
 import { signUserOut } from '@/redux/thunks/authActions'
-import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
+import { useAppDispatch } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import PagerView, { PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 import OnboardBioData from './bio-data'
-import Header from '@/components/Header'
 import OnboardProfilePicture from './profile-picture'
 import OnboardLocation from './location'
+import NavBar from '@/components/NavBar'
+import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
+import OnboardRelationshipType from './relationship-type'
+import OnboardChooseInterests from './choose-interests'
+import { KeyboardAvoidingView } from "react-native-keyboard-controller"
 
 export interface OnboardPagesProps {
     pageData?: any,
@@ -19,12 +23,12 @@ export interface OnboardPagesProps {
     setPage?: (page: number) => void,
     goToNextPage?: () => void,
     goToPreviousPage?: () => void,
+    onLogOut?: () => void
 }
 
 const OnboardPage = () => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
-    const { loading, appConfig } = useAppSelector(state => state.app);
     const [page, setPage] = useState(2);
     const insets = useSafeAreaInsets();
     const [profileData, setProfileData] = useState<any>(null);
@@ -32,7 +36,7 @@ const OnboardPage = () => {
 
     const fetchUserProfileUpdateStatus = async () => {
         try {
-            // show();
+            show();
             const response: any = await axiosRequest.get('/profile/check-profile-updated');
             hide();
             const reaction = response.reaction;
@@ -43,7 +47,7 @@ const OnboardPage = () => {
                 if (profileData) {
                     setProfileData(profileData);
                 }
-            
+
             }
         } catch (error: any) {
             hide();
@@ -56,7 +60,7 @@ const OnboardPage = () => {
     }
 
     useEffect(() => {
-            fetchUserProfileUpdateStatus();
+        fetchUserProfileUpdateStatus();
     }, [])
 
     const onPageSelected = (e: PagerViewOnPageSelectedEvent) => {
@@ -65,7 +69,7 @@ const OnboardPage = () => {
         const pageIndex = e.nativeEvent.position;
         if (pageIndex === 0) {
             // setProgress(Math.ceil((1 / 5) * 100))
-        } 
+        }
     }
 
     const goToNextPage = () => {
@@ -86,36 +90,39 @@ const OnboardPage = () => {
 
     return (
         <Fragment>
-            <View style={{ paddingBottom: insets.bottom, }} className='flex-1 h-full'>
-                <View className='px-4 pb-2'>
-                    <Header.Normal onLeftPress={goToPreviousPage} defaultHref={'/(auth)/sign-in'}/>
-                    <View className='flex-row gap-x-2'>
-                        {[...Array(6).fill('')].map((_, index) => (
-                        <View key={index} className={`h-2 rounded-full ${index <= (page) ? 'bg-primary' : 'bg-[#E0E0E0]'}`} style={{ width: `${100 / 6}%` , flexShrink: 1}}></View>
-                    ))}
+            <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 h-full'>
+                <View className='pb-2'>
+                    <NavBar leftItem={
+                        <TouchableOpacity
+                            activeOpacity={0.5} onPress={goToPreviousPage} className='flex items-center justify-center w-10 h-10 rounded-full bg-[#E0E0E0]'>
+                            <ArrowBackIcon />
+                        </TouchableOpacity>
+                    } />
+                    <View className='flex-row gap-x-2 px-4'>
+                        {[...Array(5).fill('')].map((_, index) => (
+                            <View key={index} className={`h-2 rounded-full ${index <= (page) ? 'bg-primary' : 'bg-[#E0E0E0]'}`} style={{ width: `${100 / 6}%`, flexShrink: 1 }}></View>
+                        ))}
                     </View>
                 </View>
-                <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} >
+                <KeyboardAvoidingView behavior={"padding"}
+                     style={{ flex: 1 }}>
                     <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
-                    <View key={1}>
-                        <OnboardBioData pageData={profileData} goToNextPage={goToNextPage}/>
-                    </View>
-                    <View key={2}>
-                        <OnboardProfilePicture pageData={profileData} goToNextPage={goToNextPage}/>
-                    </View>
-                    <View key={3}>
-                        <OnboardLocation pageData={profileData} goToNextPage={goToNextPage}/>
-                    </View>
-                    <View key={4}>
-                        {/* <OnboardPreferences pageData={profileData} goToNextPage={goToNextPage}/> */}
-                    </View>
-                    <View key={5}>
-                        {/* <OnboardVerify pageData={profileData} goToNextPage={goToNextPage}/> */}
-                    </View>
-                    <View key={6}>
-                        {/* <OnboardComplete pageData={profileData} /> */}
-                    </View>
-                </PagerView>
+                        <View key={1}>
+                            <OnboardBioData pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                        </View>
+                        <View key={2}>
+                            <OnboardProfilePicture pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                        </View>
+                        <View key={3}>
+                            <OnboardLocation pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                        </View>
+                        <View key={4}>
+                            <OnboardRelationshipType goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                        </View>
+                        <View key={5}>
+                            <OnboardChooseInterests onLogOut={handleLogOut} />
+                        </View>
+                    </PagerView>
                 </KeyboardAvoidingView>
             </View>
         </Fragment>

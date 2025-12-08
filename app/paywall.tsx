@@ -105,7 +105,7 @@ const PayWallScreen = () => {
             if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
                 fetchSubscriptionDetails();
             } else {
-                router.replace('/(tabs)/discover');
+                router.replace('/(tabs)');
             }
         } else {
             fetchSubscriptionDetails();
@@ -130,7 +130,7 @@ const PayWallScreen = () => {
             hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Subscription successful');
-                router.replace('/(tabs)/discover');
+                router.replace('/(tabs)');
             }
         } catch (error: any) {
             hide();
@@ -175,7 +175,7 @@ const PayWallScreen = () => {
             hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Subscription successful');
-                router.replace('/(tabs)/discover');
+                router.replace('/(tabs)');
             }
         } catch (error: any) {
             hide();

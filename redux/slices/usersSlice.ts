@@ -1,6 +1,5 @@
-import { User } from "@/components/TinderCardSwipers";
-import axiosRequest from "@/utils/axios";
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+// import { User } from "@/components/TinderCardSwipers";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { fetchProfilesAsync, swipeLeftAsync, swipeRightAsync } from "../thunks/swipeActions";
 
 export interface UserProfile {
@@ -14,7 +13,7 @@ export interface UserProfile {
 }
 
 interface UsersState {
-  profiles: User[];
+  profiles: any[];
   currentIndex: number;
   loading: boolean;
   error: string | null;
@@ -41,7 +40,7 @@ const usersSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    fetchProfilesSuccess: (state, action: PayloadAction<User[]>) => {
+    fetchProfilesSuccess: (state, action: PayloadAction<any[]>) => {
       state.profiles = action.payload;
       state.currentIndex = 0;
       state.loading = false;

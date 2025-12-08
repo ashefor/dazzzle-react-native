@@ -1,6 +1,6 @@
-import { Image, TouchableOpacity, Text, View, Pressable } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { YStack, XStack } from 'tamagui'
+import { Image, TouchableOpacity, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { YStack, XStack } from 'tamagui';
 import Images from '@/constants/images';
 import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';

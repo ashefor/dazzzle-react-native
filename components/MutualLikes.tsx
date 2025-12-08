@@ -85,8 +85,11 @@ const MutualLikes = () => {
 
     const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => {
         return (
-            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
-                <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+            <TouchableWithoutFeedback onPress={() => router.push({
+                pathname: '/[userName]',
+                params: { userName: item.username }
+            })} className='relative'>
+                <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                     <View className='absolute top-4 right-4 z-10'>
                         <TouchableOpacity onPress={() => createUnlikeUserAlert(item._id)} className='p-2 bg-white rounded-full'>
                             <Ionicons name="heart" size={20} color="red" />
@@ -138,9 +141,9 @@ const MutualLikes = () => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={refreshUsers}
-                        tintColor={'#fff'}
+                        tintColor={'#DD3FE5'}
                     />}
-                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'large'} color={'#fff'} /></View> : null}
+                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'large'} color={'#DD3FE5'} /></View> : null}
                 renderItem={renderItem}
             />
         </View>

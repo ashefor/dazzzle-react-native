@@ -1,11 +1,11 @@
 // // authActions.js
-import axios, { AxiosHeaders, AxiosRequestConfig, HeadersDefaults, InternalAxiosRequestConfig, RawAxiosRequestHeaders } from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import { API_URL } from '@/constants/constants'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import { RootState } from '../store'
 
 // const backendURL = 'http://127.0.0.1:5000'
@@ -95,6 +95,7 @@ export const fetchAuthenticatedUser = createAsyncThunk(
     'get-user-auth-info',
     async (_, { rejectWithValue }) => {
         try {
+            console.log('Fetching authenticated user...');
             const token = await getItem('dazzzle-token');
             const config: AxiosRequestConfig = {
                 headers: {

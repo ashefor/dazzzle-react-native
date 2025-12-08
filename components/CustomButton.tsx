@@ -21,7 +21,7 @@ const CustomButton = forwardRef<typeof TouchableOpacity, CustomButtonProps>((pro
       activeOpacity={0.7}
       disabled={isDisabled}
       style={wrapperStyles}
-      className={`h-[44px] w-full bg-[#DD3FE5] flex items-center justify-center rounded-lg ${containerStyles} ${isLoading ? 'opacity-50' : ''} ${isDisabled ? 'opacity-50' : ''}`}>
+      className={` py-4 w-full bg-[#DD3FE5] flex items-center justify-center rounded-[26px] ${containerStyles} ${isLoading ? 'opacity-50' : ''} ${isDisabled ? 'opacity-50' : ''}`}>
       {/* <LinearGradient
             colors={["#DD3FE5", "#3D58F1"]}
             start={{ x: 0.5, y: 0 }}

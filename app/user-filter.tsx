@@ -213,7 +213,7 @@ const FilterUsers = () => {
     return (
         <View className=' h-full px-4'>
             {/* <TabsAdvancedBackground /> */}
-        {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+        {/* <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} >
            
             <TabsAdvancedBackground />
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>

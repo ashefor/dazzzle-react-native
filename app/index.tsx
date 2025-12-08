@@ -1,80 +1,117 @@
-import CustomButton from '@/components/CustomButton';
 import Images from '@/constants/images';
-import { Redirect, router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View, Text, ImageBackground } from 'react-native';
+import { Redirect } from 'expo-router';
+import { useEffect } from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
+import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
 import dayjs from 'dayjs';
-
+import { Spinner } from 'tamagui'; // Or your preferred loader
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
-  const { loading, appConfig, error } = useAppSelector(state => state.app);
-  const { userInfo, userToken } = useAppSelector(state => state.auth);
-  const { currentSubscription, } = useAppSelector(state => state.subscription);
-  const [hasExpired, setHasExpired] = useState(false);
+  
+  // 1. Select all necessary state in one place
+  const { loading: configLoading, appConfig, error: configError } = useAppSelector(state => state.app);
+  const { 
+    userInfo, 
+    loadingUser, 
+    userToken, 
+    error: authError, 
+    isProfileCompleted 
+  } = useAppSelector(state => state.auth);
+  const { currentSubscription } = useAppSelector(state => state.subscription);
 
-  // const loadInitialSettings = async () => {
-  //   try {
-  //     setLoadingGeneralConfigSettings(true);
-  //     const response = await axios.get(API_URL + '/user/prepare-sign-up')
-  //     const responseData = response.data as BasicAppInterfaceResponse;
-  //     if (responseData.reaction != ReactionCodes.SUCCESS) {
-  //       throw new Error('Failed to load basic settings')
-  //     } else {
-  //       const generalConfigSettings = response.data.data;
-  //       setItem('generalConfigSettings', generalConfigSettings);
-  //       setLoadedGeneralConfigSettings(true);
-  //       setLoadingGeneralConfigSettings(false);
-  //     }
-  //   } catch (error: any) {
-  //     setLoadedGeneralConfigSettings(false);
-  //     setLoadingGeneralConfigSettings(false);
-  //     Alert.alert('Loaded error', error.message ? error.message : 'Failed to load basic settings')
-
-  //   }
-  // }
-
-  const fetchAppConfigSettings = async () => {
-    dispatch(fetchAppConfig());
-  }
+  // Combined loading state
+  const isInitializing = configLoading || loadingUser;
+  console.log('isInitializing:', configLoading, loadingUser);
 
   useEffect(() => {
-    fetchAppConfigSettings();
-    checkForExpiration();
-  }, [])
+    // 1. Fetch Config
+    dispatch(fetchAppConfig());
 
-  const checkForExpiration = () => {
-    const intervalId = setInterval(() => {
-      if (currentSubscription) {
-        if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
-          setHasExpired(true);
-          clearInterval(intervalId);
-          router.replace('/paywall')
-        }
-      }
-    }, 1000);
+
+    // 2. If we have a token (persisted in Redux), fetch the user immediately
+    if (userToken) {
+      dispatch(fetchAuthenticatedUser());
+    }
+  }, [dispatch, userToken]);
+
+  // Handle Auth Errors (e.g., token expired)
+  useEffect(() => {
+    if (authError) {
+        dispatch(signUserOut());
+    }
+  }, [authError, dispatch]);
+
+  // Helper function to check subscription status
+  const checkSubscriptionStatus = () => {
+    if (!userInfo?.is_premium) return false;
+    
+    // If premium but no sub object, treat as valid or invalid based on your business logic
+    // Assuming here that if is_premium is true, we check the date
+    if (currentSubscription?.expiry_at) {
+       return !dayjs().isAfter(dayjs(currentSubscription.expiry_at));
+    }
+    
+    return false; // Default to false if premium flag is true but no subscription data exists
+  };
+
+  // --- RENDER LOGIC ---
+
+  // 1. Show loading screen while fetching config OR user
+  if (isInitializing) {
+    return (
+      <View className='bg-white flex items-center justify-center flex-1'>
+        <Image source={Images.logo} className='w-32 h-32' resizeMode='contain' />
+        <Spinner size="large" color="$gray10" className="mt-4" />
+      </View>
+    );
   }
 
-
-  if (loading) {
-    return <ImageBackground className='h-full w-full' source={Images.splash} >
-    </ImageBackground>
-  } else {
-    if (appConfig) {
-      if (userToken) {
-        return <Redirect href="./user-details" />;
-      } else {
-        return <Redirect href="./landing" />
-      }
-    } else {
-      return <View className='h-full  flex items-center justify-center p-5'>
-        <Text className='text-white'>
-          Unable to load settings
-        </Text>
-        <CustomButton title='Try again' handlePress={fetchAppConfigSettings} containerStyles='mt-7 w-full' />
+  // 2. Error State (Config failed)
+  if (!appConfig) {
+    return (
+      <View className='h-full flex items-center justify-center p-5 bg-white'>
+        <Text className=' text-primary text-base font-semibold'>Unable to load settings</Text>
+        <Text className=' text-primary'> {configError || ''}</Text>
+        <TouchableOpacity onPress={() => dispatch(fetchAppConfig())} className='rounded-[26px] px-5 h-10 mt-7 bg-primary flex items-center justify-center'>
+                                    <Text className='text-sma font-firamedium text-white'>
+                                        Try again
+                                    </Text>
+                                </TouchableOpacity>
       </View>
-    }
+    );
+  }
+
+  // 3. Routing Logic (The "Traffic Controller")
+  
+  // Scenario A: No Token -> Landing
+  if (!userToken) {
+    return <Redirect href="./landing" />;
+  }
+
+  // Scenario B: Token exists, but we are waiting for userInfo to populate
+  // (This handles the edge case where loadingUser is false but userInfo is null briefly)
+  if (!userInfo) {
+     return (
+        <View className='bg-white flex items-center justify-center flex-1'>
+            <Spinner size="large" />
+        </View>
+     );
+  }
+
+  // Scenario C: User Logged in -> Check Profile Completion
+  if (!isProfileCompleted) {
+    return <Redirect href="./onboard/bio-data" />;
+  }
+
+  // Scenario D: Profile Complete -> Check Subscription
+  const isSubActive = checkSubscriptionStatus();
+
+  if (isSubActive) {
+    return <Redirect href="./(tabs)" />;
+  } else {
+    return <Redirect href="./paywall" />;
   }
 }

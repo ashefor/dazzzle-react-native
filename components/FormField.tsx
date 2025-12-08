@@ -1,4 +1,4 @@
-import { NativeSyntheticEvent, Platform, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { NativeSyntheticEvent, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated from 'react-native-reanimated';
@@ -32,6 +32,7 @@ const FormField: React.FC<CustomTextInputProps> = ({
   onBlur,
   value,
   isValid,
+  editable,
   showErrorIcon,
   ...restProps
 }) => {
@@ -42,9 +43,9 @@ const FormField: React.FC<CustomTextInputProps> = ({
   const labelColor = "#333";
 
   function getBorderColor() {
-    if (!isTouched) return "#ccc";
+    if (!isTouched) return "#cccccc80";
     if (isFocused) return "#DD3FE5";
-    return showError() ? '#8E1F0B' : "#ccc";
+    return showError() ? '#8E1F0B' : "#cccccc80";
   }
 
   function getLabelColor() {
@@ -70,15 +71,14 @@ const FormField: React.FC<CustomTextInputProps> = ({
     onBlur && onBlur(e);
   };
 
-
   return (
-    <View className='space-y-1'>
-      <View className={`space-y-2 ${containerStyle}`}>
-        {title && <Text className="text-black text-sm font-firaregular" style={{ color: getLabelColor() }}>{title}</Text>}
-        <View className='border w-full px-4 bg-[#F2F2F7] rounded-md focus:border-primary items-center flex-row' style={{ borderColor: getBorderColor() }}>
+    <View className=' space-y-1'>
+      <View className={`w-full space-y-2 ${containerStyle} ${editable ? '': 'opacity-80'}`}>
+        {title && <Text className="text-black text-sm font-firamedium" style={{ color: getLabelColor() }}>{title}</Text>}
+        <View className='border h-14 w-full px-4 bg-[#F2F2F7] rounded-xl focus:border-primary items-center flex-row' style={{ borderColor: getBorderColor() }}>
           <TextInput
-            style={{ lineHeight: Platform.OS == 'ios' ? 0 : undefined }}
-            className='flex-1 h-12 font-firaregular text-black text-base'
+            // style={{ lineHeight: Platform.OS == 'ios' ? 0 : undefined }}
+            className='flex-1 h-full font-firaregular text-black text-sm'
             value={value}
             onChangeText={onChangeText}
             onBlur={handleBlur}
@@ -94,7 +94,7 @@ const FormField: React.FC<CustomTextInputProps> = ({
           />
           {(secureTextEntry) && (
             <TouchableOpacity onPress={() => setIsSecureTextEntry(!isSecureTextEntry)}>
-              <Ionicons name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} size={24} color="black" />
+              <Ionicons name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} size={20} color="black" />
             </TouchableOpacity>
           )}
         </View>

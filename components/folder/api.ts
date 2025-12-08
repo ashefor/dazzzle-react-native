@@ -26,7 +26,6 @@ type FetchUsersParams = {
   signal?: AbortSignal;
 };
 
-const BASE_URL = "https://dazzzle.org/api"; // replace
 
 export async function fetchUsers(signal?: AbortSignal): Promise<UserCard[]> {
   const res = await axiosRequest.profiles.get({ signal });
@@ -36,12 +35,8 @@ export async function fetchUsers(signal?: AbortSignal): Promise<UserCard[]> {
   const users: unknown =
     Array.isArray(data) ? data : (data && (data.filterData ?? []));
 
-  // Optional: runtime guard to ensure objects have required fields.
-  // Remove if you already validate within your interceptor.
   if (!Array.isArray(users)) return [];
-
-  // Optionally map to your UserCard shape if the API uses different field names.
-  // Example mapping shown; adjust to match your API response.
+  console.log('Fetched users:', users);
   return users
 }
 
@@ -52,12 +47,9 @@ export async function sendSwipe({
   userId: string;
   direction: "left" | "right";
 }): Promise<void> {
-  const res = await fetch(`${BASE_URL}/swipes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({ userId, action: direction === "right" ? "like" : "dislike" }),
-  });
-  if (!res.ok) throw new Error(`Failed to send swipe: ${res.status}`);
+    const directionValue = direction === "right" ? '1' : '0';
+    const res = await axiosRequest.post(`/${userId}/${directionValue}/user-like-dislike`, {});
+    return res.data;
 }
 
 export async function prefetchImages(urls: string[], concurrency = 4): Promise<void> {

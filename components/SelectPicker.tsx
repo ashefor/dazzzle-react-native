@@ -1,10 +1,11 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { JSX, memo, useCallback, useMemo, useRef } from "react";
-import { TouchableOpacity, View, Text, Keyboard, Platform, FlatList, Dimensions } from "react-native";
-import { XStack, ListItem as ListItemBase } from "tamagui";
+import { JSX, useCallback, useMemo, useRef } from "react";
+import { TouchableOpacity, View, Text, Keyboard, FlatList, Dimensions } from "react-native";
+import { ListItem as ListItemBase } from "tamagui";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import React from "react";
 
 interface CustomButtonProps {
     options: { id: string | number, value: string }[];
@@ -99,36 +100,18 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
         []
     );
 
-
-    const ListItem = memo(({ item }: any) => {
-        return (
-            <TouchableOpacity onPress={() => selectOption(item.id)} className={`bg-gray-800 min-h-[44px] py-2.5 px-[18px] rounded-lg ${defaultOption == item.id.toString() ? 'bg-secondary' : ''}`}>
-                <XStack gap="$3" alignItems='center'>
-                    <Text className={`text-lg ${defaultOption == item.id.toString() ? 'text-black' : 'text-black'}`}>{item.value}</Text>
-                </XStack>
-            </TouchableOpacity>
-        );
-    });
-
-    const renderItem = ({ item }: { item: { id: string | number, value: string } }) => <ListItemBase onPress={() => selectOption(item.id)} className={`bg-gray-800 rounded-lg ${defaultOption == item.id.toString() ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`}>
-        <XStack gap="$3" alignItems='center'>
-            <Text className={`text-lg ${defaultOption == item.id.toString() ? 'text-black' : 'text-black'}`}>{item.value}</Text>
-        </XStack>
+    const renderItem = ({ item }: { item: { id: string | number, value: string } }) => <ListItemBase onPress={() => selectOption(item.id)} className={`bg-[#F2F2F7] rounded-lg ${defaultOption == item.id.toString() ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`} py={"$3"}>
+        <Text className={`text-base ${defaultOption == item.id.toString() ? 'text-primary' : 'text-black'}`}>{item.value}</Text>
     </ListItemBase>;
 
     return (
         <>
             <View className="space-y-2">
-                <Text className='text-base text-black font-firamedium capitalize'>{title}</Text>
-                <View className='border border-[#ccc] w-full px-4 bg-[#F2F2F7] rounded-md focus:border-secondary items-center flex-row'>
-                    <View
-                        className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-black divide divide-x divide-[#A9A9A9]'>
-                        <TouchableOpacity className='flex-row items-center justify-between gap-0.5 flex-1 h-full' onPress={() => searchBottomSheetModalRef.current?.present()} disabled={disabled}>
-                            <Text className={`text-base text-black font-firaregular ${defaultOption ? 'text-black' : 'text-[#5B5B5B3A]'}`}>{defaultOption ? getPickerLabel(defaultOption) : placeholder}</Text>
-                            <Feather className='ml-auto' name="chevron-down" size={20} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                <Text className='text-sm text-black font-firamedium capitalize'>{title}</Text>
+                <TouchableOpacity className='px-4 h-14 bg-[#F2F2F7] rounded-xl focus:border-primary flex-row items-center justify-between gap-0.5 flex-1 border border-[#cccccc80]' onPress={() => searchBottomSheetModalRef.current?.present()} disabled={disabled}>
+                    <Text className={`text-sm text-black font-firaregular ${defaultOption ? 'text-black' : 'text-[#5B5B5B3A]'}`}>{defaultOption ? getPickerLabel(defaultOption) : placeholder}</Text>
+                    <Feather className='ml-auto' name="chevron-down" size={20} color="black" />
+                </TouchableOpacity>
             </View>
 
             <BottomSheetModal
@@ -136,15 +119,12 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 enableDynamicSizing
                 maxDynamicContentSize={MAX_HEIGHT_PX}
                 enablePanDownToClose={true}
-                bottomInset={16}
                 handleIndicatorStyle={{
                     backgroundColor: "red",
                     display: "none"
                 }}
                 handleStyle={{ padding: 0 }}
-                detached={true}
                 style={{
-                    marginHorizontal: 16,
                     shadowColor: "#000",
                     shadowOffset: { width: 0, height: 6 },
                     shadowOpacity: 0.1,
@@ -156,21 +136,19 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 backgroundStyle={{
                     borderRadius: 28,
                 }}
+                stackBehavior="push"
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
-                keyboardBehavior="extend"
-                keyboardBlurBehavior='restore'
-                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
             >
 
                 <BottomSheetFlatList
                     // ref={flatListRef}
-                    ItemSeparatorComponent={() => <View className='h-2' />}
+                    ItemSeparatorComponent={() => <View className='h-3' />}
                     style={{ marginBottom: 20 }}
                     contentContainerStyle={{
                         paddingTop: 16,
                         paddingHorizontal: 16,
-                        paddingBottom: 28,
+                        paddingBottom: 16 + insets.bottom,
                         borderRadius: 28,
                     }} data={options}
                     renderItem={renderItem}
@@ -224,4 +202,4 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
 }
 
 
-export default SelectPicker
+export default React.memo(SelectPicker)

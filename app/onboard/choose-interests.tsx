@@ -1,34 +1,26 @@
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Link, router } from 'expo-router'
-import { YStack, Progress, ScrollView, Sheet } from 'tamagui'
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native'
+import React, { JSX, useCallback, useEffect, useRef, useState } from 'react'
+import { router } from 'expo-router'
 import CustomButton from '@/components/CustomButton'
 import { Interest, ReactionCodes } from '@/models/general'
-import Ionicons from '@expo/vector-icons/Ionicons'
-import { signUserOut } from '@/redux/thunks/authActions'
-import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
+import { useAppSelector } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
 import { defaultInterests } from '@/constants/constants'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import LottieView from 'lottie-react-native'
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
+import { OnboardPagesProps } from '.'
 
-const OnboardChooseInterests = () => {
-    const dispatch = useAppDispatch();
-        const { show, hide } = useLoader();
+const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
+    const { show, hide } = useLoader();
     const { appConfig } = useAppSelector(state => state.app);
-    const [progress, setProgress] = React.useState(Math.ceil((4 / 5) * 100));
     const [interests, setInterests] = useState<Interest[]>(defaultInterests);
-    const [hasFinished, setHasFinished] = useState(false);
-
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const animationRef = useRef<LottieView>(null);
     const insets = useSafeAreaInsets();
-
     const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setProgress(Math.ceil((5 / 5) * 100))
-        }, 500);
-    }, [])
 
     useEffect(() => {
         if (appConfig?.interests) {
@@ -45,16 +37,23 @@ const OnboardChooseInterests = () => {
         }
     }
 
-    const submit = async () => {
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            />
+        ),
+        []
+    );
+
+    const completeProfileCreation = async () => {
         try {
             show();
-            const data:any = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
+            const data: any = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                // Toast.success('Profile updated successfully');
-                setHasFinished(true)
-                // setAuthState('completed');
-                // await setItem('profileCompletion', 'completed');
-                // router.replace('/(tabs)/discover');
+                bottomSheetModalRef.current?.present();
             }
             hide();
         } catch (error: any) {
@@ -63,101 +62,92 @@ const OnboardChooseInterests = () => {
         }
     }
 
-    const handleLogOut = async () => {
-        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
-    }
-
-    const finishAndSkip = async () => {
-        try {
-            // const { data } = await axiosRequest.post('/get-user-auth-info');
-            // if (data.reaction === ReactionCodes.SUCCESS) {
-            //     Toast.success('Profile updated successfully');
-            //     // setAuthState('completed');
-            //     await setItem('profileCompletion', 'completed');
-            //     router.replace('/(tabs)/discover');
-            // }
-            router.replace('/paywall');
-        } catch (error) {
-
-        }
-    }
-
 
     return (
         <>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-            >
-                <View style={{ paddingBottom: insets.bottom }} className=' h-full'>
-                    <View className='px-4'>
-                        <Progress size="$3" value={progress}>
-                            <Progress.Indicator backgroundColor="#DF3FE5" animation="bouncy" />
-                        </Progress>
-                    </View>
-                    <ScrollView className='h-full'>
-                        <View className='p-4 space-y-4'>
-                            <YStack>
-                                <Text className='text-2xl text-white font-firabold'>Interest</Text>
-                                <Text className='text-sm text-[#A9A9A9] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
-                            </YStack>
-                            <YStack>
-                                {interests && interests.length > 0 && <>
-                                    {selectedInterests.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one interest type</Text>}
-                                    <View className='flex-row flex-wrap my-6'>
-                                        {interests.map((interest, index) => (
-                                            <Pressable onPress={() => chooseSelectedInterests(interest.id)} key={index} className={`rounded-lg px-4 py-2 mr-3 mb-3 ${selectedInterests.includes(interest.id) ? 'bg-[#DF3FE5]' : 'bg-[#414141]'}`}>
-                                                <Text className='text-sm text-white font-firamedium'>{interest.value}</Text>
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                    <YStack>
-                                        <CustomButton disabled={selectedInterests.length === 0} title='Next' handlePress={submit} />
-                                        <View className='justify-center pt-5 flex-row gap-2'>
-                                            <Text className='text-sm text-white font-firaregular'>Already have an account?</Text>
-                                            <Link className='text-sm text-tertiary font-firaregular underline' href='../(auth)/sign-in'>Sign In</Link>
-                                        </View>
-                                    </YStack>
-                                </>}
-                            </YStack>
-                        </View>
-                    </ScrollView>
+            <View className='flex-1 space-y-4'>
+                <View className='px-4'>
+                    <Text className='text-2xl text-black font-firabold'>Interest</Text>
+                    <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                 </View>
-            </KeyboardAvoidingView>
-            <Sheet
-                forceRemoveScrollEnabled={hasFinished}
-                modal={true}
-                open={hasFinished}
-                disableDrag={true}
-                snapPointsMode={'fit'}
-                dismissOnSnapToBottom
-                zIndex={100_000}
-                animation="medium"
+                <ScrollView contentContainerStyle={{ flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
+                    {interests && interests.length > 0 && <>
+                        {selectedInterests.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one interest type</Text>}
+                        <View className='flex-row flex-wrap my-6'>
+                            {interests.map((interest, index) => (
+                                <Pressable onPress={() => chooseSelectedInterests(interest.id)} key={index} className={`rounded-lg px-4 py-2 mr-3 mb-3 ${selectedInterests.includes(interest.id) ? 'bg-primary' : 'bg-[#FCE6FD]'}`}>
+                                    <Text className={`text-sm ${selectedInterests.includes(interest.id) ? 'text-white' : 'text-black'} font-firamedium`}>{interest.value}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                        <View className='mt-auto'>
+                            <CustomButton disabled={selectedInterests.length === 0} title='Next' handlePress={completeProfileCreation} />
+                            <View className='justify-center pt-5 flex-row gap-2'>
+                                <TouchableOpacity onPress={onLogOut}>
+                                    <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </>}
+                </ScrollView>
+            </View>
+            <BottomSheetModal
+                ref={bottomSheetModalRef}
+                enableDynamicSizing
+                enablePanDownToClose={true}
+                style={{
+                    borderRadius: 28,
+                }}
+                backgroundStyle={{
+                    borderRadius: 28,
+                }}
+                backdropComponent={renderBackdrop}
+                onDismiss={() => router.replace('/paywall')}
             >
-                <Sheet.Overlay
-                    onPress={() => setHasFinished(false)}
-                    animation="medium"
-                    enterStyle={{ opacity: 0 }}
-                    exitStyle={{ opacity: 0 }}
-                />
-                <Sheet.Frame paddingBottom="$2" gap="$5" backgroundColor={'#1A1A1A'}>
-                    <View className=' flex-row items-center p-4 pb-0 space-x-1' >
-                        <TouchableOpacity onPress={() => setHasFinished(false)} className='z-10 flex items-center justify-center pr-4'>
-                            <Ionicons name="close-circle" size={24} color="#ffffff" />
+
+                <BottomSheetView>
+                    <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+                        <View style={styles.lottieContainer}>
+                            <LottieView
+                                ref={animationRef}
+                                source={require('../../assets/checkmark.json')}
+                                style={styles.lottie}
+                                autoPlay={true}
+                                loop={true}
+                            />
+                        </View>
+                        <View className='mb-7'>
+                            <Text className='text-2xl font-semibold mb-2 text-center'>
+                                Registration Complete!
+                            </Text>
+                            <Text className='text-base font-firaregular text-center'>
+                                You have successfully completed your registration.
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
+                            <Text className='text-base font-firamedium text-white'>
+                                Finish
+                            </Text>
                         </TouchableOpacity>
                     </View>
-                    <View className='px-6 pt-4 pb-10'>
-                        <View className='space-y-4 text-center mb-5'>
-                            <Text className='text-white text-lg font-firabold text-center'>Registration Complete!</Text>
-                            <Text className='text-white text-sm font-firaregular text-center'>You have successfully completed your registration.</Text>
-                        </View>
-                        <CustomButton title="Finish" handlePress={finishAndSkip} />
-                    </View>
-                </Sheet.Frame>
-            </Sheet>
+                </BottomSheetView>
+            </BottomSheetModal>
         </>
     )
 }
 
 export default OnboardChooseInterests
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    lottieContainer: {
+        width: 120,
+        height: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 'auto'
+    },
+    lottie: {
+        width: '100%',
+        height: '100%',
+    },
+})

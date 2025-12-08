@@ -1,17 +1,17 @@
-import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, ActivityIndicator, RefreshControl, Alert, Dimensions, Platform } from 'react-native';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user';
 import Toast from '@/components/toast/toast';
 import axiosRequest from '@/utils/axios';
 import { useLoader } from '@/context/loader/LoaderProvider';
 
+const { width } = Dimensions.get('window');
+const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
 const MyLikes = () => {
-    const { width } = useWindowDimensions();
-        const { show, hide } = useLoader();
-    const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
+    const { show, hide } = useLoader();
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -89,23 +89,63 @@ const MyLikes = () => {
 
     const unlikeUser = async (userId: string | number) => {
         try {
+            show();
             const data: any = await axiosRequest.post(`/${userId.toString()}/0/user-like-dislike`, {});
+            hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const response = data.data;
                 Toast.success(response.message || 'User Disliked successfully', 2000)
                 setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
             }
         } catch (error) {
+            hide();
             console.error('Error unliking user:', error);
         }
     }
-
     const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => {
-        return (
-            <TouchableWithoutFeedback onPress={() => router.push(`/view-user/${item.username}`)} className='relative'>
-                            <View className='m-2 h-72' style={{ flex: 1 / numColumns, width: width / numColumns }}>
+            return <LikeItem item={item}  onPress={createUnlikeUserAlert}/>;
+        }, []);
+
+    return (
+        <View className=' h-full'>
+            <FlatList
+                className='p-1'
+                data={users}
+                keyExtractor={(item, index) => `${item._uid}-${index}`}
+                windowSize={5}
+                maxToRenderPerBatch={10}
+                removeClippedSubviews={Platform.OS === 'android'}
+                numColumns={numColumns}
+                onEndReached={() => fetchMoreUsers()}
+                refreshing={refreshing}
+                onRefresh={() => refreshUsers()}
+                onEndReachedThreshold={0.5}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={refreshUsers}
+                        tintColor={'#DD3FE5'}
+                    />}
+                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'small'} color={'#DD3FE5'} /></View> : null}
+                renderItem={renderItem}
+            />
+        </View>
+
+    )
+}
+
+const LikeItem = memo(({ item, onPress }: { item: LikedUserProfile, onPress: (itemId:  number) => void }) => {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
+    return (
+            <TouchableWithoutFeedback onPress={() => router.push({
+                pathname: '/[userName]',
+                params: { userName: item.username }
+            })} className='relative'>
+                            <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                                 <View className='absolute top-4 right-4 z-10'>
-                                    <TouchableOpacity onPress={() => createUnlikeUserAlert(item._id)} className='p-2 bg-white rounded-full'>
+                                    <TouchableOpacity onPress={() => onPress(item._id)} className='p-2 bg-white rounded-full'>
                                         <Ionicons name="heart" size={20} color="red" />
                                     </TouchableOpacity>
                                 </View>
@@ -121,31 +161,6 @@ const MyLikes = () => {
                             </View>
                         </TouchableWithoutFeedback>
         )
-    }, [])
-
-    return (
-        <View className=' h-full'>
-            <FlatList
-                className='p-1'
-                data={users}
-                keyExtractor={(item, index) => `${item._uid}-${index}`}
-                numColumns={numColumns}
-                onEndReached={() => fetchMoreUsers()}
-                refreshing={refreshing}
-                onRefresh={() => refreshUsers()}
-                onEndReachedThreshold={0.5}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={refreshUsers}
-                        tintColor={'#fff'}
-                    />}
-                ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'small'} color={'#fff'} /></View> : null}
-                renderItem={renderItem}
-            />
-        </View>
-
-    )
-}
+});
 
 export default MyLikes

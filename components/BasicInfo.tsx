@@ -297,7 +297,7 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
                             </TouchableOpacity>
                             <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Edit Basic Info</Text>
                         </View>
-                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+                        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} >
                             <ScrollView className='px-4 py-2 h-full'>
                                 <Form gap="$7">
                                     <YStack gap="$3">
@@ -573,7 +573,7 @@ const BasicInfo = memo(({ editable, userSpecificationData, userProfileData, onEd
 //                             </TouchableOpacity>
 //                             <Text className='font-firabold text-white text-center flex-1 mx-auto text-base'>Edit {item.title}</Text>
 //                         </View>
-//                         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+//                         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} >
 //                             <ScrollView className='px-4 py-2 h-full'>
 //                                 <Form gap="$7">
 //                                     <YStack gap="$3">

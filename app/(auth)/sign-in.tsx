@@ -1,4 +1,4 @@
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
 import * as yup from 'yup'
 import { Formik } from 'formik'
+import { KeyboardAvoidingView } from "react-native-keyboard-controller"
 
 const SignIn = () => {
     const dispatch = useAppDispatch();
@@ -19,9 +20,9 @@ const SignIn = () => {
         try {
             const { user, isProfileComplete } = await dispatch(userLogin({ email_or_username, password })).unwrap();
             if (user) {
-                if (!isProfileComplete) {
+                if (isProfileComplete) {
                     if (user.is_premium) {
-                        router.replace('/(tabs)/discover');
+                        router.replace('/(tabs)');
                     } else {
                         router.replace('/paywall');
                     }
@@ -36,12 +37,14 @@ const SignIn = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }} className=' h-full'>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
+            <KeyboardAvoidingView behavior={"padding"}
+         style={{ flex: 1 }} >
                 <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
                     <View className='w-full h-full py-16 justify-between'>
                         <Formik
                             initialValues={{ password: '', email_or_username: '' }}
                             onSubmit={logUserIn}
+                            enableReinitialize
                             validationSchema={signInValidationSchema}
                         >
                             {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {

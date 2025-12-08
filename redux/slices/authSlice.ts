@@ -1,11 +1,10 @@
 // counterSlice.js
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { fetchAuthenticatedUser, signUserOut, userLogin } from '../thunks/authActions';
-import { clear, getItem, setItem } from '@/utils/asyncStorage';
-import { LoggedInUser, LoggedInUserProfile } from '@/models/user';
-import { store } from '../store';
-import { subscriptionSlice } from './subscriptionSlice';
+import { clear, setItem } from '@/utils/asyncStorage';
+import { LoggedInUserProfile } from '@/models/user';
 import { fetchUserProfileData } from '../thunks/userActions';
+import { arrayToObject } from '@/utils/helpers';
 
 type UserState = {
     loading: boolean,
@@ -53,7 +52,6 @@ export const userSlice = createSlice({
             return initialState;
         },
         updateUserInfo: (state: UserState, action) => {
-            console.log('action', action);
             const oldUser = state.userInfo;
             const newUser = {...oldUser, ...action.payload}
             state.userInfo = newUser;
@@ -111,8 +109,11 @@ export const userSlice = createSlice({
             state.loadingUserProfileData = true
         })
         builder.addCase(fetchUserProfileData.fulfilled, (state, action) => {
+            const response = action.payload;
+            const userSpecificationData = response.userSpecificationData;
+            const formatteduserSpecificationData = arrayToObject(userSpecificationData);
             state.loadingUserProfileData = false
-            state.userProfileData = action.payload
+            state.userProfileData = {...action.payload, formatteduserSpecificationData: formatteduserSpecificationData}
         })
         builder.addCase(fetchUserProfileData.rejected, (state, action) => {
             state.loadingUserProfileData = false

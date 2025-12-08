@@ -85,6 +85,21 @@ export interface FeaturedUser {
   _uid: string;
 }
 
+export interface RandomUser {
+  id: number;
+  username: string;
+  fullName: string;
+  profileImage: string;
+  coverImage: string;
+  gender: string;
+  dob: string;
+  userAge: number;
+  countryName: string;
+  userOnlineStatus: number;
+  isPremiumUser: boolean;
+  detailString: string;
+}
+
 export interface RandomUserResponse extends ApiResponse {
   data: {
     totalCount: number;
@@ -114,6 +129,9 @@ export interface SingleUserDetails {
   userProfileData: UserProfileData
   photosData: any[]
   userSpecificationData: UserSpecificationsData
+  formatteduserSpecificationData: { [key: string]: { [key: string]: string } }
+  likedUserProfileData: LikedUserProfile[]
+  totalLikedUser: number
   userLikeData: {like: number, _id: number}[] | {like: number, _id: number};
   totalUserLike: number
   totalVisitors: number

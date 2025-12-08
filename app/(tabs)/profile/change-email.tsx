@@ -1,16 +1,23 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, TouchableOpacity } from 'react-native'
-import React, { Fragment, useCallback, useEffect, useState } from 'react'
+import { View, ScrollView, Alert, TouchableOpacity, Text } from 'react-native'
+import React, { JSX, useCallback, useRef } from 'react'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import { Form, YStack } from 'tamagui'
+import { YStack } from 'tamagui'
 import { ReactionCodes } from '@/models/general'
-import { router, Stack } from 'expo-router'
+import { router } from 'expo-router'
 import Toast from '@/components/toast/toast'
-import { isValidEmail } from '@/utils/validators'
-import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
 import { useAppSelector } from '@/hooks/reduxHooks'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as yup from 'yup'
+import { Formik } from 'formik'
+import NavBar from '@/components/NavBar'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import LottieView from 'lottie-react-native'
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
+import { StyleSheet } from 'react-native'
 
 type ChangeEmailForm = {
   current_email: string;
@@ -19,64 +26,17 @@ type ChangeEmailForm = {
 };
 
 const ChangeEmailScreen = () => {
+  const insets = useSafeAreaInsets();
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const animationRef = useRef<LottieView>(null);
   const { userInfo } = useAppSelector(state => state.auth);
-      const { show, hide } = useLoader();
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [errors, setErrors] = useState<ChangeEmailForm | Record<string, string>>({});
-  const [hasTyped, setHasTyped] = useState<Record<string, boolean>>({});
-  const [form, setForm] = useState<ChangeEmailForm>({
-    current_email: '',
-    new_email: '',
-    current_password: ''
-  })
+  const { show, hide } = useLoader();
 
-  const updateForm = useCallback(<K extends keyof ChangeEmailForm>(key: K, value: ChangeEmailForm[K]) => {
-    setForm({
-      ...form,
-      [key]: value
-    })
-  }, [form])
 
-  useEffect(() => {
-    if (userInfo && userInfo.email) {
-      updateForm('current_email', userInfo.email);
-    }
-  }, [userInfo])
-
-  const handleInputChange = (field: keyof ChangeEmailForm, value: string) => {
-    // setForm(prev => ({ ...prev, [field]: value }));
-    updateForm(field, value);
-
-    // Mark field as touched
-    setHasTyped(prev => ({ ...prev, [field]: true }));
-  };
-
-  const validateForm = () => {
-    let errors: { [key: string]: string } = {};
-    if (!isValidEmail(form.current_email) || !form.current_email) {
-      errors.current_email = 'Valid email is required';
-    }
-    if (!isValidEmail(form.new_email) || !form.new_email) {
-      errors.new_email = 'Valid email is required';
-    }
-    if (!form.current_password || form.current_password.length < 6) {
-      errors.current_password = 'Password is required';
-    }
-    setErrors(errors);
-    setIsFormValid(Object.keys(errors).length === 0);
-  }
-
-  useEffect(() => {
-    if (hasTyped.current_email || hasTyped.new_email || hasTyped.current_password) {
-      const timer = setTimeout(validateForm, 300); // Delay validation after typing
-      return () => clearTimeout(timer);
-    }
-  }, [form.current_email, form.new_email, form.current_password])
-
-  const handleChangeEmail = async () => {
+  const handleChangeEmail = async (formValues: ChangeEmailForm) => {
     try {
       show();
-      const data: any = await axiosRequest.post('/profile/update-email-process', form);
+      const data: any = await axiosRequest.post('/profile/update-email-process', formValues);
       hide();
       if (data.reaction === ReactionCodes.SUCCESS) {
         const response = data.data;
@@ -89,61 +49,146 @@ const ChangeEmailScreen = () => {
     }
   }
 
-  return (
-    <Fragment>
-      <Stack.Screen
-        options={{
-          headerStyle: { backgroundColor: '#1A1A1A' },
-          headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center pr-4 w-9 h-8'>
-            <ArrowBackIcon />
-          </TouchableOpacity>
-        }}
+  const renderBackdrop = useCallback(
+    (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+      // onPress={handleBlur}
       />
-      <View className=' h-full'>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} >
-          <ScrollView>
-            <View className='px-4 py-5'>
-              <Form gap="$7">
-                <YStack gap="$4">
-                  <YStack gap="$1">
-                    <FormField
-                      title="Current Email"
-                      placeholder='Enter username'
-                      value={form.current_email}
-                      onChangeText={(text: string) => handleInputChange('current_email', text)}
-                    />
-                    {hasTyped.current_email && errors.current_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_email}</Text>}
-                  </YStack>
+    ),
+    []
+  );
 
-                  <YStack gap="$1">
-                    <FormField
-                      title="New Email"
-                      placeholder='Enter username'
-                      value={form.new_email}
-                      onChangeText={(text: string) => handleInputChange('new_email', text)}
-                    />
-                    {hasTyped.new_email && errors.new_email && <Text className='text-xs text-red-500 font-firaregular'>{errors.new_email}</Text>}
-                  </YStack>
-                  <YStack gap="$1">
-                    <FormField
-                      title="Password"
-                      value={form.current_password}
-                      placeholder='Enter password'
-                      onChangeText={(text: string) => handleInputChange('current_password', text)}
-                    />
-                    {hasTyped.current_password && errors.current_password && <Text className='text-xs text-red-500 font-firaregular'>{errors.current_password}</Text>}
-                  </YStack>
-                </YStack>
-                <Form.Trigger asChild>
-                  <CustomButton title='Change Email' handlePress={handleChangeEmail} />
-                </Form.Trigger>
-              </Form>
+  return (
+    <View className='flex-1 bg-white' style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <NavBar title='Change Email' />
+      <KeyboardAvoidingView behavior={"padding"}
+         style={{ flex: 1 }} >
+        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+          <View className='w-full h-full justify-center'>
+            <Formik
+              initialValues={{ current_email: userInfo?.email || '', new_email: '', current_password: '', }}
+              onSubmit={handleChangeEmail}
+              enableReinitialize
+              validationSchema={changeEmailValidationSchema}
+            >
+              {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
+                return (
+                  <View className='flex-1 '>
+                    <YStack gap="$3" mb={20}>
+                      <FormField
+                        title="Current Email"
+                        placeholder=''
+                        editable={userInfo?.email ? false : true}
+                        onChangeText={handleChange('current_email')}
+                        onBlur={handleBlur('current_email')}
+                        showCustomError={errors.current_email ? true : false}
+                        errorMessage={errors.current_email}
+                        value={values.current_email}
+                        keyboardType='email-address'
+                      />
+                      <FormField
+                        title="New Email"
+                        placeholder=''
+                        value={values.new_email}
+                        onChangeText={handleChange('new_email')}
+                        onBlur={handleBlur('new_email')}
+                        showCustomError={errors.new_email ? true : false}
+                        errorMessage={errors.new_email}
+                        keyboardType='email-address'
+                      />
+                      <FormField
+                        title="Password"
+                        placeholder=''
+                        value={values.current_password}
+                        secureTextEntry
+                        onChangeText={handleChange('current_password')}
+                        onBlur={handleBlur('current_password')}
+                        showCustomError={errors.current_password ? true : false}
+                        errorMessage={errors.current_password}
+                      />
+                    </YStack>
+                    <View className='mt-auto'>
+                      <CustomButton title='Update Email' disabled={!isValid} handlePress={handleSubmit} />
+                    </View>
+                  </View>
+                )
+              }}
+
+            </Formik>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        enableDynamicSizing
+        enablePanDownToClose={true}
+        style={{
+          borderRadius: 28,
+        }}
+        backgroundStyle={{
+          borderRadius: 28,
+        }}
+        backdropComponent={renderBackdrop}
+        onDismiss={() => router.back()}
+      >
+
+        <BottomSheetView>
+          <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+            <View style={styles.lottieContainer}>
+              <LottieView
+                ref={animationRef}
+                source={require('../../../assets/checkmark.json')} // Point to your JSON file
+                style={styles.lottie}
+                autoPlay={true} // Set to true if you want it to loop or start immediately
+                loop={true}     // Set to true if you want it to repeat
+              />
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
-    </Fragment>
+            <View className='mb-7'>
+              <Text className='text-2xl font-semibold mb-2 text-center'>
+                Successful!
+              </Text>
+              <Text className='text-base font-firaregular text-center'>
+                Email changed successfully
+              </Text>
+            </View>
+            <TouchableOpacity className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
+              <Text className='text-base font-firamedium text-white'>
+                Done
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+    </View>
   )
 }
 
 export default ChangeEmailScreen
+
+const styles = StyleSheet.create({
+  lottieContainer: {
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 'auto'
+  },
+  lottie: {
+    width: '100%',
+    height: '100%',
+  },
+})
+
+const changeEmailValidationSchema = yup.object().shape({
+  email: yup
+    .string()
+    .email("Please enter valid email")
+    .required('Email is required'),
+  password: yup
+    .string()
+    .min(6, ({ min }) => `Password must be at least ${min} characters`)
+    .required('Password is required'),
+})

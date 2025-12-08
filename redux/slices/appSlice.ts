@@ -1,5 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { userLogin } from '../thunks/authActions';
+import { createSlice } from '@reduxjs/toolkit';
 import { BasicAppInterface } from '@/models/general';
 import { fetchAppConfig } from '../thunks/appActions';
 
@@ -34,7 +33,7 @@ export const appSlice = createSlice({
             state.loading = false
             state.appConfig = action.payload
         })
-        builder.addCase(userLogin.rejected, (state, action) => {
+        builder.addCase(fetchAppConfig.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
         })

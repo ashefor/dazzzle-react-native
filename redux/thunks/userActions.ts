@@ -35,6 +35,7 @@ export const fetchUserProfileData = createAsyncThunk(
             if (errorMessage) {
                 return rejectWithValue(errorMessage)
             }
+            console.log('data', data);
             return data
         } catch (error: any) {
             // return custom error message from API if any

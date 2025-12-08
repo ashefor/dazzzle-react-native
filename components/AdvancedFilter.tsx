@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native'
+import { KeyboardAvoidingView, ScrollView, Text } from 'react-native'
 import { YStack } from 'tamagui'
 import CustomButton from './CustomButton'
 
@@ -11,7 +11,7 @@ const UsersAdvancedFilter = () => {
         distance: '100'
     })
     return (
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+            <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }}>
                 <ScrollView className='px-4 py-2 h-full'>
                 <YStack gap="$7">
                 <YStack>
