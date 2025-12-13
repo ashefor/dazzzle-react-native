@@ -2,7 +2,6 @@ import { View, ScrollView, Alert, TouchableOpacity, Text } from 'react-native'
 import React, { JSX, useCallback, useRef } from 'react'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
-import { YStack } from 'tamagui'
 import { ReactionCodes } from '@/models/general'
 import { router } from 'expo-router'
 import Toast from '@/components/toast/toast'
@@ -77,8 +76,9 @@ const ChangeEmailScreen = () => {
               {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
                 return (
                   <View className='flex-1 '>
-                    <YStack gap="$3" mb={20}>
-                      <FormField
+                    <View className='space-y-3 mb-5'>
+                      <View>
+                        <FormField
                         title="Current Email"
                         placeholder=''
                         editable={userInfo?.email ? false : true}
@@ -89,7 +89,9 @@ const ChangeEmailScreen = () => {
                         value={values.current_email}
                         keyboardType='email-address'
                       />
-                      <FormField
+                      </View>
+                      <View>
+                        <FormField
                         title="New Email"
                         placeholder=''
                         value={values.new_email}
@@ -99,7 +101,9 @@ const ChangeEmailScreen = () => {
                         errorMessage={errors.new_email}
                         keyboardType='email-address'
                       />
-                      <FormField
+                      </View>
+                      <View>
+                        <FormField
                         title="Password"
                         placeholder=''
                         value={values.current_password}
@@ -109,7 +113,8 @@ const ChangeEmailScreen = () => {
                         showCustomError={errors.current_password ? true : false}
                         errorMessage={errors.current_password}
                       />
-                    </YStack>
+                      </View>
+                    </View>
                     <View className='mt-auto'>
                       <CustomButton title='Update Email' disabled={!isValid} handlePress={handleSubmit} />
                     </View>

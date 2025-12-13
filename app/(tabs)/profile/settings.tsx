@@ -1,6 +1,5 @@
 import { View, Text, ScrollView, Switch, Platform } from 'react-native';
 import React, { Fragment, useEffect, useState } from 'react';
-import { XStack, YStack } from 'tamagui';
 import CustomButton from '@/components/CustomButton';
 import { getItem, setItem } from '@/utils/asyncStorage';
 import Toast from '@/components/toast/toast';
@@ -59,9 +58,9 @@ const settings = () => {
                 <ScrollView contentContainerStyle={{ paddingHorizontal: 16, flexGrow: 1, paddingBottom: insets.bottom + 20 }}>
                     <View className='mb-5'>
                             <Text className='text-sm text-black font-firaregular mb-2'>Notification Settings</Text>
-                            <YStack className='bg-[#F2F2F7] pl-4 rounded-xl'>
+                            <View className='bg-[#F2F2F7] pl-4 rounded-xl'>
                                 <View className=' p-3 border-b border-[#F0F0F0]'>
-                                    <XStack alignItems="center" justifyContent='space-between' gap="$2.5">
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                         <Text className='font-firaregular flex-1'>
                                             Show Visitors Notification
                                         </Text>
@@ -72,10 +71,10 @@ const settings = () => {
                                             onValueChange={toggleShowVisitorsNotification}
                                             value={showVisitorsNotification}
                                         />
-                                    </XStack>
+                                    </View>
                                 </View>
                                 <View className=' p-3 border-b border-[#F0F0F0]'>
-                                    <XStack alignItems="center" justifyContent='space-between' gap="$2.5">
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                         <Text className=' font-firaregular flex-1'>
                                             Show Messages notification
                                         </Text>
@@ -86,10 +85,10 @@ const settings = () => {
                                             onValueChange={toggleShowMessagesNotification}
                                             value={showMessagesNotification}
                                         />
-                                    </XStack>
+                                    </View>
                                 </View>
                                 <View className=' p-3 border-b border-[#F0F0F0]'>
-                                    <XStack alignItems="center" justifyContent='space-between' gap="$2.5">
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                         <Text className=' font-firaregular flex-1'>
                                             Show Likes Notification
                                         </Text>
@@ -100,10 +99,10 @@ const settings = () => {
                                             onValueChange={toggleShowLikesNotification}
                                             value={showLikesNotification}
                                         />
-                                    </XStack>
+                                    </View>
                                 </View>
                                 <View className=' p-3'>
-                                    <XStack alignItems="center" justifyContent='space-between' gap="$2.5">
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                         <Text className=' font-firaregular flex-1'>
                                             Show Login Notification For Your Liked Users
                                         </Text>
@@ -114,9 +113,9 @@ const settings = () => {
                                             onValueChange={toggleShowLoginNotification}
                                             value={showLoginNotification}
                                         />
-                                    </XStack>
+                                    </View>
                                 </View>
-                            </YStack>
+                            </View>
                         </View>
 
                         <CustomButton title='Update' containerStyles='w-2/5 mt-6' handlePress={saveNotificationsAndSaveToLocalStorage} />

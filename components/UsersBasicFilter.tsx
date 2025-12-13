@@ -1,10 +1,10 @@
-import { Text, ScrollView } from 'react-native'
+import { Text, Dimensions, View, TextInputProps } from 'react-native'
 import React, { useCallback, useState } from 'react'
-// import MultiSlider from '@ptomasroos/react-native-multi-slider'
-import { YStack, XStack, RadioGroup, SizeTokens, Label } from 'tamagui'
+import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import CustomButton from './CustomButton'
-import FormField from './FormField'
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import SelectPicker from './SelectPicker'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 
 export type BasicFilter = {
     username: string;
@@ -14,24 +14,15 @@ export type BasicFilter = {
     distance: string;
 }
 
-const RadioGroupItemWithLabel = (props: {
-    size: SizeTokens
-    value: string
-    label: string
-}) => {
-    const id = `radiogroup-${props.value}`
-    return (
-        <XStack alignItems="center" justifyContent='space-between' gap="$2">
-            <Label unstyled className='text-black text-sm font-firaregular flex-1' htmlFor={id}>
-                {props.label}
-            </Label>
-            <RadioGroup.Item value={props.value} id={id} size={props.size}>
-                <RadioGroup.Indicator />
-            </RadioGroup.Item>
-        </XStack>
-    )
-}
+const genderOptions = [
+    { value: 'All', id: 'all' },
+    { value: 'Male', id: 'male' },
+    { value: 'Female', id: 'female' },
+    { value: 'Secret', id: 'secret' },
+]
+
 const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) => void }) => {
+    const insets = useSafeAreaInsets();
     const [filterParams, setFilterParams] = useState<BasicFilter>({
         username: '',
         age: [18, 60],
@@ -62,60 +53,74 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
 
 
     return (
-        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }}>
-            <ScrollView className='px-4 py-2 h-full'>
-                <YStack gap="$7">
-                    <YStack gap="$5">
-                        <FormField
-                            title="Username"
-                            placeholder='Enter Username'
-                            value={filterParams.username}
-                            onChangeText={(value) => updateFilterParams('username', value)}
+        <View style={{ gap: 28, paddingHorizontal: 20, paddingBottom: insets.bottom + 20, paddingTop: 20 }}>
+            <View style={{ gap: 20 }}>
+                <View>
+                    <CustomTextInput
+                        label="Username"
+                        value={filterParams.username}
+                        onChangeText={(val: string) => updateFilterParams('username', val)}
+                    />
+                </View>
+                <View className='space-y-1'>
+                    <Text className='text-sm text-black font-firaregular'>Age</Text>
+                    <View className=' items-center justify-center'>
+                        <MultiSlider
+                            values={filterParams.age}
+                            min={18}
+                            max={60}
+                            step={1}
+                            enableLabel={true}
+                            customLabel={(value) =>
+                                <Text className='text-primary'>Between: {value.oneMarkerValue} and {value.twoMarkerValue} </Text>}
+                            markerStyle={{ backgroundColor: '#DD3FE5', borderWidth: 0 }}
+                            sliderLength={Dimensions.get('window').width - 50}
+                            selectedStyle={{ backgroundColor: '#DD3FE5' }}
+                            trackStyle={{ backgroundColor: '#ccc' }}
+                            // onValuesChange={(values) => console.log(values)}
+                            onValuesChangeFinish={(values) => updateFilterParams('age', values)}
                         />
-                        <YStack gap="$2">
-                            <Text className='text-sm text-black font-firaregular'>Age</Text>
-                            <XStack alignItems='center' justifyContent='center'>
-                                {/* <MultiSlider
-                                    values={filterParams.age}
-                                    min={18}
-                                    max={60}
-                                    step={1}
-                                    enableLabel={true}
-                                    customLabel={(value) =>
-                                        <Text className='text-white'>Between: {value.oneMarkerValue} and {value.twoMarkerValue} </Text>}
-                                    markerStyle={{ backgroundColor: '#DD3FE5', borderWidth: 0 }}
-                                    sliderLength={Dimensions.get('window').width - 64}
-                                    selectedStyle={{ backgroundColor: '#DD3FE5' }}
-                                    // onValuesChange={(values) => console.log(values)}
-                                    onValuesChangeFinish={(values) => updateFilterParams('age', values)}
-                                /> */}
-                            </XStack>
-                        </YStack>
-                        <YStack gap="$2">
-                            <Text className='text-sm text-black font-firaregular'>Gender</Text>
-                            <RadioGroup value={filterParams.looking_for} onValueChange={(value) => updateFilterParams('looking_for', value)} aria-labelledby="Select one item" defaultValue="all" name="form">
-                                <YStack gap="$3">
-                                    <RadioGroupItemWithLabel size="$3" value="all" label="All" />
-                                    <RadioGroupItemWithLabel size="$3" value="male" label="Male" />
-                                    <RadioGroupItemWithLabel size="$3" value="female" label="Female" />
-                                    <RadioGroupItemWithLabel size="$3" value="secret" label="Secret" />
-                                </YStack>
-                            </RadioGroup>
-                        </YStack>
-                        <FormField
-                            title="Distance(km)"
-                            placeholder='Anywhere'
-                            keyboardType='numeric'
-                            value={filterParams.distance}
-                            onChangeText={(value) => updateFilterParams('distance', value)}
-                        />
-                    </YStack>
-                    <CustomButton title='Apply' handlePress={applyFilter} />
-                </YStack>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                    </View>
+                </View>
+                <View className='space-y-1'>
+                    <SelectPicker options={genderOptions} onSelectOption={(params) => updateFilterParams('looking_for', params)} defaultOption={filterParams.looking_for} title='Gender' />
+                </View>
+                <View>
+                    <CustomTextInput
+                        label="Distance(km)"
+                        value={filterParams.distance}
+                        keyboardType="numeric"
+                        placeholder='Anywhere'
+                        onChangeText={(val: string) => updateFilterParams('distance', val)}
+                    />
+                </View>
+            </View>
+            <CustomButton title='Apply' handlePress={applyFilter} />
+        </View>
 
     )
 }
+
+interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
+    label: string;
+}
+
+const CustomTextInput: React.FC<CustomTextInputProps> = ({ label, value, onChangeText, keyboardType = 'default' }) => (
+    <View className="mb-5">
+        <Text className="text-black text-sm font-firamedium mb-2">{label}</Text>
+        <View className="bg-[#F2F2F7] text-black rounded-xl px-4 h-14 focus:border-primary border border-[#cccccc80]">
+            <BottomSheetTextInput
+                value={value}
+                style={{ height: '100%', color: 'black' }}
+                onChangeText={onChangeText}
+                keyboardType={keyboardType}
+                autoCapitalize="none"
+                importantForAutofill='no'
+                placeholderTextColor={"#5B5B5B3A"}
+                selectionColor={'#DD3FE5'}
+            />
+        </View>
+    </View>
+);
 
 export default UsersBasicFilter

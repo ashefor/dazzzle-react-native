@@ -1,5 +1,5 @@
 import React, { useState, useCallback, JSX, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useIsFocused, useRoute } from '@react-navigation/native';
@@ -16,12 +16,13 @@ import CustomButton from '@/components/CustomButton';
 import CountryCodePicker from '@/components/CountryCodePicker';
 import { educationOptions, preferredLanguageOptions, relationshipStatusOptions, workStatusOptions } from '@/constants/constants';
 import DateOfBirthPicker from '@/components/DateOfBirthPicker';
-import { BasicAppInterface } from '@/models/general';
+import { BasicAppInterface, ReactionCodes } from '@/models/general';
 import { useLoader } from '@/context/loader/LoaderProvider';
 import Toast from '@/components/toast/toast';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
 import { updateUserInfo } from '@/redux/slices/authSlice';
 import { convertObjectToSelectPickerArray } from '@/utils/helpers';
+import * as ImagePicker from 'expo-image-picker';
 
 type EditType = 'basic' | 'looks' | 'personality' | 'lifestyle' | 'favorites';
 
@@ -31,7 +32,7 @@ const PhotoGridSection = ({ initialPhotos }: { initialPhotos: string[] }) => {
     const { slots, handleAddPhoto, handleRemovePhoto, handleRetry } = usePhotoManager(initialPhotos);
 
     return (
-        <View className="mb-6">
+        <View>
             <Text className="font-bold text-lg px-4 py-4 text-black">Photos</Text>
 
             <View className="flex-row flex-wrap justify-between px-4">
@@ -45,10 +46,6 @@ const PhotoGridSection = ({ initialPhotos }: { initialPhotos: string[] }) => {
                     />
                 ))}
             </View>
-
-            <Text className="px-4 text-gray-400 text-xs text-center mt-2">
-                Tap '+' to upload. Main photo is the first one.
-            </Text>
         </View>
     );
 };
@@ -375,6 +372,47 @@ export default function ProfileSettings() {
     //     );
     // }
 
+    const pickImage = async () => {
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                allowsMultipleSelection: false,
+                cameraType: ImagePicker.CameraType.front,
+                aspect: [4, 3],
+                quality: 1,
+                base64: true
+            });
+
+            if (!result.canceled) {
+                const image = result.assets[0];
+                const formData = new FormData();
+                formData.append("filepond", {
+                    uri: image?.uri,
+                    name: 'name' in image ? image.name : image.uri.split("/").pop() || "unknown.jpg",
+                    type: image?.mimeType || "image/jpeg",
+                } as any);
+                show();
+                const data: any = await axiosRequest.post('/upload-profile-image', formData, { headers: { "Content-Type": "multipart/form-data" } });
+                const response = data.data
+                const image_url = response.image_url;
+                if (image_url) {
+                    // setProfilePictureUrl(image_url);
+                    dispatch(updateUserInfo({ profile_picture_url: image_url }));
+                }
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    Toast.success('Profile picture updated successfully');
+                } else {
+                    Alert.alert('Error', data.message ? data.message : 'Unable to proceed')
+                }
+                hide();
+            }
+        } catch (error) {
+            hide();
+            console.error('Error picking image:', error);
+        }
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-white">
             {/* Header */}
@@ -382,8 +420,15 @@ export default function ProfileSettings() {
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
+        <View className='items-center justify-center'>
+                    <Image source={userInfo?.profile_picture_url ? { uri: userInfo?.profile_picture_url } : undefined} className="w-24 h-24 rounded-full my-4 mx-auto bg-gray-50"/>
+                     <TouchableOpacity onPress={pickImage} className="flex-row items-center">
+            <Feather name="edit-2" size={14} color="#D946EF" />
+            <Text className="text-primary font-firamedium ml-1">Edit</Text>
+        </TouchableOpacity>
+                </View>
                 {/* <Text className="font-bold text-lg px-4 py-4">Photos</Text> */}
-                {/* <PhotoGridSection initialPhotos={profile.photos} /> */}
+                <PhotoGridSection initialPhotos={userProfileData?.photosData.map((photo: any) => photo.image_url)} />
 
                 {/* Basic Info Section */}
                 <SectionHeader title="Basic information" onEdit={openEditBottomSheet} />

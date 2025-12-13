@@ -22,6 +22,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import NavigationStack from '@/components/NavigationStack';
+import { SystemBars } from "react-native-edge-to-edge";
 
 
 
@@ -57,11 +58,12 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
+         <StatusBar barStyle={'dark-content'} translucent/>
       <GestureHandlerRootView style={{
         flex: 1,
       }}>
         <ToastWrapper />
-        <StatusBar barStyle={'dark-content'} backgroundColor={"#ffffff"} />
+        <SystemBars style="light" />
         <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
           <BottomSheetModalProvider>
             <ThemeProvider value={DefaultTheme}>

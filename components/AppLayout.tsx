@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import React from 'react'
 import { router, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -30,7 +30,7 @@ const AppLayout = () => {
                             options={{
                                 presentation: 'modal',
                                 headerStyle: {
-                                    backgroundColor: '#1A1A1A'
+                                    backgroundColor: '#FFFFFF'
                                 },
                                 title: 'Filter Users',
                                 headerLeft: () => <TouchableOpacity onPress={() => router.back()} className='flex items-center justify-center'>

@@ -80,7 +80,7 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
 
     return (
         <ScrollView className='h-full'>
-            <View className='p-4 space-y-4'>
+            <View className='px-4 space-y-4'>
                 <YStack>
                     <Text className='text-2xl text-black font-firabold'>Profile Picture</Text>
                     <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>

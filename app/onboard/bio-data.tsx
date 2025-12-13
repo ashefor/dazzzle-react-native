@@ -1,7 +1,6 @@
 import { Platform, ScrollView, Text, TouchableOpacity, View, TextInput, Alert } from 'react-native'
 import React from 'react'
 import { router } from 'expo-router'
-import { YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import CountryCodePicker from '@/components/CountryCodePicker'
@@ -66,7 +65,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 16, paddingTop: 16 }} keyboardShouldPersistTaps="handled">
             <View className='w-full h-full justify-between'>
                 <Formik
                     initialValues={initialValues}
@@ -77,12 +76,13 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                     {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => {
                         return (
                             <View className='flex-1'>
-                                <YStack>
+                                <View>
                                     <Text className='text-2xl text-black font-firabold'>Complete your profile</Text>
                                     <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
-                                </YStack>
-                                <YStack gap="$3" mt={20} mb={20}>
-                                    <FormField
+                                </View>
+                                <View className='my-5 space-y-3'>
+                                    <View>
+                                        <FormField
                                         title="First Name"
                                         placeholder='Enter first name'
                                         onChangeText={handleChange('first_name')}
@@ -91,7 +91,9 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                         errorMessage={errors.first_name}
                                         value={values.first_name}
                                     />
-                                    <FormField
+                                    </View>
+                                    <View>
+                                        <FormField
                                         title="Last Name"
                                         placeholder='Enter last name'
                                         onChangeText={handleChange('last_name')}
@@ -100,6 +102,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                         errorMessage={errors.last_name}
                                         value={values.last_name}
                                     />
+                                    </View>
                                     <View className="space-y-2">
                                         <Text className='text-base text-black font-firamedium'>Phone Number</Text>
                                         <View className='border border-[#ccc] w-full px-4 bg-[#F2F2F7] rounded-md focus:border-primary items-center flex-row'>
@@ -120,9 +123,13 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                             </View>
                                         </View>
                                     </View>
-                                    <DateOfBirthPicker dateOfBirth={values.birthday} onDateOfBirthSelected={(date) => setFieldValue('birthday', date)} />
-                                    <SelectPicker options={appConfig?.genders! || genders} onSelectOption={(params) => setFieldValue('gender', params)} defaultOption={values.gender} title='Gender' />
-                                </YStack>
+                                    <View>
+                                        <DateOfBirthPicker dateOfBirth={values.birthday} onDateOfBirthSelected={(date) => setFieldValue('birthday', date)} />
+                                    </View>
+                                    <View>
+                                        <SelectPicker options={appConfig?.genders! || genders} onSelectOption={(params) => setFieldValue('gender', params)} defaultOption={values.gender} title='Gender' />
+                                    </View>
+                                </View>
                                 <View className='mt-auto'>
                                     <CustomButton title='Next' handlePress={handleSubmit} />
                                     <View className='justify-center pt-5 flex-row gap-2'>

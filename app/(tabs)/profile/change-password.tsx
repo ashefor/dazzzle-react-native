@@ -2,7 +2,6 @@ import { View, ScrollView, Alert, TouchableOpacity, Text, StyleSheet } from 'rea
 import React, { JSX, useCallback, useRef } from 'react';
 import CustomButton from '@/components/CustomButton';
 import FormField from '@/components/FormField';
-import { YStack } from 'tamagui';
 import Toast from '@/components/toast/toast';
 import { ReactionCodes } from '@/models/general';
 import { router } from 'expo-router';
@@ -74,8 +73,9 @@ const ChangePasswordScreen = () => {
                             {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
                                 return (
                                     <View className='flex-1 '>
-                                        <YStack gap="$3" mb={20}>
-                                            <FormField
+                                        <View className='space-y-3 mb-5'>
+                                            <View>
+                                                <FormField
                                                 title="Current Password"
                                                 placeholder=''
                                                 secureTextEntry
@@ -85,7 +85,9 @@ const ChangePasswordScreen = () => {
                                                 errorMessage={errors.current_password}
                                                 value={values.current_password}
                                             />
-                                            <FormField
+                                            </View>
+                                            <View>
+                                                <FormField
                                                 title="New Password"
                                                 placeholder=''
                                                 value={values.new_password}
@@ -95,7 +97,9 @@ const ChangePasswordScreen = () => {
                                                 showCustomError={errors.new_password ? true : false}
                                                 errorMessage={errors.new_password}
                                             />
-                                            <FormField
+                                            </View>
+                                            <View>
+                                                <FormField
                                                 title="Confirm Password"
                                                 placeholder=''
                                                 value={values.new_password_confirmation}
@@ -105,7 +109,8 @@ const ChangePasswordScreen = () => {
                                                 showCustomError={errors.new_password_confirmation ? true : false}
                                                 errorMessage={errors.new_password_confirmation}
                                             />
-                                        </YStack>
+                                            </View>
+                                        </View>
                                         <View className='mt-auto'>
                                             <CustomButton title='Update Password' disabled={!isValid} handlePress={handleSubmit} />
                                         </View>
@@ -127,7 +132,7 @@ const ChangePasswordScreen = () => {
                     borderRadius: 28,
                 }}
                 backdropComponent={renderBackdrop}
-                onDismiss={() => router.back()}
+                onDismiss={() => router.replace('/profile')}
             >
 
                 <BottomSheetView>

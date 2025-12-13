@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { JSX, useCallback, useMemo, useRef } from "react";
-import { TouchableOpacity, View, Text, Keyboard, FlatList, Dimensions } from "react-native";
+import { TouchableOpacity, View, Text, Keyboard, FlatList, Dimensions, Platform } from "react-native";
 import { ListItem as ListItemBase } from "tamagui";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -139,6 +139,11 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                 stackBehavior="push"
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
+                keyboardBehavior="extend"
+                enableBlurKeyboardOnGesture
+                keyboardBlurBehavior='restore'
+                // onDismiss={() => setSearch('')}
+                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
             >
 
                 <BottomSheetFlatList

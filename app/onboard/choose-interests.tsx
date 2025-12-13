@@ -13,7 +13,7 @@ import LottieView from 'lottie-react-native'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import { OnboardPagesProps } from '.'
 
-const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
+const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut, goToNextPage }) => {
     const { show, hide } = useLoader();
     const { appConfig } = useAppSelector(state => state.app);
     const [interests, setInterests] = useState<Interest[]>(defaultInterests);
@@ -53,7 +53,8 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
             show();
             const data: any = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                bottomSheetModalRef.current?.present();
+                // bottomSheetModalRef.current?.present();
+                goToNextPage?.();
             }
             hide();
         } catch (error: any) {
@@ -98,6 +99,9 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
                 style={{
                     borderRadius: 28,
                 }}
+                handleStyle={{
+                    display: 'none',
+                }}
                 backgroundStyle={{
                     borderRadius: 28,
                 }}
@@ -107,28 +111,30 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
 
                 <BottomSheetView>
                     <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
-                        <View style={styles.lottieContainer}>
-                            <LottieView
-                                ref={animationRef}
-                                source={require('../../assets/checkmark.json')}
-                                style={styles.lottie}
-                                autoPlay={true}
-                                loop={true}
-                            />
-                        </View>
-                        <View className='mb-7'>
-                            <Text className='text-2xl font-semibold mb-2 text-center'>
-                                Registration Complete!
-                            </Text>
-                            <Text className='text-base font-firaregular text-center'>
-                                You have successfully completed your registration.
-                            </Text>
-                        </View>
-                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
-                            <Text className='text-base font-firamedium text-white'>
-                                Finish
-                            </Text>
-                        </TouchableOpacity>
+                         <View className='p-5 flex-1 text-center justify-center gap-6 my-20'>
+                                    <View>
+                                        <View style={styles.lottieContainer}>
+                                        <LottieView
+                                            source={require('../../assets/heartbeat.json')}
+                                            style={styles.lottie}
+                                            autoPlay={true}
+                                            loop={true}
+                                        />
+                                    </View>
+                                    </View>
+
+                                    <View>
+                                        <Text className='text-2xl text-center text-primary font-firabold'>
+                                            Welcome to Dazzzle ✨
+                                        </Text>
+                                        <Text className='text-base text-center text-black font-firaregular mt-2'>
+                                            Your account is ready! Start exploring and let your light connect with someone else's. 💜
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View className='p-5'>
+                                    <CustomButton title='Start Exploring' handlePress={() => bottomSheetModalRef.current?.dismiss()} />
+                                </View>
                     </View>
                 </BottomSheetView>
             </BottomSheetModal>

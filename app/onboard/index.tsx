@@ -29,7 +29,7 @@ export interface OnboardPagesProps {
 const OnboardPage = () => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
-    const [page, setPage] = useState(2);
+    const [page, setPage] = useState(0);
     const insets = useSafeAreaInsets();
     const [profileData, setProfileData] = useState<any>(null);
     const viewPager = useRef<PagerView>(null);
@@ -65,7 +65,6 @@ const OnboardPage = () => {
 
     const onPageSelected = (e: PagerViewOnPageSelectedEvent) => {
         fetchUserProfileUpdateStatus();
-        console.log('e.nativeEvent.position', e);
         const pageIndex = e.nativeEvent.position;
         if (pageIndex === 0) {
             // setProgress(Math.ceil((1 / 5) * 100))
@@ -90,15 +89,15 @@ const OnboardPage = () => {
 
     return (
         <Fragment>
-            <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 h-full'>
+            <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 bg-white h-full'>
                 <View className='pb-2'>
                     <NavBar leftItem={
                         <TouchableOpacity
-                            activeOpacity={0.5} onPress={goToPreviousPage} className='flex items-center justify-center w-10 h-10 rounded-full bg-[#E0E0E0]'>
+                            activeOpacity={0.5} onPress={goToPreviousPage} className='flex items-center justify-center w-10 h-10 rounded-full border border-[#E0E0E0]'>
                             <ArrowBackIcon />
                         </TouchableOpacity>
                     } />
-                    <View className='flex-row gap-x-2 px-4'>
+                    <View className='flex-row gap-x-2 px-4 justify-center'>
                         {[...Array(5).fill('')].map((_, index) => (
                             <View key={index} className={`h-2 rounded-full ${index <= (page) ? 'bg-primary' : 'bg-[#E0E0E0]'}`} style={{ width: `${100 / 6}%`, flexShrink: 1 }}></View>
                         ))}

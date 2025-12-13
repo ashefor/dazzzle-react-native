@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity, ScrollView, View, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
-import { Fragment, useEffect } from 'react';
+import { Fragment, JSX, useCallback, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { signUserOut } from '@/redux/thunks/authActions';
 import { AntDesign, Feather } from '@expo/vector-icons';
@@ -19,12 +19,15 @@ import LockIcon from '@/components/icons/LockIcon';
 import MailIcon from '@/components/icons/MailIcon';
 import ShieldIcon from '@/components/icons/ShieldIcon';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { show, hide } = useLoader();
   const dispatch = useAppDispatch();
   const { userInfo, loggingOut } = useAppSelector(state => state.auth);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const handleLogOut = async () => {
     dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
@@ -53,6 +56,19 @@ export default function ProfileScreen() {
   const openContactUsPage = async () => {
     await WebBrowser.openBrowserAsync('https://dazzzle.org/contact');
   };
+
+
+  const renderBackdrop = useCallback(
+    (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+      // onPress={handleBlur}
+      />
+    ),
+    []
+  );
 
   return (
     <Fragment>
@@ -111,7 +127,7 @@ export default function ProfileScreen() {
             <MenuItem onPress={openInstagram} icon={<AntDesign name="instagram" size={20} color="#8E8E93" />} label="Follow us on Instagram" />
             <MenuItem onPress={openContactUsPage} icon={<Feather name="help-circle" size={20} color="#8E8E93" />} label="Help" isLast />
           </Section>
-          <TouchableOpacity onPress={handleLogOut} style={styles.logoutButton}>
+          <TouchableOpacity onPress={() => bottomSheetModalRef.current?.present()} style={styles.logoutButton}>
             <ExitIcon stroke={"#FF383C"} />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
@@ -123,6 +139,45 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        enableDynamicSizing
+        enablePanDownToClose={true}
+        style={{
+          borderRadius: 28,
+        }}
+        backgroundStyle={{
+          borderRadius: 28,
+        }}
+        backdropComponent={renderBackdrop}
+      // onDismiss={() => router.back()}
+      >
+
+        <BottomSheetView>
+          <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+            <View className='mb-7'>
+              <Text className='text-lg font-red-500 mb-2 text-center'>
+                Logout
+              </Text>
+              <Text className='text-base font-firaregular text-center'>
+                Are you sure you want to logout?
+              </Text>
+            </View>
+            <View className='space-y-4'>
+              <TouchableOpacity onPress={handleLogOut} className='rounded-[26px] h-12 bg-white border border-primary flex items-center justify-center'>
+              <Text className='text-base font-firamedium text-primary'>
+                Yes, Logout
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className='rounded-[26px] h-12 border bg-primary border-primary flex items-center justify-center'>
+              <Text className='text-base font-firamedium text-white'>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            </View>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </Fragment>
   );
 }

@@ -3,7 +3,6 @@ import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
-import { YStack } from 'tamagui'
 import CustomButton from '@/components/CustomButton'
 import FormField from '@/components/FormField'
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
@@ -18,25 +17,29 @@ const SignIn = () => {
 
     const logUserIn = async ({ password, email_or_username }: { password: string; email_or_username: string }) => {
         try {
-            const { user, isProfileComplete } = await dispatch(userLogin({ email_or_username, password })).unwrap();
-            if (user) {
-                if (isProfileComplete) {
-                    if (user.is_premium) {
-                        router.replace('/(tabs)');
-                    } else {
-                        router.replace('/paywall');
-                    }
-                } else {
-                    router.replace('/onboard');
-                }
-            }
+            dispatch(userLogin({ email_or_username, password }))
+            // if (user) {
+            //     const destination = !isProfileComplete
+            //         ? '/onboard'
+            //         : user.is_premium
+            //             ? '/(tabs)'
+            //             : '/paywall';
+
+            //     // Delay the replace so Android doesn't crash trying to reattach views
+            //     InteractionManager.runAfterInteractions(() => {
+            //         router.replace(destination);
+            //     });
+
+            //     // Alternative lightweight hack:
+            //     // setTimeout(() => router.replace(destination), 0);
+            // }
         } catch (error) {
             Alert.alert('Error', error ? String(error) : 'Failed to log in');
         }
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }} className=' h-full'>
+        <SafeAreaView style={{ flex: 1 }} className=' h-full bg-white'>
             <KeyboardAvoidingView behavior={"padding"}
          style={{ flex: 1 }} >
                 <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
@@ -50,13 +53,14 @@ const SignIn = () => {
                             {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {
                                 return (
                                     <View className='flex-1 '>
-                                        <YStack>
+                                        <View>
                                             <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
                                             <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
                                             <Text className='text-sm text-black font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
-                                        </YStack>
-                                        <YStack gap="$3" mt={20} mb={20}>
-                                            <FormField
+                                        </View>
+                                        <View className='my-5 space-y-3'>
+                                            <View>
+                                                <FormField
                                                 editable={!loading}
                                                 title="Username"
                                                 placeholder='Enter username'
@@ -66,7 +70,9 @@ const SignIn = () => {
                                                 errorMessage={errors.email_or_username}
                                                 value={values.email_or_username}
                                             />
-                                            <FormField
+                                            </View>
+                                            <View>
+                                                <FormField
                                                 title="Password"
                                                 editable={!loading}
                                                 placeholder='Enter password'
@@ -77,8 +83,9 @@ const SignIn = () => {
                                                 value={values.password}
                                                 errorMessage={errors.password}
                                             />
+                                            </View>
 
-                                        </YStack>
+                                        </View>
                                         <View className='mt-auto'>
                                             <CustomButton disabled={loading || !isValid} title={loading ? 'Loading...' : 'Sign In'} handlePress={handleSubmit} />
                                         </View>

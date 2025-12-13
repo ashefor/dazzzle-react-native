@@ -84,6 +84,7 @@ const EncounterScreen = () => {
       setTriggerSwipeDirection(direction);
   };
 
+  const isDisabled = users.length === 0 || status === 'loading';
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -94,8 +95,6 @@ const EncounterScreen = () => {
       {/* Card Stack */}
       <View style={styles.stackContainer}>
         {users.length > 0 ? (
-           // Render in reverse so top index is last (on top visually) 
-           // BUT efficiently, we only need to render current + next few
            users.slice(topCardIndex, topCardIndex + 4).map((user, i) => {
              const actualIndex = topCardIndex + i;
              return (
@@ -118,15 +117,15 @@ const EncounterScreen = () => {
 
       {/* Controls */}
       <View style={styles.controls}>
-        <TouchableOpacity style={[styles.circleBtn, {backgroundColor: 'rgba(231,76,60,0.12)',}]} onPress={() => onButtonPress('left')}>
+        <TouchableOpacity disabled={isDisabled} style={[styles.circleBtn, {backgroundColor: 'rgba(231,76,60,0.12)', opacity: isDisabled ? 0.5 : 1}]} onPress={() => onButtonPress('left')}>
            <CloseIcon width={26} height={26} fill="#EB4242" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.circleBtn, {backgroundColor: 'rgba(184,74,233,0.12)',} ]} onPress={() => onButtonPress('right')}>
+        <TouchableOpacity disabled={isDisabled} style={[styles.circleBtn, {backgroundColor: 'rgba(184,74,233,0.12)', opacity: isDisabled ? 0.5 : 1} ]} onPress={() => onButtonPress('right')}>
             <HeartIcon fill="#DD3FE5" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.circleBtn]} onPress={handleInfoPress}>
+        <TouchableOpacity disabled={isDisabled} style={[styles.circleBtn, {opacity: isDisabled ? 0.5 : 1}]} onPress={handleInfoPress}>
             <InformationCircleIcon width={60} height={60} fill="black" />
         </TouchableOpacity>
       </View>

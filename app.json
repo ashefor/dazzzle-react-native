@@ -8,7 +8,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1A1A1A"
+      "backgroundColor": "#FFFFFF"
     },
     "scheme": "dazzzle",
     "userInterfaceStyle": "automatic",
@@ -22,6 +22,7 @@
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "package": "com.dazzzle.app",
       "permissions": [
         "android.permission.RECORD_AUDIO"
@@ -45,7 +46,7 @@
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "cover",
-          "backgroundColor": "#1A1A1A"
+          "backgroundColor": "#FFFFFF"
         }
       ],
       "expo-font",

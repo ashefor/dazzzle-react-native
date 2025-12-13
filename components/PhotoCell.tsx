@@ -55,7 +55,7 @@ export const PhotoCell = React.memo(({ slot, onAdd, onRemove, onRetry }: PhotoCe
   // 3. RENDER: Filled State (Show Image)
   if (slot.status === 'filled' && slot.uri) {
     return (
-      <View className="w-[31%] aspect-square mb-3 rounded-xl overflow-hidden relative bg-gray-200">
+      <View className="w-[31%] min-h-[120px] aspect-square mb-3 rounded-xl overflow-hidden relative bg-gray-200">
         <Image source={{ uri: slot.uri }} className="w-full h-full" resizeMode="cover" />
         <TouchableOpacity 
           onPress={onRemove}
@@ -71,7 +71,7 @@ export const PhotoCell = React.memo(({ slot, onAdd, onRemove, onRetry }: PhotoCe
   return (
     <TouchableOpacity 
       onPress={onAdd}
-      className="w-[31%] aspect-square mb-3 bg-gray-100 rounded-xl items-center justify-center border border-dashed border-gray-300"
+      className="w-[31%] min-h-[120px] aspect-square mb-3 bg-gray-100 rounded-xl items-center justify-center border border-dashed border-gray-300"
     >
       <Feather name="plus" size={28} color="#9CA3AF" />
     </TouchableOpacity>
