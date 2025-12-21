@@ -66,7 +66,6 @@ const settings = () => {
             setSaving(true);
             const response: any = await axiosRequest.post('/notification/user-setting-store', params)
             setSaving(false);
-            console.log('response', response);
             if (response.reaction === ReactionCodes.SUCCESS) {
                 Toast.success('Notification settings updated successfully');
                 saveNotificationsAndSaveToLocalStorage();

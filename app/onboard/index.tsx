@@ -43,7 +43,6 @@ const OnboardPage = () => {
             const responseData = response.data;
             if (reaction === ReactionCodes.SUCCESS) {
                 const profileData = responseData['profileInfo'];
-                console.log('profileData', profileData);
                 if (profileData) {
                     setProfileData(profileData);
                 }

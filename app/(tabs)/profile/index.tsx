@@ -165,7 +165,7 @@ export default function ProfileScreen() {
           </View>
           <Section title="Account">
             <MenuItem onPress={() => router.push('/profile/profile-settings')} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
-            <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet" />
+            <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" />
             <MenuItem onPress={() => router.push('/profile/blocked-users')} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
             <MenuItem onPress={() => notificationSettingsBottomSheetModalRef.current?.present()} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
           </Section>
@@ -388,7 +388,6 @@ const NotificationSettings = ({ onSaveNotificationSettings }: { onSaveNotificati
       setSaving(true);
       const response: any = await axiosRequest.post('/notification/user-setting-store', params)
       setSaving(false);
-      console.log('response', response);
       if (response.reaction === ReactionCodes.SUCCESS) {
         Toast.success('Notification settings updated successfully');
         saveNotificationsAndSaveToLocalStorage();

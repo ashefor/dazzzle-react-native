@@ -36,6 +36,7 @@ const SubscriptionCard = ({ planName, expiryDate }: { planName: string; expiryDa
         >
             <View className="flex-row items-center mb-2">
                 <View>
+                    <Text className="text-white/80 text-base font-firaregular capitalize">Current Subscription</Text>
                     <Text className="text-white text-xl font-firabold capitalize">{planName}</Text>
                     <Text className="text-white/80 text-sm font-firaregular">Expires On: {dayjs(expiryDate).format('ddd, MMM D, YYYY h:mm A')}</Text>
                 </View>
@@ -123,7 +124,6 @@ const WalletTransactions = () => {
             }
             const { data } = await axiosRequest.get('credit-wallet/transaction-list');
             const transactions = data.data;
-            console.log('transactions', transactions);
             setTransactions(transactions);
             setLoading(false);
             setRefreshing(false)
@@ -143,7 +143,6 @@ const WalletTransactions = () => {
     }
 
     const viewSingleTransaction = (transaction?: FinancialTransaction | Array<any>) => {
-        console.log('transaction', transaction);
         if (transaction && Array.isArray(transaction)) {
             setSingleFinancialTransaction(null);
             // bottomSheetModalRef.current?.present();
@@ -167,7 +166,7 @@ const WalletTransactions = () => {
 
     return (
         <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-            <NavBar title="Wallet Transactions" />
+            <NavBar title="Account Transactions" />
             <View className="flex-1">
                 <FlatList
                     className="h-full"

@@ -35,7 +35,6 @@ export const fetchUserProfileData = createAsyncThunk(
             if (errorMessage) {
                 return rejectWithValue(errorMessage)
             }
-            console.log('data', data);
             return data
         } catch (error: any) {
             // return custom error message from API if any
@@ -68,7 +67,6 @@ export const updateUserBioData = createAsyncThunk(
                 bioData,
                 config
             )
-            console.log('update response', response);
             const { reaction, message, data } = response.data;
             let errorMessage = message;
             if (reaction === ReactionCodes.ERROR) {
@@ -82,9 +80,7 @@ export const updateUserBioData = createAsyncThunk(
                 return rejectWithValue(errorMessage)
             }
             const oldUser = await getItem('dazzzle-user');
-            // dispatch(fetchUserProfileData(oldUser.username));
             const newUser = { ...oldUser, first_name, last_name, about_me };
-            console.log('newUser', newUser);
             await setItem('dazzzle-user', newUser);
             return newUser;
         } catch (error: any) {

@@ -51,21 +51,15 @@ const EncounterScreen = () => {
     setTriggerSwipeDirection(null);
     
     const currentUser = users[topCardIndex]
-    // Logic for Like/Dislike
-    console.log(`User swiped ${direction} on ${users[topCardIndex].username}`);
     
-    // Update Redux - This is instant and makes the next card active
     dispatch(popCard());
 
     dispatch(processSwipe({ 
       userId: currentUser.id, 
       action: direction === 'left' ? 'dislike' : 'like' 
     })).unwrap().then(() => {
-        // Successfully processed swipe
-        console.log('Swipe processed successfully');
     }).catch(() => {
         // Handle error if needed (e.g., show toast)
-        console.log('Error processing swipe');
     });
   };
 

@@ -68,7 +68,6 @@ export async function registerForPushNotificationsAsync() {
       projectId,
     })).data;
 
-    console.log('Expo Push Token:', token);
     Alert.alert('Push Notification Token', JSON.stringify(token));
 
     // Send token to backend

@@ -58,7 +58,6 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                 // router.push('/onboard/profile-picture');
             }
         } catch (error: any) {
-            console.log('error', error);
             hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to submit')
         }

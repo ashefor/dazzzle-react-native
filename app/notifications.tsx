@@ -75,7 +75,6 @@ const NotificationsScreen = () => {
             };
             const data: any = await axiosRequest.get('/notifications/notification-list');
             if (!isRefresh && !isLoadMore) hide();
-            console.log('Notifications data:', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const notificationsData = data.data;
                 const notifications = notificationsData.data;

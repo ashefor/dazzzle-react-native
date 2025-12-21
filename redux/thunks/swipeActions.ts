@@ -19,7 +19,6 @@ export const swipeLeftAsync = createAsyncThunk(
       }
         return response;
       } catch (error) {
-        console.log('swipe left error', error);
         return rejectWithValue(error instanceof Error ? error.message : "Failed to record dislike");
       }
     }

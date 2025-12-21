@@ -37,7 +37,6 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName='discover'
       screenOptions={{
         // tabBarActiveTintColor: '#DD3FE5',
         headerShown: false,
@@ -57,12 +56,6 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="discover"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="encounter"
         options={{
           href: null,
@@ -72,7 +65,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ color, focused }) => <HomeTabIcon focused={focused} />,
-          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Discover</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Home</Text>
         }}
       />
       <Tabs.Screen

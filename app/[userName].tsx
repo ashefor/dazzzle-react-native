@@ -343,7 +343,6 @@ export default function UserDetailsScreen() {
             show();
             const data: any = await axiosRequest.post(`${userId}/unblock-user-data`, {});
             hide();
-            console.log('user data from unblock', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 setUserDetails((prevUserDetails) => {
                     return {
@@ -524,7 +523,7 @@ export default function UserDetailsScreen() {
         Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user?', [
             {
                 text: 'Cancel',
-                onPress: () => console.log('Cancel Pressed'),
+                onPress: () => {},
                 style: 'cancel',
             },
             { text: 'Block', style: 'destructive', onPress: () => handleBlockUser() },

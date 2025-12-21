@@ -30,9 +30,7 @@ export async function hydrateMessageApi(user_id: number, messageId: number | str
 }
 
 export async function sendMessageApi(user_id: number, params: any): Promise<UserConversation> {
-  console.log('sendMessageApi params', params);
   const { data } = await axiosRequest.post(`/messenger/${user_id}/send-message`, params);
-  console.log('data', data);
   const storedData = data.storedData;
   return storedData;
 }

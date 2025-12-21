@@ -240,7 +240,6 @@ export const checkUserSubscriptionHasExpired = createAsyncThunk(
             const state = (getState() as RootState).subscription;
             const userSubscription = state.currentSubscription;
             const hasExpired = userSubscription ? dayjs().isAfter(dayjs(userSubscription.expiry_at)) : false;
-            console.log('hasExpired', hasExpired);
             return hasExpired;
         } catch (error: any) {
             return rejectWithValue(error)

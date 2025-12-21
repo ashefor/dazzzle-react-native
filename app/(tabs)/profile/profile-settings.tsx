@@ -184,7 +184,6 @@ const EditProfileOtherDetailsForm = ({ initialData, onSave }: { initialData: { [
     const [formData, setFormData] = useState(initialData || {});
 
     const handleChange = useCallback((key: string, value: string) => {
-        console.log('update key', key, 'value', value);
         setFormData((prev: any) => {
             const updatedItems = prev.items.map((item: any) => {
                 if (item.name === key) {
@@ -345,7 +344,7 @@ export default function ProfileSettings() {
             editBottomSheetModalRef.current?.dismiss();
         } catch (error: any) {
             hide();
-            console.log('error', error);
+            console.error('error', error);
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to update')
         }
     }
