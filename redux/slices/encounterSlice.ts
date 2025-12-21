@@ -28,7 +28,6 @@ export const fetchMoreUsers = createAsyncThunk(
     Array.isArray(data) ? data : (data && (data.filterData ?? []));
 
   if (!Array.isArray(users)) return [];
-  console.log('Fetched users:', users);
   return users as RandomUser[];
   }
 );

@@ -23,6 +23,8 @@ import {
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import NavigationStack from '@/components/NavigationStack';
 import { SystemBars } from "react-native-edge-to-edge";
+import { registerForPushNotificationsAsync, registerNotificationListeners } from '@/utils/notificationHandler';
+import { router } from 'expo-router';
 
 
 
@@ -43,8 +45,30 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    initializeStorePromise.then(() => setInitialized(true));
+    const init = async () => {
+      await initializeStorePromise;
+      setInitialized(true);
+      
+      // Register for Push Token on app launch
+      await registerForPushNotificationsAsync();
+    };
+    init();
   }, []);
+
+  useEffect(() => {
+     if (!initialized) return;
+
+     // Register listeners for incoming messages
+     const cleanUp = registerNotificationListeners(
+        store.dispatch, 
+        store.getState, 
+        (userId) => router.push(`/single-chat/${userId}`)
+     );
+     
+     return () => {
+        cleanUp();
+     };
+  }, [initialized]);
 
   useEffect(() => {
     if (loaded) {

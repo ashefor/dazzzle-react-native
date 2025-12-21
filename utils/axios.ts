@@ -146,6 +146,10 @@ const axiosRequest = {
         update: (profileData: any, options?: CustomAxiosRequestConfig) =>
             axiosRequest.put("/random-user", profileData, options),
     },
+    notifications: {
+        registerToken: (token: string, options?: CustomAxiosRequestConfig) =>
+             axiosRequest.post("/user/device-token", { token, device_type: 'mobile' }, { showGlobalLoader: false, ...options }),
+    },
 
     auth: {
         login: (email: string, password: string, options?: CustomAxiosRequestConfig) =>

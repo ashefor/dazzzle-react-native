@@ -89,6 +89,15 @@ const messagesSlice = createSlice({
       const bucket = state.byUserId[action.payload.user_id];
       if (bucket) bucket.loadingUpdate = false;
     },
+    deleteMessage: (state, action: PayloadAction<{ chatId: string; user_id: string }>) => {
+      const { chatId, user_id } = action.payload;
+      const bucket = state.byUserId[user_id];
+
+      if (bucket) {
+        // Filter out the message that matches the messageId
+        bucket.items = bucket.items.filter(message => message.chat_id.toString() !== chatId);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -195,6 +204,7 @@ export const {
   setActiveUserId,
   startUpdateLoading,
   stopUpdateLoading,
+  deleteMessage
 } = messagesSlice.actions;
 
 export default messagesSlice.reducer;

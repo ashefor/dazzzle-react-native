@@ -24,7 +24,6 @@ export default function HomeScreen() {
 
   // Combined loading state
   const isInitializing = configLoading || loadingUser;
-  console.log('isInitializing:', configLoading, loadingUser);
 
   useEffect(() => {
     // 1. Fetch Config
@@ -73,13 +72,14 @@ export default function HomeScreen() {
   if (!appConfig) {
     return (
       <View className='h-full flex items-center justify-center p-5 bg-white'>
+        <Image source={Images.logo} className='w-32 h-32' resizeMode='contain' />
         <Text className=' text-primary text-base font-semibold'>Unable to load settings</Text>
         <Text className=' text-primary'> {configError || ''}</Text>
         <TouchableOpacity onPress={() => dispatch(fetchAppConfig())} className='rounded-[26px] px-5 h-10 mt-7 bg-primary flex items-center justify-center'>
-                                    <Text className='text-sma font-firamedium text-white'>
-                                        Try again
-                                    </Text>
-                                </TouchableOpacity>
+          <Text className='text-sma font-firamedium text-white'>
+            Try again
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }

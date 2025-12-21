@@ -10,7 +10,7 @@ import axiosRequest from '@/utils/axios';
 import { useLoader } from '@/context/loader/LoaderProvider';
 import NavBar from '@/components/NavBar';
 import FilterIcon from '@/components/icons/FilterIcon';
-import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 
 interface FeaturedUser {
@@ -180,8 +180,9 @@ const FilterUsers = () => {
             <BottomSheetHandle
                 {...props}
             >
-                <View className="pb-4 relative bg-transparent" style={{paddingTop: insets.top + 16}}>
-                    <AnimatedView className=' w-full'>
+                 <View className="py-4 relative">
+
+                    <View className=' w-full'>
                         <TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
                             position: 'absolute',
                             top: '50%',
@@ -195,7 +196,7 @@ const FilterUsers = () => {
                             <Ionicons name="close-circle" size={24} color="black" />
                         </TouchableOpacity>
                         <Text className='font-firabold text-black text-base mx-auto text-center'>Filter</Text>
-                    </AnimatedView>
+                    </View>
                 </View>
             </BottomSheetHandle>
         ),
@@ -319,33 +320,15 @@ const FilterUsers = () => {
                 }}
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
-                keyboardBlurBehavior="restore"
-                enableBlurKeyboardOnGesture
+                                keyboardBehavior="extend"
+                                enableBlurKeyboardOnGesture
+                                keyboardBlurBehavior='restore'
+                                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
             >
-                <BottomSheetView>
+                <BottomSheetScrollView>
                     <UsersBasicFilter filterUsers={filterUsers} />
-                </BottomSheetView>
+                </BottomSheetScrollView>
             </BottomSheetModal>
-            {/* <Modal
-                animationType="slide"
-                visible={modalVisible}
-                presentationStyle="pageSheet"
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}
-            >
-                <SafeAreaProvider>
-                    <SafeAreaView className=' h-full'>
-                        <View className=' flex-row items-center justify-center px-4 py-3 relative'>
-                            <TouchableOpacity onPress={() => setModalVisible(false)} className='absolute z-10 left-4 items-center justify-center pr-4'>
-                                <Ionicons name="close" size={24} />
-                            </TouchableOpacity>
-                            <Text className='font-firabold text-black text-center flex-1 mx-auto text-base'>Search filters</Text>
-                        </View>
-                        <UsersBasicFilter filterUsers={filterUsers} />
-                    </SafeAreaView>
-                </SafeAreaProvider>
-            </Modal> */}
         </View>
 
     )

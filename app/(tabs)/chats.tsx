@@ -48,7 +48,8 @@ export default function ChatsScreen() {
                 </View>
                 <View style={styles.rowBottom}>
                     <Text style={styles.status}>
-                        {item.is_online ? 'Online' : `Last seen ${item.last_seen_at_time_ago_format}`}
+                        {/* {item.is_online ? 'Online' : `Last seen ${item.last_seen_at_time_ago_format}`} */}
+                        {item.last_seen_at ? `Last seen ${item.last_seen_at_time_ago_format}` : 'No activity yet'}
                     </Text>
                     {!!item.unreadCount && item.unreadCount > 0 && (
                         <View style={styles.badge}>

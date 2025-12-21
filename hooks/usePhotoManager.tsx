@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 import { PhotoStatus } from '@/components/PhotoCell';
 import axiosRequest from '@/utils/axios';
+import { useLoader } from '@/context/loader/LoaderProvider';
 
 // Mock API Services
 const apiUploadPhoto = async (image: ImagePicker.ImagePickerAsset, onProgress?: (progress: number) => void): Promise<string> => {
@@ -49,8 +50,13 @@ const apiUploadPhoto = async (image: ImagePicker.ImagePickerAsset, onProgress?: 
 };
 
 const apiDeletePhoto = async (photoId: string) => {
-    await new Promise(r => setTimeout(r, 800));
-    return true;
+    try {
+        console.log('Deleting photo with ID:', photoId);
+        const response = await axiosRequest.delete(`/user-setting/${photoId}/delete-photos`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
 };
 
 // Initial State Helper
@@ -66,6 +72,7 @@ const createInitialSlots = (initialPhotos: string[]) => {
 };
 
 export const usePhotoManager = (initialPhotos: string[]) => {
+    const {show, hide} = useLoader();
     const [slots, setSlots] = useState(createInitialSlots(initialPhotos));
 
     const updateSlot = (index: number, updates: Partial<typeof slots[0]>) => {
@@ -128,13 +135,16 @@ export const usePhotoManager = (initialPhotos: string[]) => {
                     onPress: async () => {
                         // 1. Optimistic Update (or Loading state if you prefer)
                         const previousSlot = slots[index];
-                        updateSlot(index, { status: 'empty', uri: undefined }); // Clear UI immediately
+                        console.log('previousSlot', previousSlot);
 
                         try {
+                            show();
                             await apiDeletePhoto("some-photo-id");
-                            // Success: Do nothing, UI is already cleared
+                        updateSlot(index, { status: 'empty', uri: undefined }); // Clear UI immediately
+                            hide();
                         } catch (error) {
                             // Revert on failure
+                            hide();
                             updateSlot(index, previousSlot);
                             Alert.alert("Error", "Could not delete photo");
                         }
@@ -152,9 +162,9 @@ export const usePhotoManager = (initialPhotos: string[]) => {
             updateSlot(index, { status: 'uploading', progress: 0, error: undefined });
             
             // We duplicate logic here, or you can extract the upload logic to a pure function
-            apiUploadPhoto(slot.uri, (p) => updateSlot(index, { progress: p }))
-                .then(url => updateSlot(index, { status: 'filled', uri: url, progress: 100 }))
-                .catch(() => updateSlot(index, { status: 'error' }));
+            // apiUploadPhoto(slot.uri, (p) => updateSlot(index, { progress: p }))
+            //     .then(url => updateSlot(index, { status: 'filled', uri: url, progress: 100 }))
+            //     .catch(() => updateSlot(index, { status: 'error' }));
         } else {
              // If no URI, just reset to empty so they can pick again
             updateSlot(index, { status: 'empty', error: undefined });

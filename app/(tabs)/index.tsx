@@ -88,7 +88,7 @@ const EncounterScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => { }} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => router.push('/notifications')} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
         <NotificationIcon color={"#DD3FE5"} />
       </TouchableOpacity>} />
 

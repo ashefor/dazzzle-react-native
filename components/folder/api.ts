@@ -36,7 +36,6 @@ export async function fetchUsers(signal?: AbortSignal): Promise<UserCard[]> {
     Array.isArray(data) ? data : (data && (data.filterData ?? []));
 
   if (!Array.isArray(users)) return [];
-  console.log('Fetched users:', users);
   return users
 }
 

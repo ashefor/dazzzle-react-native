@@ -1,8 +1,8 @@
 import React, { useState, useCallback, JSX, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useIsFocused, useRoute } from '@react-navigation/native';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import NavBar from '@/components/NavBar';
 import { usePhotoManager } from '@/hooks/usePhotoManager';
 import { PhotoCell } from '@/components/PhotoCell';
@@ -257,10 +257,10 @@ export default function ProfileSettings() {
     const { userInfo, userProfileData, loadingUserProfileData } = useAppSelector(state => state.auth);
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
-    const navigation = useNavigation();
     const isFocused = useIsFocused(); // Trigger refetch when returning from Edit screen
     const editBottomSheetModalRef = useRef<BottomSheetModal>(null);
     const editOtherFormBottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const notificationSettingsBottomSheetModalRef = useRef<BottomSheetModal>(null);
     const { appConfig } = useAppSelector(state => state.app);
     const insets = useSafeAreaInsets();
     const [editType, setEditType] = useState<EditType | null>('basic');
@@ -302,6 +302,7 @@ export default function ProfileSettings() {
     const closeBottomSheets = () => {
         editBottomSheetModalRef.current?.dismiss();
         editOtherFormBottomSheetModalRef.current?.dismiss();
+        notificationSettingsBottomSheetModalRef.current?.dismiss();
         setEditType(null);
     }
 
@@ -364,13 +365,6 @@ export default function ProfileSettings() {
         }
     }
 
-    // if (loading && ) {
-    //     return (
-    //         <View className="flex-1 justify-center items-center bg-white">
-    //             <ActivityIndicator size="large" color="#D946EF" />
-    //         </View>
-    //     );
-    // }
 
     const pickImage = async () => {
         try {
@@ -414,18 +408,18 @@ export default function ProfileSettings() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white" style={{ paddingTop: insets.top, paddingBottom: 10}}>
             {/* Header */}
             <NavBar title='Profile Settings' />
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-        <View className='items-center justify-center'>
-                    <Image source={userInfo?.profile_picture_url ? { uri: userInfo?.profile_picture_url } : undefined} className="w-24 h-24 rounded-full my-4 mx-auto bg-gray-50"/>
-                     <TouchableOpacity onPress={pickImage} className="flex-row items-center">
-            <Feather name="edit-2" size={14} color="#D946EF" />
-            <Text className="text-primary font-firamedium ml-1">Edit</Text>
-        </TouchableOpacity>
+                <View className='items-center justify-center'>
+                    <Image source={userInfo?.profile_picture_url ? { uri: userInfo?.profile_picture_url } : undefined} className="w-24 h-24 rounded-full my-4 mx-auto bg-gray-50" />
+                    <TouchableOpacity onPress={pickImage} className="flex-row items-center">
+                        <Feather name="edit-2" size={14} color="#D946EF" />
+                        <Text className="text-primary font-firamedium ml-1">Edit</Text>
+                    </TouchableOpacity>
                 </View>
                 {/* <Text className="font-bold text-lg px-4 py-4">Photos</Text> */}
                 <PhotoGridSection initialPhotos={userProfileData?.photosData.map((photo: any) => photo.image_url)} />
@@ -537,7 +531,6 @@ export default function ProfileSettings() {
                 snapPoints={['100%']}
                 enableDynamicSizing={false}
                 handleIndicatorStyle={{
-                    backgroundColor: "red",
                     display: "none"
                 }}
                 handleStyle={{ padding: 0 }}
@@ -570,7 +563,6 @@ export default function ProfileSettings() {
                 snapPoints={['100%']}
                 enableDynamicSizing={false}
                 handleIndicatorStyle={{
-                    backgroundColor: "red",
                     display: "none"
                 }}
                 handleStyle={{ padding: 0 }}
@@ -596,6 +588,6 @@ export default function ProfileSettings() {
                     }}
                 />}
             </BottomSheetModal>
-        </SafeAreaView>
+        </View>
     );
 }

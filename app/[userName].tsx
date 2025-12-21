@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -9,7 +9,8 @@ import {
     Pressable,
     LayoutChangeEvent,
     Modal,
-    TouchableWithoutFeedback, Alert
+    TouchableWithoutFeedback, Alert,
+    Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -39,6 +40,10 @@ import { useLoader } from '@/context/loader/LoaderProvider';
 import NavBar from '@/components/NavBar';
 import { popCard } from '@/redux/slices/encounterSlice';
 import { useAppDispatch } from '@/hooks/reduxHooks';
+import Toast from '@/components/toast/toast';
+import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
+import CustomButton from '@/components/CustomButton';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 
 
 const { width } = Dimensions.get('window');
@@ -193,14 +198,14 @@ const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
         <View className='mx-4'>
             {
                 photos.length === 0 ? (
-            <Text style={styles.bodyText}>No photos available.</Text>
-        ) : (
-            <View style={[styles.photoGrid]}>
-                {photos.map((photo, index) => (
-                    <Image key={index} source={{ uri: photo.image_url }} style={styles.gridPhoto} />
-                ))}
-            </View>
-        )
+                    <Text style={styles.bodyText}>No photos available.</Text>
+                ) : (
+                    <View style={[styles.photoGrid]}>
+                        {photos.map((photo, index) => (
+                            <Image key={index} source={{ uri: photo.image_url }} style={styles.gridPhoto} />
+                        ))}
+                    </View>
+                )
             }
         </View>
     )
@@ -209,14 +214,16 @@ const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
 export default function UserDetailsScreen() {
     const { userName } = useLocalSearchParams();
     const insets = useSafeAreaInsets();
-        const { show, hide } = useLoader();
-        const dispatch = useAppDispatch();
+    const { show, hide } = useLoader();
+    const dispatch = useAppDispatch();
 
     // State
     const [activeTab, setActiveTab] = useState<'basic' | 'photos'>('basic');
     const [isMenuVisible, setMenuVisible] = useState(false);
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [reportReason, setReportReason] = useState('');
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     // Layout Measurements (Reset these on data fetch to prevent jumpiness)
     const [tabContainerWidth, setTabContainerWidth] = useState(0);
@@ -252,10 +259,8 @@ export default function UserDetailsScreen() {
             const data: any = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const userDetails: SingleUserDetails = data.data;
-                console.log('userDetails', data.data);
                 const userSpecificationData = userDetails.userSpecificationData;
                 const formatteduserSpecificationData = arrayToObject(userSpecificationData);
-                console.log('formatteduserSpecificationData', formatteduserSpecificationData);
                 const userProfileData = { ...userDetails, formatteduserSpecificationData: formatteduserSpecificationData };
                 setUserDetails(userProfileData);
             }
@@ -305,14 +310,14 @@ export default function UserDetailsScreen() {
         }
     }, [userDetails?.userLikeData])
 
-     const handleBlockUser = async () => {
+    const handleBlockUser = async () => {
         closeMenu();
         try {
             const params = {
                 block_user_id: userDetails?.userData.userId
             }
             show();
-            const data:any = await axiosRequest.post(`/block-user`, params);
+            const data: any = await axiosRequest.post(`/block-user`, params);
             hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 setUserDetails((prevUserDetails) => {
@@ -322,8 +327,8 @@ export default function UserDetailsScreen() {
                     }
                 })
             }
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while blocking the user. Please try again later.');
             hide();
         }
     }
@@ -336,7 +341,7 @@ export default function UserDetailsScreen() {
                 block_user_id: userDetails?.userData.userId
             }
             show();
-            const data:any = await axiosRequest.post(`${userId}/unblock-user-data`, {});
+            const data: any = await axiosRequest.post(`${userId}/unblock-user-data`, {});
             hide();
             console.log('user data from unblock', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
@@ -347,9 +352,9 @@ export default function UserDetailsScreen() {
                     }
                 })
             }
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
             hide();
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while unblocking the user. Please try again later.');
         }
     }
 
@@ -389,12 +394,51 @@ export default function UserDetailsScreen() {
             } else {
                 throw new Error('Failed to like user');
             }
-        } catch (error) {
+        } catch (error: any) {
             hide();
-            console.error(error);
-            Alert.alert('Error', 'An error occurred while liking the user. Please try again later.');
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while liking the user. Please try again later.');
         }
     }
+
+    const renderBackdrop = useCallback(
+        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            // onPress={handleBlur}
+            />
+        ),
+        []
+    );
+
+    const renderHeaderHandle = useCallback(
+        (props: BottomSheetHandleProps) => (
+            <BottomSheetHandle
+                {...props}
+            >
+                <View className="py-4 relative">
+
+                    <View className=' w-full'>
+                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
+                            position: 'absolute',
+                            top: '50%',
+                            transform: [
+                                { translateY: '-50%' }
+                            ],
+                            left: 16,
+                            zIndex: 10,
+                            backgroundColor: 'white'
+                        }}>
+                            <Ionicons name="close-circle" size={24} color="black" />
+                        </TouchableOpacity>
+                        <Text className='font-firabold text-black text-base mx-auto text-center'>Report User</Text>
+                    </View>
+                </View>
+            </BottomSheetHandle>
+        ),
+        []
+    );
 
     const dislikeUser = async () => {
         try {
@@ -432,10 +476,9 @@ export default function UserDetailsScreen() {
             } else {
                 throw new Error('Failed to like user');
             }
-        } catch (error) {
+        } catch (error: any) {
             hide();
-            console.error(error);
-            Alert.alert('Error', 'An error occurred while disliking the user. Please try again later.');
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while disliking the user. Please try again later.');
         }
     }
 
@@ -445,8 +488,37 @@ export default function UserDetailsScreen() {
     const handleMenuItemPress = (action: string) => {
         closeMenu();
         // API Logic here
-        console.log(action);
+        if (action === 'block') {
+            handleBlockUser();
+        } else if (action === 'report') {
+            bottomSheetModalRef.current?.present();
+        }
     };
+
+    const reportAccount = async () => {
+        try {
+            const userId = userDetails?.userData.userId;
+            if (!userId) {
+                return new Error('User ID not found');
+            }
+            show();
+            const params = {
+                report_reason: reportReason
+            }
+            const data: any = await axiosRequest.post(`/${userId}/report-user`, params)
+            hide();
+            dispatch(popCard());
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                Toast.success('User reported successfully');
+                bottomSheetModalRef.current?.dismiss();
+            } else {
+                throw new Error('Failed to report user');
+            }
+        } catch (error: any) {
+            hide();
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while reporting the user. Please try again later.');
+        }
+    }
 
     const createBlockNotificationAlert = () =>
         Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user?', [
@@ -498,14 +570,14 @@ export default function UserDetailsScreen() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <NavBar title={<Animated.View style={[styles.headerTitleContainer, headerNameStyle]}>
-                    <Text style={styles.headerTitleText}>
-                        {userDetails?.userData.first_name} {userDetails?.userData.last_name}, {userDetails?.userData.userAge}
-                    </Text>
-                </Animated.View>}
+                <Text style={styles.headerTitleText}>
+                    {userDetails?.userData.first_name} {userDetails?.userData.last_name}, {userDetails?.userData.userAge}
+                </Text>
+            </Animated.View>}
                 rightItem={<TouchableOpacity onPress={toggleMenu} style={styles.iconButton}>
                     <EllipsisIcon width={24} height={24} color="#000" />
                 </TouchableOpacity>}
-                />
+            />
             {/* <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
                 <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
                     <ArrowBackIcon width={24} height={24} color="#000" />
@@ -530,12 +602,12 @@ export default function UserDetailsScreen() {
             >
                 <TouchableWithoutFeedback onPress={closeMenu}>
                     <View style={styles.modalOverlay}>
-                        <View style={[styles.menuContainer, { top: insets.top + HEADER_HEIGHT + 5 }]}>
-                            <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('message')}>
+                        <View style={[styles.menuContainer, { top: insets.top + HEADER_HEIGHT }]}>
+                            {/* <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('message')}>
                                 <Ionicons name="chatbubble-outline" size={20} color="#333" style={styles.menuIcon} />
                                 <Text style={styles.menuText}>Message User</Text>
                             </TouchableOpacity>
-                            <View style={styles.menuDivider} />
+                            <View style={styles.menuDivider} /> */}
                             <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('report')}>
                                 <Ionicons name="flag-outline" size={20} color="#FF3B30" style={styles.menuIcon} />
                                 <Text style={[styles.menuText, styles.destructiveText]}>Report Account</Text>
@@ -593,29 +665,37 @@ export default function UserDetailsScreen() {
                                 </View>
 
                                 {/* --- ANIMATED TABS --- */}
-                                <View
-                                    style={styles.tabSwitcher}
-                                    onLayout={(e) => setTabContainerWidth(e.nativeEvent.layout.width)}
-                                >
-                                    <Animated.View style={[styles.activeTabIndicator, tabIndicatorStyle]} />
+                                {userDetails?.blockByMeUser ? <View className='mt-10 py-4 bg-red-500 rounded-lg'>
+                                    <Text className='text-base font-firasemibold text-center text-white'>@{userDetails?.userData.userName} is blocked. Unblock this user and see their full details.</Text>
+                                </View> : userDetails.isBlockUser ? <View className='mt-10 py-4 bg-red-500 rounded-lg'>
+                                    <Text className='text-base font-firasemibold text-center text-white'>@{userDetails?.userData.userName} has blocked you</Text>
+                                </View> :
+                                    <View
+                                        style={styles.tabSwitcher}
+                                        onLayout={(e) => setTabContainerWidth(e.nativeEvent.layout.width)}
+                                    >
+                                        <Animated.View style={[styles.activeTabIndicator, tabIndicatorStyle]} />
 
-                                    <Pressable style={styles.tabButton} onPress={() => handleTabPress('basic')}>
-                                        <Animated.Text style={[styles.tabText, basicTextStyle]}>Basic Info</Animated.Text>
-                                    </Pressable>
+                                        <Pressable style={styles.tabButton} onPress={() => handleTabPress('basic')}>
+                                            <Animated.Text style={[styles.tabText, basicTextStyle]}>Basic Info</Animated.Text>
+                                        </Pressable>
 
-                                    <Pressable style={styles.tabButton} onPress={() => handleTabPress('photos')}>
-                                        <Animated.Text style={[styles.tabText, photosTextStyle]}>Photos</Animated.Text>
-                                    </Pressable>
-                                </View>
+                                        <Pressable style={styles.tabButton} onPress={() => handleTabPress('photos')}>
+                                            <Animated.Text style={[styles.tabText, photosTextStyle]}>Photos</Animated.Text>
+                                        </Pressable>
+                                    </View>
+                                }
                             </View>
-                            {activeTab === 'basic' ? (
+                            {!(userDetails?.blockByMeUser || userDetails.isBlockUser) && (activeTab === 'basic' ? (
                                 <BasicInfoTab userDetails={userDetails} />
                             ) : (
                                 <PhotosTab photos={userDetails.photosData} />
-                            )}
+                            ))}
                             <View style={{ height: HEADER_HEIGHT + insets.bottom }} />
                         </Animated.ScrollView>
-                        <View style={{
+                        
+                        {!(userDetails?.blockByMeUser || userDetails.isBlockUser) && 
+                            <View style={{
                             position: 'absolute',
                             bottom: 0,
                             left: 0,
@@ -637,17 +717,69 @@ export default function UserDetailsScreen() {
                                     <Text className={`text-xs font-firaregular ${hasUserDisliked(userDetails.userLikeData) ? "text-[#FF383C]" : "text-[#141B34]"}`}>{hasUserDisliked(userDetails.userLikeData) ? "Disliked" : "Dislike"}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => router.navigate({
-                                                        pathname: '/single-chat/[userId]',
-                                                        params: { userId: userDetails?.userData.userId }
-                                                    })}  className='items-center justify-center space-y-0.5'>
+                                    pathname: '/single-chat/[userId]',
+                                    params: { userId: userDetails?.userData.userId }
+                                })} className='items-center justify-center space-y-0.5'>
                                     <CommentIcon />
                                     <Text className="text-xs font-firaregular">Message</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
+}
                     </View>
                 )
             )}
+
+            <BottomSheetModal
+                ref={bottomSheetModalRef}
+                enableDynamicSizing
+                enablePanDownToClose={true}
+                style={{
+                    borderRadius: 28,
+                }}
+                backgroundStyle={{
+                    borderRadius: 28,
+                }}
+                backdropComponent={renderBackdrop}
+                handleComponent={renderHeaderHandle}
+                keyboardBehavior="interactive"
+                enableBlurKeyboardOnGesture
+                keyboardBlurBehavior='restore'
+                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
+                onDismiss={() => setReportReason('')}
+            >
+
+                <BottomSheetView>
+                    <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+                        <View className="bg-[#F2F2F7] text-black rounded-xl px-4 min-h-[100px] max-h-[200px] focus:border-primary border border-[#cccccc80]">
+                            <BottomSheetTextInput
+                                multiline
+                                value={reportReason}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 12,
+                                    backgroundColor: '#F2F2F7',
+                                    padding: 12,
+                                    fontSize: 16,
+                                    textAlignVertical: 'top',
+                                    fontFamily: 'Onest_400Regular',
+                                }}
+                                placeholder="Write your report here..."
+                                autoCapitalize="none"
+                                importantForAutofill='no'
+                                placeholderTextColor={"#5B5B5B3A"}
+                                selectionColor={'#DD3FE5'}
+                                onChangeText={setReportReason}
+                            />
+                        </View>
+
+                        <View className='mt-4'>
+                            <CustomButton title="Report" handlePress={reportAccount} />
+                        </View>
+                    </View>
+                </BottomSheetView>
+            </BottomSheetModal>
         </View>
     );
 }

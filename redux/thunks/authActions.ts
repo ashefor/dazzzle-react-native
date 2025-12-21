@@ -95,7 +95,6 @@ export const fetchAuthenticatedUser = createAsyncThunk(
     'get-user-auth-info',
     async (_, { rejectWithValue }) => {
         try {
-            console.log('Fetching authenticated user...');
             const token = await getItem('dazzzle-token');
             const config: AxiosRequestConfig = {
                 headers: {
@@ -157,6 +156,51 @@ export const signUserOut = createAsyncThunk(
             }
             const response = await axios.post(
                 `${API_URL}/user/logout`,
+                {},
+                config
+            )
+            const authApiResponse = response.data as AuthApiResponse;
+            const { reaction, message, data } = response.data;
+            let errorMessage = message;
+            if (reaction === ReactionCodes.ERROR) {
+                if (data) {
+                    errorMessage = data.message;
+                }
+            } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
+                errorMessage = message
+            }
+            if (errorMessage) {
+                return rejectWithValue(errorMessage)
+            }
+            await removeItem('dazzzle-token');
+            await removeItem('dazzzle-user');
+            clear();
+            return true;
+        } catch (error: any) {
+            // return custom error message from API if any
+            if (error.response && error.response.data.message) {
+                return rejectWithValue(error.response.data.message)
+            } else {
+                return rejectWithValue(error.message)
+            }
+        }
+    }
+)
+
+export const deleteUserAccount = createAsyncThunk(
+    '/user/delete-account',
+    async (_, { rejectWithValue, getState }) => {
+        try {
+            const state = (getState() as any).auth;
+            const config: AxiosRequestConfig = {
+                headers: {
+                    "Accept": "*/*",
+                    "Api-Request-Signature": "mobile-app-request",
+                    ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
+                }
+            }
+            const response = await axios.post(
+                `${API_URL}/delete-account`,
                 {},
                 config
             )

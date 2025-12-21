@@ -2,10 +2,14 @@ import { upsertChat, incrementUnread } from '@/redux/slices/chatsSlice';
 import { startUpdateLoading, refreshMessages, stopUpdateLoading } from '@/redux/slices/messagesSlice';
 import { AppDispatch } from '@/redux/store';
 import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+import { Alert, Platform } from 'react-native';
+import axiosRequest from './axios'; // Import the API handler
 
 type IncomingPayload = {
   messageId: number | string;
-  user_id: number; // target user id for the chat
+  user_id: number;
   user_full_name?: string;
   profile_picture?: string;
   is_online?: number;
@@ -13,7 +17,67 @@ type IncomingPayload = {
   last_seen_at_time_ago_format?: string;
 };
 
-export function registerNotificationHandlers(
+// Configure how notifications appear when the app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+export async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (!Device.isDevice) {
+    Alert.alert('Physical Device Required', 'Must use physical device for Push Notifications');
+    console.log('Must use physical device for Push Notifications');
+    return;
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    console.log('Failed to get push token for push notification!');
+    return;
+  }
+
+  try {
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+        throw new Error('Project ID not found in app config');
+    }
+
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId,
+    })).data;
+
+    console.log('Expo Push Token:', token);
+
+    // Send token to backend
+    await axiosRequest.notifications.registerToken(token);
+    
+  } catch (error) {
+    console.error('Error fetching push token:', error);
+  }
+}
+
+export function registerNotificationListeners(
   dispatch: AppDispatch,
   getState: () => any,
   navigateToChat: (user_id: number) => void
@@ -23,12 +87,10 @@ export function registerNotificationHandlers(
     if (!data?.messageId || typeof data.user_id !== 'number') return;
 
     const { user_id } = data;
-
     const state = getState();
     const isOnChatsScreen = state.navigation?.currentRouteName === 'Chats';
     const activeUserId = state.messages?.activeUserId;
 
-    // If on chats screen, upsert minimal chat item locally and bump unread
     if (isOnChatsScreen) {
       dispatch(upsertChat({
         about_me: null,
@@ -47,7 +109,6 @@ export function registerNotificationHandlers(
       dispatch(incrementUnread({ user_id }));
     }
 
-    // If on active chat screen for this user, refresh messages with inline loader
     if (activeUserId === user_id) {
       dispatch(startUpdateLoading({ user_id }));
       await dispatch(refreshMessages({ user_id }));
@@ -58,17 +119,15 @@ export function registerNotificationHandlers(
   const onClick = async (response: Notifications.NotificationResponse) => {
     const data = response.notification.request.content.data as Partial<IncomingPayload> | undefined;
     if (!data?.messageId || typeof data.user_id !== 'number') return;
-    const { user_id } = data;
-
-    await onReceive(response.notification);
-
-    navigateToChat(user_id);
-
-    dispatch(startUpdateLoading({ user_id }));
-    await dispatch(refreshMessages({ user_id }));
-    dispatch(stopUpdateLoading({ user_id }));
+    
+    navigateToChat(data.user_id);
   };
 
-  Notifications.addNotificationReceivedListener(onReceive);
-  Notifications.addNotificationResponseReceivedListener(onClick);
+  const responseListener = Notifications.addNotificationResponseReceivedListener(onClick);
+  const receivedListener = Notifications.addNotificationReceivedListener(onReceive);
+
+  return () => {
+    Notifications.removeNotificationSubscription(responseListener);
+    Notifications.removeNotificationSubscription(receivedListener);
+  };
 }
