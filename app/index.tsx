@@ -1,11 +1,10 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
 import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
 import dayjs from 'dayjs';
-import { Spinner } from 'tamagui';
 import { handlePermissionNavigation } from '@/utils/notificationHandler';
 
 export default function HomeScreen() {
@@ -98,7 +97,7 @@ export default function HomeScreen() {
             fontFamily: "LilitaOne_400Regular",
           }}>dazzzle</Text>
         </View>
-        <Spinner size="large" color="$gray10" className="mt-4" />
+        <ActivityIndicator size="large" color="#DD3FE5" className="mt-4" />
       </View>
     );
   }
@@ -124,8 +123,8 @@ export default function HomeScreen() {
   // D. Waiting for User Data (Edge case safety)
   if (!userInfo) {
      return (
-        <View className='bg-white flex items-center justify-center flex-1'>
-            <Spinner size="large" />
+          <View className='bg-white flex items-center justify-center flex-1'>
+        <ActivityIndicator size="large" />
         </View>
      );
   }
@@ -146,7 +145,7 @@ export default function HomeScreen() {
             fontFamily: "LilitaOne_400Regular",
           }}>dazzzle</Text>
         </View>
-        <Spinner size="large" color="$gray10" className="mt-4" />
+        <ActivityIndicator size="large" color="#DD3FE5" className="mt-4" />
       </View>
   );
 }

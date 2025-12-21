@@ -1,7 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { JSX, useCallback, useMemo, useRef } from "react";
 import { TouchableOpacity, View, Text, Keyboard, FlatList, Dimensions, Platform } from "react-native";
-import { ListItem as ListItemBase } from "tamagui";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
@@ -100,9 +99,9 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
         []
     );
 
-    const renderItem = ({ item }: { item: { id: string | number, value: string } }) => <ListItemBase onPress={() => selectOption(item.id)} className={`bg-[#F2F2F7] rounded-lg ${defaultOption == item.id.toString() ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`} py={"$3"}>
+    const renderItem = ({ item }: { item: { id: string | number, value: string } }) => <TouchableOpacity onPress={() => selectOption(item.id)} className={`bg-[#F2F2F7] rounded-lg px-4 py-3 ${defaultOption == item.id.toString() ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`}>
         <Text className={`text-base ${defaultOption == item.id.toString() ? 'text-primary' : 'text-black'}`}>{item.value}</Text>
-    </ListItemBase>;
+    </TouchableOpacity>;
 
     return (
         <>

@@ -1699,7 +1699,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-keyboard-controller (1.20.1):
+  - react-native-keyboard-controller (1.20.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1714,7 +1714,7 @@ PODS:
     - React-hermes
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.20.1)
+    - react-native-keyboard-controller/common (= 1.20.2)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1724,7 +1724,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller/common (1.20.1):
+  - react-native-keyboard-controller/common (1.20.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2923,7 +2923,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: fae8da2c01aeb7f26ad739731b6dba61fd02fd97
   React-microtasksnativemodule: 20454ffccff553f0ee73fd20873aa8555a5867fb
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-keyboard-controller: 0faec0497327d901a610bd3f5810525a41a17bf1
+  react-native-keyboard-controller: 394dfa7d8e678d835c32f5d1d06cfab494d71d56
   react-native-maps: 9febd31278b35cd21e4fad2cf6fa708993be5dab
   react-native-pager-view: f238ed7fb53458bd03366944a33686f067c83e9a
   react-native-safe-area-context: 562163222d999b79a51577eda2ea8ad2c32b4d06

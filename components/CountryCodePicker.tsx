@@ -1,6 +1,5 @@
 import { View, Text, Platform, TouchableOpacity, Dimensions, InteractionManager } from 'react-native';
 import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ListItem, XStack } from 'tamagui';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { CountryPhoneCode } from '@/models/general';
 import { useAppSelector } from '@/hooks/reduxHooks';
@@ -107,12 +106,12 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
             const isSelected = item.phone_code.toString() == selectedCountryCode;
             return (
                 (
-                    <ListItem onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className={`rounded-lg text-black ${isSelected ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`} py={"$3"}>
-                        <XStack gap="$3"  justifyContent='flex-start' flexWrap='wrap'>
+                    <TouchableOpacity onPress={() => selectCountryCode(item.phone_code.toString())} key={index} className={`rounded-lg text-black px-4 py-3 ${isSelected ? 'bg-[#FCE6FD]' : 'bg-[#F2F2F7]'}`} >
+                        <View className='flex-row items-center gap-3 justify-start flex-wrap'>
                             <Text className='text-base text-black'>(+{item.phone_code})</Text>
                             <Text className='text-base text-black flex-1' style={{ wordWrap: 'break-word' }}>{item.name}</Text>
-                        </XStack>
-                    </ListItem>
+                        </View>
+                    </TouchableOpacity>
                 )
             )
         }, [selectedCountryCode]

@@ -7,15 +7,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { TamaguiProvider } from 'tamagui';
-import { tamaguiConfig } from '../tamagui.config';
 import ToastWrapper from '@/components/toast/ToastWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { initializeStorePromise, store } from '@/redux/store';
-import { SheetProvider } from 'react-native-actions-sheet';
-import '@/context/sheets';
 import { LoaderProvider } from '@/context/loader/LoaderProvider';
 import { StatusBar } from 'react-native';
 
@@ -89,21 +85,17 @@ export default function RootLayout() {
       }}>
         <ToastWrapper />
         <SystemBars style="dark" />
-        <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
-          <BottomSheetModalProvider>
+       <BottomSheetModalProvider>
             <ThemeProvider value={DefaultTheme}>
               <LoaderProvider>
                 <KeyboardProvider>
                   <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
-                    <SheetProvider>
                       <NavigationStack />
-                    </SheetProvider>
                   </PaystackProvider>
                 </KeyboardProvider>
               </LoaderProvider>
             </ThemeProvider>
           </BottomSheetModalProvider>
-        </TamaguiProvider>
       </GestureHandlerRootView>
     </Provider>
   );

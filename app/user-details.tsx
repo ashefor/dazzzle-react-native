@@ -2,8 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
 import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
-import { Spinner } from "tamagui";
+import { ActivityIndicator, View } from "react-native";
 import dayjs from 'dayjs';
 
 const UserDetails = () => {
@@ -41,7 +40,7 @@ const UserDetails = () => {
     if (loadingUser) {
         return (
             <View className="h-full w-full items-center justify-center bg-white">
-                <Spinner color={"$gray10"} size="large" />
+                <ActivityIndicator size="large" color="#DD3FE5" />
             </View>
         )
     } else {

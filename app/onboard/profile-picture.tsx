@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Alert, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, ScrollView, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import CustomButton from '@/components/CustomButton'
 import Toast from '@/components/toast/toast'
@@ -11,7 +11,6 @@ import axiosRequest from '@/utils/axios'
 import Feather from '@expo/vector-icons/Feather'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
-import { ScrollView, YStack } from 'tamagui'
 import { OnboardPagesProps } from '.'
 
 const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
@@ -27,7 +26,6 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
     const submit = async () => {
         try {
             if (initialValues && initialValues.profile_picture_url) {
-                // router.push('/onboard/location');
                 goToNextPage?.();
             } else {
                 if (!image) {
@@ -45,7 +43,6 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
                 hide();
                 if (response.reaction === ReactionCodes.SUCCESS) {
                     Toast.success('Profile updated successfully');
-                    // router.push('/onboard/location');
                     goToNextPage?.();
                 } else {
                     Alert.alert('Error', response.message ? response.message : 'Unable to proceed')
@@ -59,7 +56,6 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
 
     const pickImage = async () => {
         try {
-            // No permissions request is necessary for launching the image library
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
                 allowsEditing: true,
@@ -81,12 +77,12 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
     return (
         <ScrollView className='h-full'>
             <View className='px-4 space-y-4'>
-                <YStack>
+                <View>
                     <Text className='text-2xl text-black font-firabold'>Profile Picture</Text>
                     <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
-                </YStack>
-                <YStack>
-                    <YStack>
+                </View>
+                <View>
+                    <View>
                         <TouchableOpacity onPress={pickImage}>
                             <View className='h-56 w-56 mx-auto my-10'>
                                 {image ? (
@@ -103,16 +99,16 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
                                 }
                             </View>
                         </TouchableOpacity>
-                    </YStack>
-                    <YStack>
+                    </View>
+                    <View>
                         <CustomButton title='Next' handlePress={submit} />
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <TouchableOpacity onPress={() => handleLogOut()}>
                                 <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
                             </TouchableOpacity>
                         </View>
-                    </YStack>
-                </YStack>
+                    </View>
+                </View>
             </View>
         </ScrollView>
     )
