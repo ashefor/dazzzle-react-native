@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dazzzle.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "Allow this app to track your activity across other companies' apps and websites"
       },
       "googleServicesFile": "./GoogleService-Info.plist"
     },
@@ -71,6 +72,12 @@
             "parentTheme": "Default",
             "enforceNavigationBarContrast": false
           }
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Allow this app to track your activity across other companies' apps and websites"
         }
       ]
     ],

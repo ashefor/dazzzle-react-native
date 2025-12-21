@@ -56,7 +56,10 @@ const OnboardPage = () => {
     };
 
     const handleLogOut = async () => {
-        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
+        show();
+        await dispatch(signUserOut()).unwrap();
+        hide();
+        router.replace('/(auth)/sign-in');
     }
 
     useEffect(() => {

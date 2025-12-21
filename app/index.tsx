@@ -1,17 +1,18 @@
-import Images from '@/constants/images';
-import { Redirect } from 'expo-router';
-import { useEffect } from 'react';
+import { Redirect, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
 import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
 import dayjs from 'dayjs';
-import { Spinner } from 'tamagui'; // Or your preferred loader
+import { Spinner } from 'tamagui';
+import { handlePermissionNavigation } from '@/utils/notificationHandler';
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   
-  // 1. Select all necessary state in one place
+  // --- 1. HOOKS & STATE (Always declare these first) ---
   const { loading: configLoading, appConfig, error: configError } = useAppSelector(state => state.app);
   const { 
     userInfo, 
@@ -22,77 +23,105 @@ export default function HomeScreen() {
   } = useAppSelector(state => state.auth);
   const { currentSubscription } = useAppSelector(state => state.subscription);
 
-  // Combined loading state
+  const [isCheckingPermissions, setIsCheckingPermissions] = useState(false);
+
+  // --- 2. DERIVED STATE (Calculations) ---
   const isInitializing = configLoading || loadingUser;
 
+  const checkSubscriptionStatus = () => {
+    if (!userInfo?.is_premium) return false;
+    if (currentSubscription?.expiry_at) {
+       return !dayjs().isAfter(dayjs(currentSubscription.expiry_at));
+    }
+    return false;
+  };
+
+  const isSubActive = checkSubscriptionStatus();
+
+  // --- 3. EFFECTS (Must run before any return statements) ---
+
+  // Effect A: Fetch Data
   useEffect(() => {
-    // 1. Fetch Config
     dispatch(fetchAppConfig());
-
-
-    // 2. If we have a token (persisted in Redux), fetch the user immediately
     if (userToken) {
       dispatch(fetchAuthenticatedUser());
     }
   }, [dispatch, userToken]);
 
-  // Handle Auth Errors (e.g., token expired)
+  // Effect B: Handle Auth Errors
   useEffect(() => {
     if (authError) {
         dispatch(signUserOut());
     }
   }, [authError, dispatch]);
 
-  // Helper function to check subscription status
-  const checkSubscriptionStatus = () => {
-    if (!userInfo?.is_premium) return false;
-    
-    // If premium but no sub object, treat as valid or invalid based on your business logic
-    // Assuming here that if is_premium is true, we check the date
-    if (currentSubscription?.expiry_at) {
-       return !dayjs().isAfter(dayjs(currentSubscription.expiry_at));
-    }
-    
-    return false; // Default to false if premium flag is true but no subscription data exists
-  };
+  // Effect C: Routing Logic (Permission & Subscription)
+  useEffect(() => {
+      // Only attempt routing if we are fully ready:
+      // 1. Not initializing
+      // 2. Have config
+      // 3. Have user & token
+      // 4. Profile is completed
+      // 5. Not already checking permissions
+      const isReadyForRouting = !isInitializing && appConfig && userToken && userInfo && isProfileCompleted && !isCheckingPermissions;
 
-  // --- RENDER LOGIC ---
+      if (!isReadyForRouting) return;
 
-  // 1. Show loading screen while fetching config OR user
+      const performRouting = async () => {
+          if (isSubActive) {
+              setIsCheckingPermissions(true);
+              // Use the helper: 
+              // - Checks Permission
+              // - If Granted -> Register Token -> router.replace('/(tabs)')
+              // - If Denied -> router.replace('/permissions')
+              await handlePermissionNavigation('/(tabs)', '/permissions'); 
+          } else {
+              // No sub -> Paywall
+              router.replace('./paywall');
+          }
+      };
+
+      performRouting();
+      
+  }, [isInitializing, appConfig, userToken, userInfo, isProfileCompleted, isSubActive, isCheckingPermissions]);
+
+
+  // --- 4. RENDER (Early returns allowed here) ---
+
+  // A. Initialization / Loading
   if (isInitializing) {
     return (
       <View className='bg-white flex items-center justify-center flex-1'>
-        <Image source={Images.logo} className='w-32 h-32' resizeMode='contain' />
+        <View className='flex-row items-center justify-center mb-6'>
+          <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
+          <Text className='text-3xl text-primary' style={{
+            fontFamily: "LilitaOne_400Regular",
+          }}>dazzzle</Text>
+        </View>
         <Spinner size="large" color="$gray10" className="mt-4" />
       </View>
     );
   }
 
-  // 2. Error State (Config failed)
+  // B. Config Error
   if (!appConfig) {
     return (
       <View className='h-full flex items-center justify-center p-5 bg-white'>
-        <Image source={Images.logo} className='w-32 h-32' resizeMode='contain' />
         <Text className=' text-primary text-base font-semibold'>Unable to load settings</Text>
         <Text className=' text-primary'> {configError || ''}</Text>
         <TouchableOpacity onPress={() => dispatch(fetchAppConfig())} className='rounded-[26px] px-5 h-10 mt-7 bg-primary flex items-center justify-center'>
-          <Text className='text-sma font-firamedium text-white'>
-            Try again
-          </Text>
+            <Text className='text-sma font-firamedium text-white'>Try again</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // 3. Routing Logic (The "Traffic Controller")
-  
-  // Scenario A: No Token -> Landing
+  // C. Not Logged In
   if (!userToken) {
     return <Redirect href="./landing" />;
   }
 
-  // Scenario B: Token exists, but we are waiting for userInfo to populate
-  // (This handles the edge case where loadingUser is false but userInfo is null briefly)
+  // D. Waiting for User Data (Edge case safety)
   if (!userInfo) {
      return (
         <View className='bg-white flex items-center justify-center flex-1'>
@@ -101,17 +130,23 @@ export default function HomeScreen() {
      );
   }
 
-  // Scenario C: User Logged in -> Check Profile Completion
+  // E. Profile Incomplete
   if (!isProfileCompleted) {
     return <Redirect href="./onboard/bio-data" />;
   }
 
-  // Scenario D: Profile Complete -> Check Subscription
-  const isSubActive = checkSubscriptionStatus();
-
-  if (isSubActive) {
-    return <Redirect href="./(tabs)" />;
-  } else {
-    return <Redirect href="./paywall" />;
-  }
+  // F. Final Loading State
+  // If we reached here, the Effect C is running or we are checking permissions.
+  // Show the loader to prevent a blank white screen.
+  return (
+      <View className='bg-white flex items-center justify-center flex-1'>
+        <View className='flex-row items-center justify-center mb-6'>
+          <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
+          <Text className='text-3xl text-primary' style={{
+            fontFamily: "LilitaOne_400Regular",
+          }}>dazzzle</Text>
+        </View>
+        <Spinner size="large" color="$gray10" className="mt-4" />
+      </View>
+  );
 }

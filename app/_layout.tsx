@@ -1,5 +1,7 @@
 import 'react-native-get-random-values';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { LilitaOne_400Regular } from '@expo-google-fonts/lilita-one/400Regular';
+
 import { Onest_100Thin, Onest_200ExtraLight, Onest_300Light, Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold, Onest_900Black, useFonts } from '@expo-google-fonts/onest';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -23,8 +25,6 @@ import {
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import NavigationStack from '@/components/NavigationStack';
 import { SystemBars } from "react-native-edge-to-edge";
-import { registerForPushNotificationsAsync, registerNotificationListeners } from '@/utils/notificationHandler';
-import { router } from 'expo-router';
 
 
 
@@ -41,7 +41,8 @@ export default function RootLayout() {
 
   const [loaded] = useFonts({
     Onest_100Thin,
-    Onest_200ExtraLight, Onest_300Light, Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold, Onest_900Black
+    Onest_200ExtraLight, Onest_300Light, Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, Onest_800ExtraBold, Onest_900Black,
+    LilitaOne_400Regular
   });
 
   useEffect(() => {
@@ -49,26 +50,26 @@ export default function RootLayout() {
       await initializeStorePromise;
       setInitialized(true);
       
-      // Register for Push Token on app launch
-      await registerForPushNotificationsAsync();
+      // // Register for Push Token on app launch
+      // await registerForPushNotificationsAsync();
     };
     init();
   }, []);
 
-  useEffect(() => {
-     if (!initialized) return;
+  // useEffect(() => {
+  //    if (!initialized) return;
 
-     // Register listeners for incoming messages
-     const cleanUp = registerNotificationListeners(
-        store.dispatch, 
-        store.getState, 
-        (userId) => router.push(`/single-chat/${userId}`)
-     );
+  //    // Register listeners for incoming messages
+  //    const cleanUp = registerNotificationListeners(
+  //       store.dispatch, 
+  //       store.getState, 
+  //       (userId) => router.push(`/single-chat/${userId}`)
+  //    );
      
-     return () => {
-        cleanUp();
-     };
-  }, [initialized]);
+  //    return () => {
+  //       cleanUp();
+  //    };
+  // }, [initialized]);
 
   useEffect(() => {
     if (loaded) {
@@ -87,7 +88,7 @@ export default function RootLayout() {
         flex: 1,
       }}>
         <ToastWrapper />
-        <SystemBars style="light" />
+        <SystemBars style="dark" />
         <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme!}>
           <BottomSheetModalProvider>
             <ThemeProvider value={DefaultTheme}>

@@ -199,9 +199,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Ensure these are installed: npx expo install expo-blur react-native-reanimated
 import { BlurView } from 'expo-blur';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
 } from 'react-native-reanimated';
 import CustomButton from '@/components/CustomButton';
 import { router } from 'expo-router';
@@ -314,8 +314,10 @@ export default function OnboardingScreen() {
                     {/* Logo Section */}
                     <View className='flex-row items-center justify-center'>
                       {/* Added a white tint to logo for better visibility */}
-                      <Image source={require('@/assets/images/logo.png')} style={{ width: 80, height: 80, tintColor: 'white' }} resizeMode='contain' />
-                      <Text className='text-3xl text-white font-firabold'>Dazzzle</Text>
+                      <Image source={require('@/assets/images/logo.png')} style={{ width: 72, height: 72, tintColor: 'white' }} resizeMode='contain' />
+                      <Text className='text-5xl text-white' style={{
+                        fontFamily: "LilitaOne_400Regular",
+                      }}>dazzzle</Text>
                     </View>
 
                     <View>

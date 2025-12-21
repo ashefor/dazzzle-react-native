@@ -53,8 +53,8 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut, goToNex
             show();
             const data: any = await axiosRequest.post('/user-process-interest-type-update-profile', { interest: selectedInterests });
             if (data.reaction === ReactionCodes.SUCCESS) {
-                // bottomSheetModalRef.current?.present();
-                goToNextPage?.();
+                bottomSheetModalRef.current?.present();
+                // goToNextPage?.();
             }
             hide();
         } catch (error: any) {

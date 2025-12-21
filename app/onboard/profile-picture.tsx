@@ -108,7 +108,7 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
                         <CustomButton title='Next' handlePress={submit} />
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <TouchableOpacity onPress={() => handleLogOut()}>
-                                <Text className='text-sm text-tertiary font-firaregular underline'>Log Out</Text>
+                                <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
                             </TouchableOpacity>
                         </View>
                     </YStack>

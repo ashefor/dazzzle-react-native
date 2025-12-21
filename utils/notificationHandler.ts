@@ -6,6 +6,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Alert, Platform } from 'react-native';
 import axiosRequest from './axios'; // Import the API handler
+import { Href, router } from 'expo-router';
 
 type IncomingPayload = {
   messageId: number | string;
@@ -40,7 +41,7 @@ export async function registerForPushNotificationsAsync() {
 
   if (!Device.isDevice) {
     Alert.alert('Physical Device Required', 'Must use physical device for Push Notifications');
-    console.log('Must use physical device for Push Notifications');
+    console.error('Must use physical device for Push Notifications');
     return;
   }
 
@@ -53,7 +54,7 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
+    console.error('Failed to get push token for push notification!');
     return;
   }
 
@@ -68,6 +69,7 @@ export async function registerForPushNotificationsAsync() {
     })).data;
 
     console.log('Expo Push Token:', token);
+    Alert.alert('Push Notification Token', JSON.stringify(token));
 
     // Send token to backend
     await axiosRequest.notifications.registerToken(token);
@@ -123,11 +125,33 @@ export function registerNotificationListeners(
     navigateToChat(data.user_id);
   };
 
-  const responseListener = Notifications.addNotificationResponseReceivedListener(onClick);
-  const receivedListener = Notifications.addNotificationReceivedListener(onReceive);
+  const responseSubscription = Notifications.addNotificationResponseReceivedListener(onClick);
+  const receivedSubscription = Notifications.addNotificationReceivedListener(onReceive);
 
   return () => {
-    Notifications.removeNotificationSubscription(responseListener);
-    Notifications.removeNotificationSubscription(receivedListener);
+    responseSubscription.remove();
+    receivedSubscription.remove();
   };
 }
+
+/**
+ * Checks for notification permissions.
+ * - If granted: Registers the token and navigates to the success destination.
+ * - If denied: Navigates to the permissions page.
+ * * @param successDestination Where to go if permission is granted (default: '/(tabs)')
+ * @param failureDestination Where to go if permission is denied (default: '/app-permissions')
+ */
+export const handlePermissionNavigation = async (
+  successDestination: Href = '/(tabs)', 
+  failureDestination: Href = '/app-permissions'
+) => {
+  const { status: notifStatus } = await Notifications.getPermissionsAsync();
+  const isGranted = notifStatus === Notifications.PermissionStatus.GRANTED;
+
+  if (isGranted) {
+      await registerForPushNotificationsAsync();
+      router.replace(successDestination);
+  } else {
+      router.replace(failureDestination);
+  }
+};

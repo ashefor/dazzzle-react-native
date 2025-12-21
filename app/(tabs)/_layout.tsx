@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
 import { HapticTab } from '@/components/HapticTab';
 import LikeTabIcon from '@/components/LikeTabIcon';
 import HomeTabIcon from '@/components/HomeTabIcon';
@@ -7,15 +7,40 @@ import ProfileTabIcon from '@/components/ProfileTabIcon';
 import MessagesTabIcon from '@/components/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
 import { Text } from 'react-native';
+import { registerNotificationListeners } from '@/utils/notificationHandler';
+import { useAppDispatch } from '@/hooks/reduxHooks';
+import { store } from '@/redux/store';
 
 export default function TabLayout() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  useEffect(() => {
+    // Register listeners for incoming messages
+    const cleanUp = registerNotificationListeners(
+      store.dispatch,
+      store.getState,
+      (userId) => router.push(`/single-chat/${userId}`)
+    );
+
+    return () => {
+      cleanUp();
+    };
+  }, [dispatch]);
+
+  // useEffect(() => {
+  //    const init = async () => {
+  //     // // Register for Push Token on app launch
+  //     await registerForPushNotificationsAsync();
+  //   };
+  //   init();
+  // }, []);
 
   return (
     <Tabs
-    initialRouteName='discover'
+      initialRouteName='discover'
       screenOptions={{
         // tabBarActiveTintColor: '#DD3FE5',
-         headerShown: false,
+        headerShown: false,
         tabBarStyle: {
           // backgroundColor: '#1A1A1A',
         },
@@ -47,7 +72,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ color, focused }) => <HomeTabIcon focused={focused} />,
-          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Discover</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Discover</Text>
         }}
       />
       <Tabs.Screen
@@ -55,7 +80,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, focused }) => <SearchTabIcon focused={focused} />,
-          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Search</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Search</Text>
         }}
       />
       <Tabs.Screen
@@ -63,7 +88,7 @@ export default function TabLayout() {
         options={{
           title: 'Likes',
           tabBarIcon: ({ color, focused }) => <LikeTabIcon focused={focused} />,
-          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Likes</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Likes</Text>
         }}
       />
       <Tabs.Screen
@@ -71,7 +96,7 @@ export default function TabLayout() {
         options={{
           title: 'Chats',
           tabBarIcon: ({ color, focused }) => <MessagesTabIcon focused={focused} />,
-          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Chats</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Chats</Text>
         }}
       />
       <Tabs.Screen
@@ -79,7 +104,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ focused }) => <ProfileTabIcon focused={focused} />,
-          tabBarLabel: ({focused}) => <Text className='text-xs' style={{color: focused ? '#DD3FE5' : '#333'}}>Profile</Text>
+          tabBarLabel: ({ focused }) => <Text className='text-xs' style={{ color: focused ? '#DD3FE5' : '#333' }}>Profile</Text>
         }}
       />
     </Tabs>

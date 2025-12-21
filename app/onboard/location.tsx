@@ -1,4 +1,4 @@
-import { Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router } from 'expo-router'
 import CustomButton from '@/components/CustomButton'
@@ -60,7 +60,6 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
         setLoading(true);
         findPlaceFromText(searchText, []).then((res: PlaceAutocompletePrediction[] | []) => {
             setLoading(false);
-            console.log(res.length)
             setSearchResults(res || [])
         })
     }, [searchText])
@@ -146,6 +145,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
             <ScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
                 <View className="relative z-50 w-full">
                     <FormField
+                    showCustomError={false}
                         title=''
                         value={searchText}
                         secureTextEntry={false}
@@ -173,14 +173,10 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                                     <Text className='text-sm text-gray-500 font-firaregular'>Loading...</Text>
                                 </View>
                             ) : (
-                                <FlatList
-                                    data={searchResults}
-                                    keyExtractor={(item, index) => index.toString()}
-                                    keyboardShouldPersistTaps="handled"
-                                    nestedScrollEnabled={true}
-                                    showsVerticalScrollIndicator={true}
-                                    renderItem={({ item }) => (
+                                <ScrollView>
+                                    {searchResults.map((item, index) => (
                                         <TouchableOpacity
+                                        key={index.toString()}
                                             onPress={() => {
                                                 setSearchText(item.description);
                                                 setShowOptions(false);
@@ -197,8 +193,34 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
-                                    )}
-                                />
+                                    ))}
+                                    </ScrollView>
+                                // <FlatList
+                                //     data={searchResults}
+                                //     keyExtractor={(item, index) => index.toString()}
+                                //     keyboardShouldPersistTaps="handled"
+                                //     nestedScrollEnabled={true}
+                                //     showsVerticalScrollIndicator={true}
+                                //     renderItem={({ item }) => (
+                                //         <TouchableOpacity
+                                //             onPress={() => {
+                                //                 setSearchText(item.description);
+                                //                 setShowOptions(false);
+                                //                 fetchLocationFromPlacesApi(item.place_id)
+                                //             }}
+                                //             className="active:bg-gray-100"
+                                //         >
+                                //             <View className='p-4 border-b border-gray-100'>
+                                //                 <Text
+                                //                     numberOfLines={1}
+                                //                     className='font-ps_regular text-[14px] text-black'
+                                //                 >
+                                //                     {item.description}
+                                //                 </Text>
+                                //             </View>
+                                //         </TouchableOpacity>
+                                //     )}
+                                // />
                             )}
                         </View>
                     )}
