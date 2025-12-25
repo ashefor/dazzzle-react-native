@@ -33,7 +33,6 @@ export default function ChatsScreen() {
 
     const renderItem = ({ item }: { item: MessengerUser & { unreadCount?: number } }) => (
         <TouchableOpacity style={styles.row} onPress={() => {
-            console.log(item);
             router.navigate({
                 pathname: '/single-chat/[userId]',
                 params: { userId: item.user_id.toString() },

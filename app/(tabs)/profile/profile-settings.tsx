@@ -36,7 +36,7 @@ const PhotoGridSection = () => {
                 <Text className="font-bold text-lg px-4 py-4 text-black">Photos</Text>
                 <View className="flex-row flex-wrap justify-between px-4">
                     {Array(6).fill(0).map(() => (
-                        <View className="w-[31%] aspect-square mb-3 bg-gray-100 rounded-xl items-center justify-center border border-gray-200 overflow-hidden relative">
+                        <View key={Math.random()} className="w-[31%] aspect-square mb-3 bg-gray-100 rounded-xl items-center justify-center border border-gray-200 overflow-hidden relative">
                             <Skeleton style={{ width: '100%', height: '100%', borderRadius: 12 }} />
                         </View>
                     ))}

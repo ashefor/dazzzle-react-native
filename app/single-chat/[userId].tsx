@@ -19,7 +19,8 @@ import {
   TouchableOpacity,
   Image,
   Platform, Alert,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  Modal, Dimensions
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import axiosRequest from '@/utils/axios';
@@ -28,6 +29,7 @@ import { useLoader } from '@/context/loader/LoaderProvider';
 import ChatRoomSkeleton from '@/components/ChatRoomSkeleton';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { UserConversation } from '@/models/chat';
+import { Ionicons } from '@expo/vector-icons';
 
 type MessageItemProps = {
   item: {
@@ -298,8 +300,11 @@ const MessageItem = ({ item, styles, userId }: MessageItemProps) => {
   const {show, hide} = useLoader();
   const isMine = !item.is_message_received;
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const isText = String(item.type) === '1';
 
+  const closeModal = () => setIsModalOpen(false);
+  const openModal = () => item.type == "1" ? null: setIsModalOpen(true)
   const showDeleteConfirmation = () => {
     // Implement delete confirmation logic if needed
     const alertMessage = isText ? `Are you sure you want to delete this message?\n\n"${item.message}"` : 'Are you sure you want to delete this image message?';
@@ -331,8 +336,9 @@ const MessageItem = ({ item, styles, userId }: MessageItemProps) => {
   }
 
   return (
+    <>
     <View style={[styles.msgContainer, isMine ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }]}>
-      <TouchableOpacity onLongPress={showDeleteConfirmation}>
+      <TouchableOpacity onPress={openModal} onLongPress={showDeleteConfirmation}>
         <View style={[styles.msgBubble, isMine ? styles.msgMine : styles.msgTheirs]}>
         {isText ? (
           <Text style={[styles.msgText, isMine ? styles.msgTextMine : styles.msgTextTheirs]}>
@@ -355,6 +361,21 @@ const MessageItem = ({ item, styles, userId }: MessageItemProps) => {
       </TouchableOpacity>
       <Text style={styles.msgTime}>{item.created_on}</Text>
     </View>
+      <Modal
+        visible={isModalOpen}
+        animationType="fade"
+        onRequestClose={closeModal}
+      >
+        <View className='flex-1'>
+            <NavBar leftItem={<TouchableOpacity onPress={closeModal} className=' flex items-center justify-center'>
+              <Ionicons name="close-circle" size={24} color="black" />
+            </TouchableOpacity>} title={'View Image'}/>
+            <View className='flex-1 justify-center items-center p-6'>
+              <Image source={{ uri: item.message }} style={{ resizeMode: 'contain', width: '100%', height: '100%', maxHeight: Dimensions.get('screen').height * 0.9, maxWidth: Dimensions.get('screen').width * 0.9, margin: 'auto' }} />
+            </View>
+          </View>
+      </Modal>
+    </>
   );
 }
 

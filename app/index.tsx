@@ -1,17 +1,102 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAppConfig } from '@/redux/thunks/appActions';
 import { fetchAuthenticatedUser, signUserOut } from "@/redux/thunks/authActions";
 import dayjs from 'dayjs';
 import { handlePermissionNavigation } from '@/utils/notificationHandler';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, FadeIn } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+
+// --- COMPONENTS FOR UI STATES ---
+
+// 1. Fancy Loading Screen (Pulsing Logo)
+const LoadingScreen = ({ message = "Loading..." }: { message?: string }) => {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0.5);
+
+  useEffect(() => {
+    scale.value = withRepeat(withTiming(1.1, { duration: 1200 }), -1, true);
+    opacity.value = withRepeat(withTiming(1, { duration: 1200 }), -1, true);
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <View className="flex-1 bg-white">
+      <LinearGradient
+        // Subtle pink gradient from top-left
+        colors={['#FFF0FC', '#FFFFFF', '#FFFFFF']}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Animated.View style={animatedStyle} className="items-center justify-center">
+          <Image 
+            source={require('@/assets/images/logo.png')} 
+            style={{ width: 80, height: 80, tintColor: '#DD3FE5' }} 
+            resizeMode='contain' 
+          />
+        </Animated.View>
+        
+        <View className="mt-6 items-center space-y-2">
+          <Text className='text-4xl text-primary' style={{ fontFamily: "LilitaOne_400Regular" }}>
+            dazzzle
+          </Text>
+          <Text className="text-gray-400 font-firamedium text-xs tracking-widest uppercase">
+            {message}
+          </Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+};
+
+// 2. Fancy Error Screen
+const ErrorScreen = ({ error, onRetry }: { error: string, onRetry: () => void }) => (
+  <View className="flex-1 bg-white">
+    <LinearGradient
+      colors={['#FFF5F5', '#FFFFFF']}
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 }}
+    >
+      <Animated.View entering={FadeIn.duration(500)} className="items-center">
+        <View className="bg-red-50 p-6 rounded-full mb-6">
+          <Ionicons name="cloud-offline-outline" size={48} color="#EF4444" />
+        </View>
+        
+        <Text className="text-xl font-firabold text-gray-800 mb-2">
+          Connection Issue
+        </Text>
+        
+        <Text className="text-gray-500 text-center font-firaregular mb-8 leading-5">
+          We couldn't load the app configuration. Please check your internet and try again.
+          {'\n'}({error})
+        </Text>
+
+        <TouchableOpacity 
+          onPress={onRetry} 
+          activeOpacity={0.8}
+          className="bg-primary px-8 py-3 rounded-full shadow-sm shadow-purple-300"
+        >
+          <Text className="text-white font-firamedium text-sm">Try Again</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </LinearGradient>
+  </View>
+);
+
+// --- MAIN SCREEN LOGIC ---
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   
-  // --- 1. HOOKS & STATE (Always declare these first) ---
+  // --- STATE ---
   const { loading: configLoading, appConfig, error: configError } = useAppSelector(state => state.app);
   const { 
     userInfo, 
@@ -24,7 +109,6 @@ export default function HomeScreen() {
 
   const [isCheckingPermissions, setIsCheckingPermissions] = useState(false);
 
-  // --- 2. DERIVED STATE (Calculations) ---
   const isInitializing = configLoading || loadingUser;
 
   const checkSubscriptionStatus = () => {
@@ -37,9 +121,8 @@ export default function HomeScreen() {
 
   const isSubActive = checkSubscriptionStatus();
 
-  // --- 3. EFFECTS (Must run before any return statements) ---
+  // --- EFFECTS ---
 
-  // Effect A: Fetch Data
   useEffect(() => {
     dispatch(fetchAppConfig());
     if (userToken) {
@@ -47,35 +130,26 @@ export default function HomeScreen() {
     }
   }, [dispatch, userToken]);
 
-  // Effect B: Handle Auth Errors
   useEffect(() => {
     if (authError) {
         dispatch(signUserOut());
     }
   }, [authError, dispatch]);
 
-  // Effect C: Routing Logic (Permission & Subscription)
   useEffect(() => {
-      // Only attempt routing if we are fully ready:
-      // 1. Not initializing
-      // 2. Have config
-      // 3. Have user & token
-      // 4. Profile is completed
-      // 5. Not already checking permissions
       const isReadyForRouting = !isInitializing && appConfig && userToken && userInfo && isProfileCompleted && !isCheckingPermissions;
 
       if (!isReadyForRouting) return;
 
       const performRouting = async () => {
+          // Add a small artificial delay so the user sees the branding 
+          // instead of a flicker if data loads instantly.
+          await new Promise(resolve => setTimeout(resolve, 800));
+
           if (isSubActive) {
               setIsCheckingPermissions(true);
-              // Use the helper: 
-              // - Checks Permission
-              // - If Granted -> Register Token -> router.replace('/(tabs)')
-              // - If Denied -> router.replace('/permissions')
               await handlePermissionNavigation('/(tabs)', '/permissions'); 
           } else {
-              // No sub -> Paywall
               router.replace('./paywall');
           }
       };
@@ -85,33 +159,20 @@ export default function HomeScreen() {
   }, [isInitializing, appConfig, userToken, userInfo, isProfileCompleted, isSubActive, isCheckingPermissions]);
 
 
-  // --- 4. RENDER (Early returns allowed here) ---
+  // --- RENDER ---
 
-  // A. Initialization / Loading
-  if (isInitializing) {
-    return (
-      <View className='bg-white flex items-center justify-center flex-1'>
-        <View className='flex-row items-center justify-center mb-6'>
-          <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
-          <Text className='text-3xl text-primary' style={{
-            fontFamily: "LilitaOne_400Regular",
-          }}>dazzzle</Text>
-        </View>
-        <ActivityIndicator size="large" color="#DD3FE5" className="mt-4" />
-      </View>
-    );
+  // A. Initialization / Loading / Permission Checking
+  if (isInitializing || isCheckingPermissions || (userInfo && isProfileCompleted && !appConfig)) {
+    return <LoadingScreen message={isCheckingPermissions ? "VERIFYING ACCESS..." : "STARTING UP..."} />;
   }
 
   // B. Config Error
   if (!appConfig) {
     return (
-      <View className='h-full flex items-center justify-center p-5 bg-white'>
-        <Text className=' text-primary text-base font-semibold'>Unable to load settings</Text>
-        <Text className=' text-primary'> {configError || ''}</Text>
-        <TouchableOpacity onPress={() => dispatch(fetchAppConfig())} className='rounded-[26px] px-5 h-10 mt-7 bg-primary flex items-center justify-center'>
-            <Text className='text-sma font-firamedium text-white'>Try again</Text>
-        </TouchableOpacity>
-      </View>
+      <ErrorScreen 
+        error={configError || 'Unknown Error'} 
+        onRetry={() => dispatch(fetchAppConfig())} 
+      />
     );
   }
 
@@ -120,32 +181,16 @@ export default function HomeScreen() {
     return <Redirect href="./landing" />;
   }
 
-  // D. Waiting for User Data (Edge case safety)
+  // D. Waiting for User Data (Safety Fallback)
   if (!userInfo) {
-     return (
-          <View className='bg-white flex items-center justify-center flex-1'>
-        <ActivityIndicator size="large" />
-        </View>
-     );
+     return <LoadingScreen message="FETCHING PROFILE..." />;
   }
 
   // E. Profile Incomplete
   if (!isProfileCompleted) {
-    return <Redirect href="./onboard/bio-data" />;
+    return <Redirect href="./onboard" />;
   }
 
-  // F. Final Loading State
-  // If we reached here, the Effect C is running or we are checking permissions.
-  // Show the loader to prevent a blank white screen.
-  return (
-      <View className='bg-white flex items-center justify-center flex-1'>
-        <View className='flex-row items-center justify-center mb-6'>
-          <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
-          <Text className='text-3xl text-primary' style={{
-            fontFamily: "LilitaOne_400Regular",
-          }}>dazzzle</Text>
-        </View>
-        <ActivityIndicator size="large" color="#DD3FE5" className="mt-4" />
-      </View>
-  );
+  // F. Final Catch-all (Should generally trigger the LoadingScreen via isCheckingPermissions)
+  return <LoadingScreen />;
 }

@@ -195,20 +195,45 @@ const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
 };
 
 const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [item, setItem] = useState<{ image_url: string } | null>(null);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setItem(null);
+  };
+  const openModal = (item: { image_url: string }) => {
+    setItem(item);
+    setIsModalOpen(true);
+  };
     return (
-        <View className='mx-4'>
-            {
-                photos.length === 0 ? (
-                    <Text style={styles.bodyText}>No photos available.</Text>
-                ) : (
-                    <View style={[styles.photoGrid]}>
-                        {photos.map((photo, index) => (
+        <><View className='mx-4'>
+            {photos.length === 0 ? (
+                <Text style={styles.bodyText}>No photos available.</Text>
+            ) : (
+                <View style={[styles.photoGrid]}>
+                    {photos.map((photo, index) => (
+                        <TouchableWithoutFeedback onPress={() => openModal(photo)} key={`${photo.image_url}_${index}`}>
                             <Image key={index} source={{ uri: photo.image_url }} style={styles.gridPhoto} />
-                        ))}
-                    </View>
-                )
-            }
+                        </TouchableWithoutFeedback>
+                    ))}
+                </View>
+            )}
         </View>
+        <Modal
+            visible={isModalOpen}
+            animationType="fade"
+            onRequestClose={closeModal}
+        >
+                <View className='flex-1'>
+                    <NavBar leftItem={<TouchableOpacity onPress={closeModal} className=' flex items-center justify-center'>
+                        <Ionicons name="close-circle" size={24} color="black" />
+                    </TouchableOpacity>} title={'View Image'} />
+                    <View className='flex-1 justify-center items-center p-6'>
+                        <Image source={{ uri: item?.image_url }} style={{ resizeMode: 'contain', width: '100%', height: '100%', maxHeight: Dimensions.get('screen').height * 0.9, maxWidth: Dimensions.get('screen').width * 0.9, margin: 'auto' }} />
+                    </View>
+                </View>
+            </Modal>
+            </>
     )
 }
 
