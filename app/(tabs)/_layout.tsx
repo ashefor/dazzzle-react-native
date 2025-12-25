@@ -1,39 +1,84 @@
 import { Tabs, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { HapticTab } from '@/components/HapticTab';
-import LikeTabIcon from '@/components/LikeTabIcon';
-import HomeTabIcon from '@/components/HomeTabIcon';
+import LikeTabIcon from '@/components/icons/LikeTabIcon';
+import HomeTabIcon from '@/components/icons/HomeTabIcon';
 import ProfileTabIcon from '@/components/ProfileTabIcon';
-import MessagesTabIcon from '@/components/MessagesTabIcon';
+import MessagesTabIcon from '@/components/icons/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
 import { Text } from 'react-native';
-import { registerNotificationListeners } from '@/utils/notificationHandler';
+// import { registerNotificationListeners } from '@/utils/notificationHandler';
 import { useAppDispatch } from '@/hooks/reduxHooks';
-import { store } from '@/redux/store';
+import { DeviceEventEmitter } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
 export default function TabLayout() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  useEffect(() => {
-    // Register listeners for incoming messages
-    const cleanUp = registerNotificationListeners(
-      store.dispatch,
-      store.getState,
-      (userId) => router.push(`/single-chat/${userId}`)
-    );
 
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+const responseListener = useRef<Notifications.EventSubscription | null>(null);
+// const navigation = useNavigation();
+
+const registerNotificationListeners = () => {
+    // 1. Listener for when a notification arrives while app is in FOREGROUND
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    const data = notification.request.content.data;
+
+    // Check if it is a chat message
+    if (data && (data.type === "1" || data.type == "2")) {
+        // Emit an event called 'onNewMessage' and pass the data
+        DeviceEventEmitter.emit('onNewMessage', data);
+    }
+});
+    
+
+    // 2. Listener for when user TAPS the notification (Background or Killed state)
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        const data = response.notification.request.content.data;
+        
+        console.log("Notification Interaction Payload:", data);
+
+        // Handle Chat Message Notification (Type "1")
+        if (data && (data.type === "1" || data.type == "2")) {
+            const { userId, receiverChatUid, userUid } = data;
+
+            // Navigate to your Chat Screen
+            // Make sure to match the route name ('Chat' or 'Conversation') defined in your app
+            
+            // OPTION A: If using Expo Router
+            router.push({
+                pathname: "/single-chat/[userId]", // Update this to your actual chat route path
+                params: { 
+                    userId: userId as string, // The user_id to fetch chats from (as requested)
+                }
+            });
+
+            // OPTION B: If using standard React Navigation
+            /*
+            navigation.navigate('Chat', {
+                id: userId,
+                chatId: receiverChatUid,
+                senderId: userUid
+            });
+            */
+        }
+    });
+};
+
+useEffect(() => {
+    registerNotificationListeners();
+
+    // Clean up listeners when component unmounts
     return () => {
-      cleanUp();
+        if (notificationListener.current) {
+            notificationListener.current.remove();
+        }
+        if (responseListener.current) {
+            responseListener.current.remove();
+        }
     };
-  }, [dispatch]);
-
-  // useEffect(() => {
-  //    const init = async () => {
-  //     // // Register for Push Token on app launch
-  //     await registerForPushNotificationsAsync();
-  //   };
-  //   init();
-  // }, []);
+}, []);
 
   return (
     <Tabs
@@ -55,12 +100,6 @@ export default function TabLayout() {
         // }
       }}
     >
-      <Tabs.Screen
-        name="encounter"
-        options={{
-          href: null,
-        }}
-      />
       <Tabs.Screen
         name="index"
         options={{

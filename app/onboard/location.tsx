@@ -145,7 +145,6 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
             <ScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
                 <View className="relative z-50 w-full">
                     <FormField
-                    showCustomError={false}
                         title=''
                         value={searchText}
                         secureTextEntry={false}

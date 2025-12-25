@@ -1,113 +1,114 @@
 import { NativeSyntheticEvent, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Animated from 'react-native-reanimated';
-
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
   title: string;
-  leftIcon?: React.ReactElement | null;
+  value: string;
+  // New prop: we explicitly ask if the field has been touched
+  touched?: boolean;
+  // If this string exists, we assume there is an error
+  errorMessage?: string | null; 
   secureTextEntry?: boolean;
-  errorMessage?: string | null;
-  showCustomError?: boolean;
-  containerStyle?: StyleProp<ViewStyle> | undefined;
-  inputStyle?: StyleProp<TextStyle> | undefined;
-  labelStyle?: StyleProp<TextStyle> | undefined;
-  value: string, isValid?: boolean,
-  showErrorIcon?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  editable?: boolean;
 }
-
 
 const FormField: React.FC<CustomTextInputProps> = ({
   title,
-  leftIcon,
   onChangeText,
   secureTextEntry = false,
-  placeholder,
   containerStyle,
-  inputStyle,
-  labelStyle,
-  showCustomError,
   errorMessage,
   onBlur,
   value,
-  isValid,
-  editable,
-  showErrorIcon,
+  touched = false, // Default to false
+  editable = true,
   ...restProps
 }) => {
-  const [isTouched, setIsTouched] = React.useState<boolean>(false);
   const [isSecureTextEntry, setIsSecureTextEntry] = React.useState<boolean>(true);
   const [isFocused, setIsFocused] = React.useState(false);
+
+  // Derived state: An error exists if the field has been touched AND there is an error message
+  const hasError = touched && !!errorMessage;
 
   const labelColor = "#333";
 
   function getBorderColor() {
-    if (!isTouched) return "#cccccc80";
+    if (hasError) return '#8E1F0B';
     if (isFocused) return "#DD3FE5";
-    return showError() ? '#8E1F0B' : "#cccccc80";
+    return "#cccccc80";
   }
 
   function getLabelColor() {
-    if (!isTouched) return labelColor;
+    if (hasError) return '#8E1F0B';
     if (isFocused) return "#DD3FE5";
-    return showError() ? '#8E1F0B' : labelColor;
-  }
-
-  function getTextColor() {
-    if (!isTouched) return "#303030";
-    return showError() ? '#8E1F0B' : "#303030";
-  }
-
-  function showError() {
-    return showCustomError != undefined ? showCustomError && isTouched : (!isValid) && isTouched;
+    return labelColor;
   }
 
   const handleFocus = () => setIsFocused(true);
 
   const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-    setIsTouched(true);
     setIsFocused(false);
+    // Directly call the parent's onBlur (Formik's handleBlur)
     onBlur && onBlur(e);
   };
 
   return (
-    <View className=' space-y-1'>
-      <View className={`w-full space-y-2 ${containerStyle} ${editable ? '': 'opacity-80'}`}>
-        {title && <Text className="text-black text-sm font-firamedium" style={{ color: getLabelColor() }}>{title}</Text>}
-        <View className='border h-14 w-full px-4 bg-[#F2F2F7] rounded-xl focus:border-primary items-center flex-row' style={{ borderColor: getBorderColor() }}>
+    <View className='space-y-1'>
+      <View className={`w-full space-y-2 ${containerStyle} ${editable ? '' : 'opacity-80'}`}>
+        {title && (
+          <Text 
+            className="text-black text-sm font-firamedium" 
+            style={{ color: getLabelColor() }}
+          >
+            {title}
+          </Text>
+        )}
+        
+        <View 
+          className='border h-14 w-full px-4 bg-[#F2F2F7] rounded-xl items-center flex-row' 
+          style={{ borderColor: getBorderColor() }}
+        >
           <TextInput
-            // style={{ lineHeight: Platform.OS == 'ios' ? 0 : undefined }}
             className='flex-1 h-full font-firaregular text-black text-sm'
             value={value}
             onChangeText={onChangeText}
             onBlur={handleBlur}
             onFocus={handleFocus}
-            autoComplete='off'
-            autoCorrect={false}
-            autoCapitalize="none"
-            importantForAutofill='no'
+            editable={editable}
             placeholderTextColor={"#5B5B5B3A"}
             selectionColor={'#DD3FE5'}
             secureTextEntry={secureTextEntry && isSecureTextEntry}
+            autoCapitalize="none"
             {...restProps}
           />
-          {(secureTextEntry) && (
+          
+          {secureTextEntry && (
             <TouchableOpacity onPress={() => setIsSecureTextEntry(!isSecureTextEntry)}>
-              <Ionicons name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} size={20} color="black" />
+              <Ionicons 
+                name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} 
+                size={20} 
+                color="black" 
+              />
             </TouchableOpacity>
           )}
         </View>
       </View>
-      {showError() && (
-        <Animated.View className='flex-row gap-x-2 items-center'>
+
+      {/* Only show error if hasError is true */}
+      {hasError && (
+        <Animated.View entering={FadeIn} className='flex-row gap-x-2 items-center'>
           <Text className='text-xs text-red-500 font-firaregular'>
-            {errorMessage ? errorMessage : 'Invalid input'}
+            {errorMessage}
           </Text>
         </Animated.View>
       )}
     </View>
-  )
-}
+  );
+};
 
-export default FormField
+export default FormField;

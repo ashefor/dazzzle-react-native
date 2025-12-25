@@ -13,14 +13,12 @@ import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { initializeStorePromise, store } from '@/redux/store';
 import { LoaderProvider } from '@/context/loader/LoaderProvider';
-import { StatusBar } from 'react-native';
 
 import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import NavigationStack from '@/components/NavigationStack';
-import { SystemBars } from "react-native-edge-to-edge";
 
 
 
@@ -79,12 +77,12 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-         <StatusBar barStyle={'dark-content'} translucent/>
+         {/* <StatusBar barStyle={'dark-content'} translucent/> */}
       <GestureHandlerRootView style={{
         flex: 1,
       }}>
         <ToastWrapper />
-        <SystemBars style="dark" />
+        {/* <SystemBars style="dark" /> */}
        <BottomSheetModalProvider>
             <ThemeProvider value={DefaultTheme}>
               <LoaderProvider>

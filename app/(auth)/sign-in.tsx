@@ -45,57 +45,67 @@ const SignIn = () => {
                 <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
                     <View className='w-full h-full py-16 justify-between'>
                         <Formik
-                            initialValues={{ password: '', email_or_username: '' }}
-                            onSubmit={logUserIn}
-                            enableReinitialize
-                            validationSchema={signInValidationSchema}
-                        >
-                            {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => {
-                                return (
-                                    <View className='flex-1 '>
-                                        <View>
-                                            <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                            <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
-                                            <Text className='text-sm text-black font-firamedium mt-3'>Join our community and experience seamlessness finding a soulmate. </Text>
-                                        </View>
-                                        <View className='my-5 space-y-3'>
-                                            <View>
-                                                <FormField
-                                                editable={!loading}
-                                                title="Username"
-                                                placeholder='Enter username'
-                                                onChangeText={handleChange('email_or_username')}
-                                                onBlur={handleBlur('email_or_username')}
-                                                showCustomError={errors.email_or_username ? true : false}
-                                                errorMessage={errors.email_or_username}
-                                                value={values.email_or_username}
-                                            />
-                                            </View>
-                                            <View>
-                                                <FormField
-                                                title="Password"
-                                                editable={!loading}
-                                                placeholder='Enter password'
-                                                onChangeText={handleChange('password')}
-                                                onBlur={handleBlur('password')}
-                                                secureTextEntry
-                                                showCustomError={errors.password ? true : false}
-                                                value={values.password}
-                                                errorMessage={errors.password}
-                                            />
-                                            </View>
+  initialValues={{ password: '', email_or_username: '' }}
+  onSubmit={logUserIn}
+  // Remove enableReinitialize unless you strictly need it (it can cause flickers)
+  validationSchema={signInValidationSchema}
+>
+  {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => {
+    return (
+      <View className='flex-1'>
+        <View>
+          <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
+          <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Sign In</Text>
+          <Text className='text-sm text-black font-firamedium mt-3'>Join our community...</Text>
+        </View>
 
-                                        </View>
-                                        <View className='mt-auto'>
-                                            <CustomButton disabled={loading || !isValid} title={loading ? 'Loading...' : 'Sign In'} handlePress={handleSubmit} />
-                                        </View>
+        <View className='my-5 space-y-3'>
+          <View>
+            <FormField
+              title="Username"
+              placeholder='Enter username'
+              value={values.email_or_username}
+              editable={!loading}
+              
+              // 1. Pass Formik handlers directly
+              onChangeText={handleChange('email_or_username')}
+              onBlur={handleBlur('email_or_username')}
+              
+              // 2. Pass Error and Touched status directly
+              errorMessage={errors.email_or_username}
+              touched={touched.email_or_username}
+            />
+          </View>
+          <View>
+            <FormField
+              title="Password"
+              placeholder='Enter password'
+              value={values.password}
+              editable={!loading}
+              secureTextEntry
+              
+              // 1. Pass Formik handlers directly
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+              
+              // 2. Pass Error and Touched status directly
+              errorMessage={errors.password}
+              touched={touched.password}
+            />
+          </View>
+        </View>
 
-                                    </View>
-                                )
-                            }}
-
-
-                        </Formik>
+        <View className='mt-auto'>
+          <CustomButton 
+            disabled={loading || !isValid} 
+            title={loading ? 'Loading...' : 'Sign In'} 
+            handlePress={handleSubmit} 
+          />
+        </View>
+      </View>
+    )
+  }}
+</Formik>
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <Text className='text-sm text-black font-firaregular'>Don't have an account?</Text>
                             <TouchableOpacity onPress={() => router.replace('/(auth)/sign-up')}>

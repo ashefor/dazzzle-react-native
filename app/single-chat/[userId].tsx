@@ -4,7 +4,7 @@ import SendIcon from '@/components/icons/SendIcon';
 import NavBar from '@/components/NavBar';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { markChatAsRead } from '@/redux/slices/chatsSlice';
-import { deleteMessage, fetchMessages, sendMessage, setActiveUserId, startUpdateLoading, stopUpdateLoading } from '@/redux/slices/messagesSlice';
+import { addNewMessage, deleteMessage, fetchMessages, sendMessage, setActiveUserId, startUpdateLoading, stopUpdateLoading } from '@/redux/slices/messagesSlice';
 import { getRandomUniqueId } from '@/utils/helpers';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Fragment, useEffect, useMemo, useState } from 'react';
@@ -18,7 +18,8 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Platform, Alert
+  Platform, Alert,
+  DeviceEventEmitter
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import axiosRequest from '@/utils/axios';
@@ -26,6 +27,7 @@ import { ReactionCodes } from '@/models/general';
 import { useLoader } from '@/context/loader/LoaderProvider';
 import ChatRoomSkeleton from '@/components/ChatRoomSkeleton';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { UserConversation } from '@/models/chat';
 
 type MessageItemProps = {
   item: {
@@ -69,6 +71,41 @@ export default function ChatRoomScreen() {
       dispatch(setActiveUserId(undefined));
     };
   }, [userId, dispatch]);
+
+  useEffect(() => {
+        // Subscribe to the event we created in Step 1
+        const messageListener = DeviceEventEmitter.addListener('onNewMessage', (payload) => {
+            
+            // CRITICAL: Check if the notification belongs to THIS conversation
+            // We use '==' to handle string/number mismatches (e.g. "3239" vs 3239)
+            if (payload.userId == userId) {
+                
+                // 1. Format the payload to match your chat UI's message structure
+                const newMessage: UserConversation = {
+                  message: payload.message,
+                  is_message_received: true,
+                  created_on: payload.createdOn,
+                  chat_id: +userId,
+                  type: payload.type,
+                  optionalLoggedInUserId: meta.userData.optionalLoggedInUserId,
+                  message_from: '',
+                  message_from_username: meta.userData.message_from_username,
+                  message_to: ''
+                };
+
+                // 2. Update the UI instantly
+                // setMessages(previousMessages => [newMessage, ...previousMessages]);
+                dispatch(addNewMessage({user_id: +userId, message: newMessage}))
+                
+                // Optional: Play a simplified "pop" sound since we aren't showing the notification banner
+            }
+        });
+
+        // Cleanup: Unsubscribe when the user leaves this screen
+        return () => {
+            messageListener.remove();
+        };
+    }, [userId]);
 
   // const pickImage = async () => {
   //   try {

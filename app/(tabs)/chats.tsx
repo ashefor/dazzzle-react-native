@@ -8,18 +8,19 @@ import NavBar from '@/components/NavBar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChatListsSkeleton from '@/components/ChatListsSkeleton';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function ChatsScreen() {
     const dispatch = useAppDispatch();
     const insets = useSafeAreaInsets();
-
+    const isFocused = useIsFocused()
     const { items, loading } = useAppSelector((state => state.chats));
 
     const [search, setSearch] = useState('');
 
     useEffect(() => {
         dispatch(fetchChats());
-    }, [dispatch]);
+    }, [dispatch, isFocused]);
 
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -32,6 +33,7 @@ export default function ChatsScreen() {
 
     const renderItem = ({ item }: { item: MessengerUser & { unreadCount?: number } }) => (
         <TouchableOpacity style={styles.row} onPress={() => {
+            console.log(item);
             router.navigate({
                 pathname: '/single-chat/[userId]',
                 params: { userId: item.user_id.toString() },

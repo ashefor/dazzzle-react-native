@@ -73,7 +73,7 @@ const ChangeEmailScreen = () => {
               enableReinitialize
               validationSchema={changeEmailValidationSchema}
             >
-              {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
+              {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, touched }) => {
                 return (
                   <View className='flex-1 '>
                     <View className='space-y-3 mb-5'>
@@ -84,7 +84,7 @@ const ChangeEmailScreen = () => {
                         editable={userInfo?.email ? false : true}
                         onChangeText={handleChange('current_email')}
                         onBlur={handleBlur('current_email')}
-                        showCustomError={errors.current_email ? true : false}
+                        touched={touched.current_email}
                         errorMessage={errors.current_email}
                         value={values.current_email}
                         keyboardType='email-address'
@@ -97,7 +97,7 @@ const ChangeEmailScreen = () => {
                         value={values.new_email}
                         onChangeText={handleChange('new_email')}
                         onBlur={handleBlur('new_email')}
-                        showCustomError={errors.new_email ? true : false}
+                        touched={touched.new_email}
                         errorMessage={errors.new_email}
                         keyboardType='email-address'
                       />
@@ -110,7 +110,7 @@ const ChangeEmailScreen = () => {
                         secureTextEntry
                         onChangeText={handleChange('current_password')}
                         onBlur={handleBlur('current_password')}
-                        showCustomError={errors.current_password ? true : false}
+                        touched={touched.current_password}
                         errorMessage={errors.current_password}
                       />
                       </View>

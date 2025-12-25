@@ -90,7 +90,7 @@ const SignIn = () => {
                                 onSubmit={createAccount}
                                 validationSchema={signUpValidationSchema}
                             >
-                                {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, setFieldValue }) => {
+                                {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, touched, setFieldValue }) => {
                                     return (
                                         <View className='flex-1 '>
                                             <View>
@@ -105,9 +105,10 @@ const SignIn = () => {
                                                     placeholder=''
                                                     onChangeText={handleChange('username')}
                                                     onBlur={handleBlur('username')}
-                                                    showCustomError={errors.username ? true : false}
+
                                                     errorMessage={errors.username}
                                                     value={values.username}
+                                                    touched={touched.username}
                                                 />
                                                 </View>
                                                 <View>
@@ -119,10 +120,10 @@ const SignIn = () => {
                                                         setEmail(t);
                                                     }}
                                                     onBlur={handleBlur('email')}
-                                                    showCustomError={errors.email ? true : false}
                                                     errorMessage={errors.email}
                                                     value={values.email}
                                                     keyboardType='email-address'
+                                                    touched={touched.email}
                                                 />
                                                 </View>
                                                 <View>
@@ -131,9 +132,9 @@ const SignIn = () => {
                                                     placeholder=''
                                                     onChangeText={handleChange('password')}
                                                     onBlur={handleBlur('password')}
-                                                    showCustomError={errors.password ? true : false}
                                                     errorMessage={errors.password}
                                                     value={values.password}
+                                                    touched={touched.password}
                                                     secureTextEntry
                                                 />
                                                 </View>
@@ -143,7 +144,7 @@ const SignIn = () => {
                                                     placeholder=''
                                                     onChangeText={handleChange('repeat_password')}
                                                     onBlur={handleBlur('repeat_password')}
-                                                    showCustomError={errors.repeat_password ? true : false}
+                                                    touched={touched.repeat_password}
                                                     errorMessage={errors.repeat_password}
                                                     value={values.repeat_password}
                                                     secureTextEntry

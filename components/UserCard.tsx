@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { ImageBackground, StyleSheet, View, Text } from "react-native";
 import type { UserCard } from "./folder/api";
-import LocationIcon from "./LocationIcon";
+import LocationIcon from "./icons/LocationIcon";
 
 type Props = {
   user: UserCard;

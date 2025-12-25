@@ -68,8 +68,6 @@ export async function registerForPushNotificationsAsync() {
       projectId,
     })).data;
 
-    Alert.alert('Push Notification Token', JSON.stringify(token));
-
     // Send token to backend
     await axiosRequest.notifications.registerToken(token);
     

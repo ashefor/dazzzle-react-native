@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import LocationIcon from './LocationIcon';
+import LocationIcon from './icons/LocationIcon';
 import { RandomUser } from '@/models/user';
 
 const { width, height } = Dimensions.get('window');

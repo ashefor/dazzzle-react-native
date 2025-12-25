@@ -72,7 +72,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                     enableReinitialize
                     validationSchema={bioDataValidationSchema}
                 >
-                    {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => {
+                    {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => {
                         return (
                             <View className='flex-1'>
                                 <View>
@@ -86,7 +86,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                         placeholder='Enter first name'
                                         onChangeText={handleChange('first_name')}
                                         onBlur={handleBlur('first_name')}
-                                        showCustomError={errors.first_name ? true : false}
+                                        touched={touched.first_name}
                                         errorMessage={errors.first_name}
                                         value={values.first_name}
                                     />
@@ -97,7 +97,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                         placeholder='Enter last name'
                                         onChangeText={handleChange('last_name')}
                                         onBlur={handleBlur('last_name')}
-                                        showCustomError={errors.last_name ? true : false}
+                                        touched={touched.last_name}
                                         errorMessage={errors.last_name}
                                         value={values.last_name}
                                     />

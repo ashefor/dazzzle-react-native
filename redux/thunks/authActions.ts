@@ -52,6 +52,7 @@ export const userLogin = createAsyncThunk(
             )
             const authApiResponse = response.data as AuthApiResponse;
             const { reaction, message, data } = response.data;
+            console.log('Login Response:', response.data);
             let errorMessage = message;
             if (reaction === ReactionCodes.ERROR) {
                 if (data) {

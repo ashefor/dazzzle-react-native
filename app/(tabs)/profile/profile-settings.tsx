@@ -2,7 +2,7 @@ import React, { useState, useCallback, JSX, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import NavBar from '@/components/NavBar';
 import { usePhotoManager } from '@/hooks/usePhotoManager';
 import { PhotoCell } from '@/components/PhotoCell';
@@ -10,7 +10,6 @@ import axiosRequest from '@/utils/axios';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-// import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import SelectPicker from '@/components/SelectPicker';
 import CustomButton from '@/components/CustomButton';
 import CountryCodePicker from '@/components/CountryCodePicker';
@@ -23,13 +22,28 @@ import { fetchUserProfileData } from '@/redux/thunks/userActions';
 import { updateUserInfo } from '@/redux/slices/authSlice';
 import { convertObjectToSelectPickerArray } from '@/utils/helpers';
 import * as ImagePicker from 'expo-image-picker';
+import { Skeleton } from '@/components/SkeletonLoader';
 
 type EditType = 'basic' | 'looks' | 'personality' | 'lifestyle' | 'favorites';
 
-// --- Components ---
 
-const PhotoGridSection = ({ initialPhotos }: { initialPhotos: string[] }) => {
-    const { slots, handleAddPhoto, handleRemovePhoto, handleRetry } = usePhotoManager(initialPhotos);
+const PhotoGridSection = () => {
+    const { slots, loading, handleAddPhoto, handleRemovePhoto, handleRetry } = usePhotoManager();
+
+    if (loading) {
+        return (
+            <View>
+                <Text className="font-bold text-lg px-4 py-4 text-black">Photos</Text>
+                <View className="flex-row flex-wrap justify-between px-4">
+                    {Array(6).fill(0).map(() => (
+                        <View className="w-[31%] aspect-square mb-3 bg-gray-100 rounded-xl items-center justify-center border border-gray-200 overflow-hidden relative">
+                            <Skeleton style={{ width: '100%', height: '100%', borderRadius: 12 }} />
+                        </View>
+                    ))}
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View>
@@ -80,7 +94,7 @@ const CustomTextInput = ({ label, value, onChange, keyboardType = 'default' }: a
         <View className="bg-[#F2F2F7] text-black rounded-xl px-4 h-14 focus:border-primary border border-[#cccccc80]">
             <BottomSheetTextInput
                 value={value}
-                style={{ height: '100%' , color: 'black'}}
+                style={{ height: '100%', color: 'black' }}
                 onChangeText={onChange}
                 keyboardType={keyboardType}
                 autoCapitalize="none"
@@ -110,63 +124,63 @@ const EditProfileForm = ({ initialData, appConfig, onSave }: { initialData: { [k
         <>
             <BottomSheetScrollView className={'flex-1'} contentContainerStyle={{ padding: 16 }}>
 
-                    <CustomTextInput
-                        label="First Name"
-                        value={formData?.first_name}
-                        onChange={(val: string) => handleChange('first_name', val)}
-                    />
+                <CustomTextInput
+                    label="First Name"
+                    value={formData?.first_name}
+                    onChange={(val: string) => handleChange('first_name', val)}
+                />
 
-                    <CustomTextInput
-                        label="Last Name"
-                        value={formData?.last_name}
-                        onChange={(val: string) => handleChange('last_name', val)}
-                    />
+                <CustomTextInput
+                    label="Last Name"
+                    value={formData?.last_name}
+                    onChange={(val: string) => handleChange('last_name', val)}
+                />
 
-                    {/* Phone Number Section */}
-                    <View className="mb-5 space-y-2">
-                        <Text className='text-base text-black font-firamedium'>Phone Number</Text>
-                        <View className='border border-[#cccccc80] w-full px-4 bg-[#F2F2F7] rounded-xl items-center flex-row'>
-                            <View className='flex-1 flex-row gap-x-2 h-14 items-center divide-x divide-[#ccc]'>
-                                <CountryCodePicker
-                                    countryCode={formData?.country_code}
-                                    onCountryCodeSelect={(c) => handleChange('country_code', c)}
-                                />
-                                <BottomSheetTextInput
-                                    style={{ lineHeight: 0, height: '100%', paddingHorizontal: 16 }}
-                                    value={formData?.mobile_number}
-                                    onChangeText={(val) => handleChange('mobile_number', val)}
-                                    placeholderTextColor={"#5B5B5B3A"}
-                                />
-                            </View>
+                {/* Phone Number Section */}
+                <View className="mb-5 space-y-2">
+                    <Text className='text-base text-black font-firamedium'>Phone Number</Text>
+                    <View className='border border-[#cccccc80] w-full px-4 bg-[#F2F2F7] rounded-xl items-center flex-row'>
+                        <View className='flex-1 flex-row gap-x-2 h-14 items-center divide-x divide-[#ccc]'>
+                            <CountryCodePicker
+                                countryCode={formData?.country_code}
+                                onCountryCodeSelect={(c) => handleChange('country_code', c)}
+                            />
+                            <BottomSheetTextInput
+                                style={{ lineHeight: 0, height: '100%', paddingHorizontal: 16 }}
+                                value={formData?.mobile_number}
+                                onChangeText={(val) => handleChange('mobile_number', val)}
+                                placeholderTextColor={"#5B5B5B3A"}
+                            />
                         </View>
                     </View>
+                </View>
 
-                    {/* Dropdowns - update to use handleChange */}
-                    <View className='mb-5'>
-                        <SelectPicker
-                            options={appConfig?.genders!}
-                            defaultOption={formData?.gender}
-                            title="Gender"
-                            onSelectOption={(val) => handleChange('gender', val)}
-                        />
-                    </View>
+                {/* Dropdowns - update to use handleChange */}
+                <View className='mb-5'>
+                    <SelectPicker
+                        options={appConfig?.genders!}
+                        defaultOption={formData?.gender}
+                        title="Gender"
+                        onSelectOption={(val) => handleChange('gender', val)}
+                    />
+                </View>
 
-                    <View className='mb-5'>
-                        <DateOfBirthPicker dateOfBirth={formData.birthday} onDateOfBirthSelected={useCallback((val) => handleChange('birthday', val), [handleChange])} />
-                    </View>
+                <View className='mb-5'>
+                    <DateOfBirthPicker dateOfBirth={formData.birthday} onDateOfBirthSelected={useCallback((val) => handleChange('birthday', val), [handleChange])} />
+                </View>
 
-                    <View className='mb-5'>
-                        <SelectPicker options={preferredLanguageOptions} defaultOption={formData.preferred_language} title="Preferred Language" onSelectOption={useCallback((val) => handleChange('preferred_language', val), [handleChange])} placeholder={""} />
-                    </View>
-                    <View className='mb-5'>
-                        <SelectPicker options={relationshipStatusOptions} defaultOption={formData.relationship_status} title="Relationship Status" onSelectOption={useCallback((val) => handleChange('relationship_status', val), [handleChange])} placeholder={""} />
-                    </View>
-                    <View className='mb-5'>
-                        <SelectPicker options={workStatusOptions} defaultOption={formData.work_status} title="Work Status" onSelectOption={useCallback((val) => handleChange('work_status', val), [handleChange])} placeholder={""} />
-                    </View>
-                    <View className='mb-5'>
-                        <SelectPicker options={educationOptions} defaultOption={formData.education} title="Education" onSelectOption={useCallback((val) => handleChange('education', val), [handleChange])} placeholder={""} />
-                    </View>
+                <View className='mb-5'>
+                    <SelectPicker options={preferredLanguageOptions} defaultOption={formData.preferred_language} title="Preferred Language" onSelectOption={useCallback((val) => handleChange('preferred_language', val), [handleChange])} placeholder={""} />
+                </View>
+                <View className='mb-5'>
+                    <SelectPicker options={relationshipStatusOptions} defaultOption={formData.relationship_status} title="Relationship Status" onSelectOption={useCallback((val) => handleChange('relationship_status', val), [handleChange])} placeholder={""} />
+                </View>
+                <View className='mb-5'>
+                    <SelectPicker options={workStatusOptions} defaultOption={formData.work_status} title="Work Status" onSelectOption={useCallback((val) => handleChange('work_status', val), [handleChange])} placeholder={""} />
+                </View>
+                <View className='mb-5'>
+                    <SelectPicker options={educationOptions} defaultOption={formData.education} title="Education" onSelectOption={useCallback((val) => handleChange('education', val), [handleChange])} placeholder={""} />
+                </View>
             </BottomSheetScrollView>
 
             {/* Fixed Bottom Button */}
@@ -195,7 +209,7 @@ const EditProfileOtherDetailsForm = ({ initialData, onSave }: { initialData: { [
                 ...prev,
                 items: updatedItems,
                 // [key]: value
-                }
+            }
         })
         // setFormData((prev: any) => ({ ...prev, [key]: value }));
     }, []);
@@ -217,31 +231,31 @@ const EditProfileOtherDetailsForm = ({ initialData, onSave }: { initialData: { [
     return (
         <>
             <BottomSheetScrollView className={'flex-1'} contentContainerStyle={{ padding: 16 }}>
-                 {formData.items.map((field: any) => {
-                        <Text>{field.input_type}</Text>
-                        if (field.input_type === 'select') {
-                            return (
-                                <View className="mb-5" key={field.name}>
-                                    <SelectPicker
+                {formData.items.map((field: any) => {
+                    <Text>{field.input_type}</Text>
+                    if (field.input_type === 'select') {
+                        return (
+                            <View className="mb-5" key={field.name}>
+                                <SelectPicker
                                     key={field.name}
                                     title={field.label}
                                     defaultOption={field.selected_options}
                                     onSelectOption={(val: string) => handleChange(field.name, val)}
                                     options={convertObjectToSelectPickerArray(field.options)}
                                 />
-                                </View>
-                            );
-                        } else {
-                            return (
-                                <CustomTextInput
+                            </View>
+                        );
+                    } else {
+                        return (
+                            <CustomTextInput
                                 key={field.name}
                                 label={field.label}
                                 value={field.selected_options}
                                 onChange={(val: string) => handleChange(field.name, val)}
                             />
-                            )
-                        }
-                    })}
+                        )
+                    }
+                })}
             </BottomSheetScrollView>
 
             {/* Fixed Bottom Button */}
@@ -263,8 +277,6 @@ export default function ProfileSettings() {
     const { appConfig } = useAppSelector(state => state.app);
     const insets = useSafeAreaInsets();
     const [editType, setEditType] = useState<EditType | null>('basic');
-
-    const route = useRoute<any>(); // Access route params
 
 
     const renderBackdrop = useCallback(
@@ -332,7 +344,7 @@ export default function ProfileSettings() {
         editOtherFormBottomSheetModalRef.current?.present({ otherData: otherData })
     }
 
-    const updateBasicInfo = async (params: {[key: string]: any }) => {
+    const updateBasicInfo = async (params: { [key: string]: any }) => {
         try {
 
             show();
@@ -349,7 +361,7 @@ export default function ProfileSettings() {
         }
     }
 
-     const updateSpecificationData = async (formData: { [key: string]: any }) => {
+    const updateSpecificationData = async (formData: { [key: string]: any }) => {
         try {
             show();
             await axiosRequest.post(`/update-profile-settings`, formData);
@@ -407,7 +419,7 @@ export default function ProfileSettings() {
     };
 
     return (
-        <View className="flex-1 bg-white" style={{ paddingTop: insets.top, paddingBottom: 10}}>
+        <View className="flex-1 bg-white" style={{ paddingTop: insets.top, paddingBottom: 10 }}>
             {/* Header */}
             <NavBar title='Profile Settings' />
 
@@ -421,7 +433,7 @@ export default function ProfileSettings() {
                     </TouchableOpacity>
                 </View>
                 {/* <Text className="font-bold text-lg px-4 py-4">Photos</Text> */}
-                <PhotoGridSection initialPhotos={userProfileData?.photosData.map((photo: any) => photo.image_url)} />
+                <PhotoGridSection />
 
                 {/* Basic Info Section */}
                 <SectionHeader title="Basic information" onEdit={openEditBottomSheet} />

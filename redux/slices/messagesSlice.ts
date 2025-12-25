@@ -98,6 +98,16 @@ const messagesSlice = createSlice({
         bucket.items = bucket.items.filter(message => message.chat_id.toString() !== chatId);
       }
     },
+    addNewMessage: (state, action: PayloadAction<{ user_id: number; message: UserConversation }>) => {
+      const { user_id, message } = action.payload;
+      const bucket = state.byUserId[user_id] ?? {
+        items: [],
+        loadingInitial: false,
+        loadingUpdate: false,
+      };
+      bucket.items.push(message);
+      state.byUserId[user_id] = bucket;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -204,7 +214,8 @@ export const {
   setActiveUserId,
   startUpdateLoading,
   stopUpdateLoading,
-  deleteMessage
+  deleteMessage,
+  addNewMessage
 } = messagesSlice.actions;
 
 export default messagesSlice.reducer;

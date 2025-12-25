@@ -31,7 +31,7 @@ import UserDetailsSkeleton from '@/components/UserDetailsSkeleton';
 import { ProfileInfoSectionHeader } from '@/components/ProfileInfoSectionHeader';
 import { ProfileInfoItem } from '@/components/ProfileInfoItem';
 import { arrayToObject } from '@/utils/helpers';
-import LocationIcon from '@/components/LocationIcon';
+import LocationIcon from '@/components/icons/LocationIcon';
 import BadgeIcon from '@/components/icons/BadgeIcon';
 import HeartbreakIcon from '@/components/icons/HeartbreakIcon';
 import HeartOutlineIcon from '@/components/icons/HeartOutlineIcon';
@@ -44,6 +44,7 @@ import Toast from '@/components/toast/toast';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import CustomButton from '@/components/CustomButton';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { Skeleton } from '@/components/SkeletonLoader';
 
 
 const { width } = Dimensions.get('window');
@@ -265,8 +266,9 @@ export default function UserDetailsScreen() {
                 setUserDetails(userProfileData);
             }
             setIsLoading(false);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while fetching user details. Please try again later.');
+            setUserDetails(null);
             setIsLoading(false);
         }
     }
@@ -519,7 +521,8 @@ export default function UserDetailsScreen() {
         }
     }
 
-    const createBlockNotificationAlert = () =>
+    const createBlockNotificationAlert = () => {
+        closeMenu();
         Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user?', [
             {
                 text: 'Cancel',
@@ -527,7 +530,8 @@ export default function UserDetailsScreen() {
                 style: 'cancel',
             },
             { text: 'Block', style: 'destructive', onPress: () => handleBlockUser() },
-        ]);
+        ])
+    };
 
     // --- ANIMATIONS ---
     const headerNameStyle = useAnimatedStyle(() => {
@@ -573,9 +577,9 @@ export default function UserDetailsScreen() {
                     {userDetails?.userData.first_name} {userDetails?.userData.last_name}, {userDetails?.userData.userAge}
                 </Text>
             </Animated.View>}
-                rightItem={<TouchableOpacity onPress={toggleMenu} style={styles.iconButton}>
+                rightItem={userDetails ? <TouchableOpacity onPress={toggleMenu} style={styles.iconButton}>
                     <EllipsisIcon width={24} height={24} color="#000" />
-                </TouchableOpacity>}
+                </TouchableOpacity> : null}
             />
             {/* <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
                 <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
@@ -601,7 +605,7 @@ export default function UserDetailsScreen() {
             >
                 <TouchableWithoutFeedback onPress={closeMenu}>
                     <View style={styles.modalOverlay}>
-                        <View style={[styles.menuContainer, { top: insets.top + HEADER_HEIGHT }]}>
+                        <View style={[styles.menuContainer, { top: HEADER_HEIGHT + insets.top + 5 }]}>
                             {/* <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('message')}>
                                 <Ionicons name="chatbubble-outline" size={20} color="#333" style={styles.menuIcon} />
                                 <Text style={styles.menuText}>Message User</Text>
@@ -629,8 +633,9 @@ export default function UserDetailsScreen() {
                 <UserDetailsSkeleton />
             ) : (
                 !userDetails ? (
-                    <View style={[styles.contentPadding, { marginTop: HEADER_HEIGHT + insets.top + 20 }]}>
-                        <Text style={styles.bodyText}>User not found.</Text>
+                    <View style={[styles.contentPadding, { marginTop: 20 }]}>
+                         <Skeleton style={{ width: '100%', height: 350, borderRadius: 24, marginBottom: 20 }} />
+                        <Text className='text-base font-firasemibold text-center'>User not found.</Text>
                     </View>
                 ) : (
                     <View className='flex-1'>
