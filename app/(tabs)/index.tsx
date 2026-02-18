@@ -78,6 +78,9 @@ const EncounterScreen = () => {
           params: { userName: currentUser.username }
         })
       }
+    }, {
+      title: 'View User Profile',
+      message: 'Upgrade your account to view user profile and get more insights about your matches!'
     })
   };
 
@@ -89,7 +92,7 @@ const EncounterScreen = () => {
       setTriggerSwipeDirection(direction);
     }, {
       title: direction === 'left' ? 'Dislike Users' : 'Like Users',
-      message: `Upgrade to premium to ${direction === 'left' ? 'pass on' : 'like'} users and unlock more features!`
+      message: `Upgrade your account to ${direction === 'left' ? 'pass on' : 'like'} users and unlock all features!`
     });
   };
 
@@ -97,7 +100,12 @@ const EncounterScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => requirePremium(()=> router.push('/notifications'))} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => requirePremium(()=> {
+        router.push('/notifications')
+      }, {
+        title: 'View Notifications',
+        message: 'Upgrade your account to view notifications and get more insights about your matches!'
+      })} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
         <NotificationIcon color={"#DD3FE5"} />
       </TouchableOpacity>} />
 

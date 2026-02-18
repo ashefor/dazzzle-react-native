@@ -10,17 +10,17 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    ActivityIndicator,
-    TextInput,
-    TouchableOpacity,
-    Image,
-    Platform, Alert,
-    DeviceEventEmitter,
-    Modal, Dimensions
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Platform, Alert,
+  DeviceEventEmitter,
+  Modal, Dimensions
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import axiosRequest from '@/utils/axios';
@@ -198,7 +198,7 @@ export default function ChatRoomScreen() {
       }
     }, {
       title: 'Send Images',
-      message: 'Upgrade to premium to send images and photos in messages!'
+      message: 'Upgrade your account to send images and photos in messages!'
     });
   };
 
@@ -236,7 +236,7 @@ export default function ChatRoomScreen() {
       dispatch(stopUpdateLoading({ user_id: +userId }));
     }, {
       title: 'Send Messages',
-      message: 'Upgrade to premium to send messages and chat with other users!'
+      message: 'Upgrade your account to send messages and chat with other users!'
     });
   };
 

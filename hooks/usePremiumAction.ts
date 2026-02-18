@@ -18,7 +18,7 @@ interface UsePremiumActionReturn {
 }
 
 /**
- * Hook to check if user is premium and show payment modal if not
+ * Hook to check if user has upgraded account and show upgrade modal if not
  * 
  * @example
  * const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
@@ -29,7 +29,7 @@ interface UsePremiumActionReturn {
  *     dispatch(likeUser(userId));
  *   }, {
  *     title: "Like Users",
- *     message: "Upgrade to premium to like users!"
+ *     message: "Upgrade your account to like users!"
  *   });
  * };
  * 
@@ -53,8 +53,8 @@ export const usePremiumAction = (): UsePremiumActionReturn => {
         message: string;
         onSuccess?: () => void;
     }>({
-        title: 'Premium Feature',
-        message: 'This feature requires a premium subscription. Subscribe now to unlock it!',
+        title: 'Upgrade Required',
+        message: 'Upgrade your account to unlock this feature and enjoy exclusive benefits!',
     });
 
     // Check if user is premium and subscription is not expired
@@ -72,7 +72,7 @@ export const usePremiumAction = (): UsePremiumActionReturn => {
     }, [userInfo, currentSubscription]);
 
     /**
-     * Check if user is premium. If yes, execute action. If no, show payment modal.
+     * Check if user has upgraded. If yes, execute action. If no, show upgrade modal.
      */
     const requirePremium = useCallback((
         action: () => void,
@@ -82,14 +82,14 @@ export const usePremiumAction = (): UsePremiumActionReturn => {
         }
     ) => {
         if (isPremium()) {
-            // User is premium, execute action immediately
+            // User has upgraded, execute action immediately
             action();
         } else {
-            // User is not premium, show payment modal
+            // User needs to upgrade, show modal
             setModalOptions({
-                title: options?.title || 'Premium Feature',
-                message: options?.message || 'This feature requires a premium subscription. Subscribe now to unlock it!',
-                onSuccess: action, // Execute action after successful payment
+                title: options?.title || 'Upgrade Required',
+                message: options?.message || 'Upgrade your account to unlock this feature and enjoy exclusive benefits!',
+                onSuccess: action, // Execute action after successful upgrade
             });
             setShowModal(true);
         }

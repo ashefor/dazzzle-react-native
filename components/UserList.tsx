@@ -135,12 +135,18 @@ const UserList: React.FC<UserListProps> = ({
                     pathname: '/[userName]',
                     params: { userName: item.username }
                 });
+            }, {
+                title: 'View User Profile',
+                message: 'Upgrade your account to view user profile and get more insights about your matches!'
             })}>
             <View className='m-2' style={{ flex: 1 / numColumns }}>
                 <View className='relative h-52 w-full'>
                     {showActionButton && (
                         <View className='absolute top-4 right-4 z-10'>
-                            <TouchableOpacity onPress={() => requirePremium(() => createActionAlert(item._id))} className='p-2 bg-white rounded-full shadow-sm'>
+                            <TouchableOpacity onPress={() => requirePremium(() => createActionAlert(item._id), {
+                                title: 'Perform Action',
+                                message: 'Upgrade your account to perform this action and unlock all features!'
+                            })} className='p-2 bg-white rounded-full shadow-sm'>
                                 <Ionicons name="heart" size={20} color="red" />
                             </TouchableOpacity>
                         </View>

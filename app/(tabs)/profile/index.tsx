@@ -135,7 +135,7 @@ export default function ProfileScreen() {
 
   return (
     <Fragment>
-      <View className='flex-1 bg-white' style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <View className='flex-1 bg-white' style={{ paddingTop: insets.top}}>
         <NavBar
           leftItem={<Text className='text-2xl text-primary font-firasemibold'>Profile</Text>}
         />
@@ -203,9 +203,9 @@ export default function ProfileScreen() {
               <View style={styles.premiumStatusContent}>
                 <Text style={styles.premiumStatusIcon}>✨</Text>
                 <View style={styles.premiumStatusTextContainer}>
-                  <Text style={styles.premiumStatusTitle}>Premium Active</Text>
+                  <Text style={styles.premiumStatusTitle}>Account Upgraded</Text>
                   <Text style={styles.premiumStatusSubtitle}>
-                    Expires on {dayjs(currentSubscription.expiry_at).format('MMM DD, YYYY')}
+                    Access expires {dayjs(currentSubscription.expiry_at).format('MMM DD, YYYY')}
                   </Text>
                 </View>
               </View>
@@ -213,14 +213,39 @@ export default function ProfileScreen() {
           )}
           
           <Section title="Account">
-            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/profile-settings'))} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
+            <MenuItem onPress={() => requirePremium(()=> {
+              router.push('/profile/profile-settings')
+            }, {
+              title: 'View Profile Settings',
+              message: 'Upgrade your account to view profile settings and unlock all features!'
+            })} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
             {/* <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" /> */}
-            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/blocked-users'))} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
-            <MenuItem onPress={() => requirePremium(() => notificationSettingsBottomSheetModalRef.current?.present())} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
+            <MenuItem onPress={() => requirePremium(()=> {
+              router.push('/profile/blocked-users')
+            }, {
+              title: 'View Blocked Users',
+              message: 'Upgrade your account to view blocked users and unlock all features!'
+            })} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
+            <MenuItem onPress={() => requirePremium(() => {
+              notificationSettingsBottomSheetModalRef.current?.present()
+            }, {
+              title: 'View Notification Settings',
+              message: 'Upgrade your account to view notification settings and unlock all features!'
+            })} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
           </Section>
           <Section title="Security">
-            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/change-password'))} icon={<LockIcon stroke={"#8E8E93"} />} label="Change Password" />
-            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/change-email'))} icon={<MailIcon stroke={"#8E8E93"} />} label="Change Email" isLast />
+            <MenuItem onPress={() => requirePremium(()=> {
+              router.push('/profile/change-password')
+            }, {
+              title: "Change Password",
+              message: 'Upgrade your account to change password and unlock all features!'
+            })} icon={<LockIcon stroke={"#8E8E93"} />} label="Change Password" />
+            <MenuItem onPress={() => requirePremium(()=> {
+              router.push('/profile/change-email')
+            }, {
+              title: "Change Email",
+              message: 'Upgrade your account to change email and unlock all features!'
+            })} icon={<MailIcon stroke={"#8E8E93"} />} label="Change Email" isLast />
           </Section>
 
           <Section title="Legal">

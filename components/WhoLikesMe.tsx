@@ -9,12 +9,12 @@ const WhoLikesMe = () => {
     const [showUserList, setShowUserList] = useState(false);
 
     React.useEffect(() => {
-        // Check premium status on mount
+        // Check account status on mount
         requirePremium(() => {
             setShowUserList(true);
         }, {
             title: 'See Who Likes You',
-            message: 'Upgrade to premium to see who has liked your profile!'
+            message: 'Upgrade your account to see who has liked your profile!'
         });
     }, []);
 
@@ -32,9 +32,9 @@ const WhoLikesMe = () => {
         <View style={styles.container}>
             <View style={styles.lockContainer}>
                 <Text style={styles.lockIcon}>🔒</Text>
-                <Text style={styles.lockTitle}>Premium Feature</Text>
+                <Text style={styles.lockTitle}>Exclusive Feature</Text>
                 <Text style={styles.lockMessage}>
-                    See who has liked you by upgrading to premium
+                    See who has liked you by upgrading your account
                 </Text>
                 <TouchableOpacity 
                     style={styles.unlockButton}
@@ -43,7 +43,7 @@ const WhoLikesMe = () => {
                             setShowUserList(true);
                         }, {
                             title: 'See Who Likes You',
-                            message: 'Upgrade to premium to see who has liked your profile!'
+                            message: 'Upgrade your account to see who has liked your profile!'
                         });
                     }}
                 >
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     },
     lockTitle: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: 'Onest_700Bold',
         color: '#000',
         marginBottom: 8,
     },
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         marginBottom: 24,
+        fontFamily: 'Onest_400Regular',
     },
     unlockButton: {
         backgroundColor: '#DD3FE5',
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     },
     unlockButtonText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'Onest_600SemiBold',
         color: '#fff',
     },
 });
