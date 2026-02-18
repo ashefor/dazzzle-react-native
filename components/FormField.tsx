@@ -1,4 +1,4 @@
-import { NativeSyntheticEvent, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { NativeSyntheticEvent, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -6,14 +6,10 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
   title: string;
   value: string;
-  // New prop: we explicitly ask if the field has been touched
   touched?: boolean;
-  // If this string exists, we assume there is an error
   errorMessage?: string | null; 
   secureTextEntry?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
-  inputStyle?: StyleProp<TextStyle>;
-  labelStyle?: StyleProp<TextStyle>;
   editable?: boolean;
 }
 
@@ -25,17 +21,15 @@ const FormField: React.FC<CustomTextInputProps> = ({
   errorMessage,
   onBlur,
   value,
-  touched = false, // Default to false
+  touched = false,
   editable = true,
-  ...restProps
+  ...restProps // This contains textContentType, autoComplete, etc.
 }) => {
   const [isSecureTextEntry, setIsSecureTextEntry] = React.useState<boolean>(true);
   const [isFocused, setIsFocused] = React.useState(false);
 
-  // Derived state: An error exists if the field has been touched AND there is an error message
+  // Error Logic: Show error if touched exists and there is an error message
   const hasError = touched && !!errorMessage;
-
-  const labelColor = "#333";
 
   function getBorderColor() {
     if (hasError) return '#8E1F0B';
@@ -46,14 +40,13 @@ const FormField: React.FC<CustomTextInputProps> = ({
   function getLabelColor() {
     if (hasError) return '#8E1F0B';
     if (isFocused) return "#DD3FE5";
-    return labelColor;
+    return "#333";
   }
 
   const handleFocus = () => setIsFocused(true);
 
   const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(false);
-    // Directly call the parent's onBlur (Formik's handleBlur)
     onBlur && onBlur(e);
   };
 
@@ -84,6 +77,7 @@ const FormField: React.FC<CustomTextInputProps> = ({
             selectionColor={'#DD3FE5'}
             secureTextEntry={secureTextEntry && isSecureTextEntry}
             autoCapitalize="none"
+            // Important: This ensures autofill props passed from parent are applied
             {...restProps}
           />
           
@@ -99,7 +93,7 @@ const FormField: React.FC<CustomTextInputProps> = ({
         </View>
       </View>
 
-      {/* Only show error if hasError is true */}
+      {/* Error Message */}
       {hasError && (
         <Animated.View entering={FadeIn} className='flex-row gap-x-2 items-center'>
           <Text className='text-xs text-red-500 font-firaregular'>

@@ -25,9 +25,7 @@ const registerNotificationListeners = () => {
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
     const data = notification.request.content.data;
 
-    // Check if it is a chat message
     if (data && (data.type === "1" || data.type == "2")) {
-        // Emit an event called 'onNewMessage' and pass the data
         DeviceEventEmitter.emit('onNewMessage', data);
     }
 });
@@ -41,35 +39,21 @@ const registerNotificationListeners = () => {
 
         // Handle Chat Message Notification (Type "1")
         if (data && (data.type === "1" || data.type == "2")) {
-            const { userId, receiverChatUid, userUid } = data;
+            const { userId } = data;
 
-            // Navigate to your Chat Screen
-            // Make sure to match the route name ('Chat' or 'Conversation') defined in your app
-            
             // OPTION A: If using Expo Router
             router.push({
-                pathname: "/single-chat/[userId]", // Update this to your actual chat route path
+                pathname: "/single-chat/[userId]",
                 params: { 
-                    userId: userId as string, // The user_id to fetch chats from (as requested)
+                    userId: userId as string,
                 }
             });
-
-            // OPTION B: If using standard React Navigation
-            /*
-            navigation.navigate('Chat', {
-                id: userId,
-                chatId: receiverChatUid,
-                senderId: userUid
-            });
-            */
         }
     });
 };
 
 useEffect(() => {
     registerNotificationListeners();
-
-    // Clean up listeners when component unmounts
     return () => {
         if (notificationListener.current) {
             notificationListener.current.remove();

@@ -3,21 +3,24 @@ import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import LocationIcon from './icons/LocationIcon';
 import { RandomUser } from '@/models/user';
+import { CARD_HEIGHT } from '@/utils/helpers';
 
 const { width, height } = Dimensions.get('window');
     // const CARD_WIDTH = width * 0.9;
     // const CARD_HEIGHT = height * 0.6;
 
 const CARD_WIDTH = width - 32;
-const CARD_HEIGHT = Math.round(width * 1.25);
+// const CARD_HEIGHT = Math.round(height - 400);
 
 interface CardProps {
   user: RandomUser;
+  width: number;  // New prop
+  height: number;
 }
 
-const Card: React.FC<CardProps> = ({ user }) => {
+const Card: React.FC<CardProps> = ({ user, width, height }) => {
   return (
-    <View style={styles.cardContainer}>
+    <View style={[styles.cardContainer, { width, height }]}>
       <Image source={{ uri: user.profileImage }} style={styles.image} resizeMode="cover" />
       
       <LinearGradient

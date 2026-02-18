@@ -152,3 +152,11 @@ export const handlePermissionNavigation = async (
       router.replace(failureDestination);
   }
 };
+
+export const clearAppBadge = async () => {
+  try {
+    await Notifications.setBadgeCountAsync(0);
+  } catch (error) {
+    console.error("Failed to clear app badge:", error);
+  }
+};

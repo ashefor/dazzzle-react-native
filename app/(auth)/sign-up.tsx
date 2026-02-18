@@ -153,6 +153,11 @@ const SignIn = () => {
                                                 <View className='flex flex-row items-center py-2.5 gap-2'>
                                                     <Checkbox value={values.accepted_terms} onValueChange={(checked: boolean) => setFieldValue('accepted_terms', checked)} />
                                                     <View className='flex flex-wrap flex-1 flex-row gap-1'>
+                                                        <Text className='text-sm text-black font-firaregular'>
+        By signing up, you agree to our Terms. 
+        <Text style={{ fontWeight: 'bold' }}> We have zero tolerance for objectionable content or abusive users. </Text>
+        Violators will be banned.
+    </Text>
                                                         <Text className='text-sm text-black font-firaregular'>I accept all</Text>
                                                         <TouchableHighlight onPress={() => _handlePressButtonAsync('https://dazzzle.org/privacy-policy')}>
                                                             <Text className='text-sm text-primary font-firaregular underline'>terms and conditions</Text>

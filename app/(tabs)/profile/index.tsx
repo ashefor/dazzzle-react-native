@@ -12,7 +12,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ArrowForwardIcon from '@/components/icons/ArrowForwardIcon';
 import ExitIcon from '@/components/icons/ExitIcon';
 import IdCardIcon from '@/components/icons/IdCardIcon';
-import WalletIcon from '@/components/icons/WalletIcon';
 import UserBlockIcon from '@/components/icons/UserBlockIcon';
 import NotificationIcon from '@/components/icons/NotificationIcon';
 import LockIcon from '@/components/icons/LockIcon';
@@ -165,7 +164,7 @@ export default function ProfileScreen() {
           </View>
           <Section title="Account">
             <MenuItem onPress={() => router.push('/profile/profile-settings')} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
-            <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" />
+            {/* <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" /> */}
             <MenuItem onPress={() => router.push('/profile/blocked-users')} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
             <MenuItem onPress={() => notificationSettingsBottomSheetModalRef.current?.present()} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
           </Section>

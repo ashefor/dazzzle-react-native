@@ -24,7 +24,7 @@ export default function UserDetailsSkeleton() {
       <View style={[styles.contentPadding, { marginTop: 20 }]}>
         
         {/* Main Image */}
-        <Skeleton style={{ width: '100%', height: 350, borderRadius: 24, marginBottom: 20 }} />
+        <Skeleton style={{ width: '100%', height: Dimensions.get('screen').height * 0.35, borderRadius: 24, marginBottom: 20 }} />
 
         {/* Name & Age */}
         <Skeleton style={{ width: '70%', height: 32, borderRadius: 6, marginBottom: 10 }} />

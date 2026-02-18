@@ -14,11 +14,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
-    // const CARD_WIDTH = width * 0.9;
-    // const CARD_HEIGHT = height * 0.6;
+
+const isTablet = width >= 768;
 
 const CARD_WIDTH = width - 32;
-const CARD_HEIGHT = Math.round(width * 1.25);
+
+const potentialHeight = isTablet ? height * 0.7 : height * 0.6;
+
+const CARD_HEIGHT = Math.min(potentialHeight, height * 0.70);
 
 const EncounterScreen = () => {
   const dispatch = useAppDispatch();
@@ -26,17 +29,14 @@ const EncounterScreen = () => {
   
   const { users, topCardIndex, status } = useAppSelector((state) => state.encounter);
   
-  // Local state to trigger programmatic swipes
   const [triggerSwipeDirection, setTriggerSwipeDirection] = useState<'left' | 'right' | null>(null);
 
-  // 1. Initial Fetch
   useEffect(() => {
     if (users.length === 0) {
       dispatch(fetchMoreUsers());
     }
   }, []);
 
-  // 2. Continuous Fetching: Maintain buffer of 6
   useEffect(() => {
     const remaining = users.length - topCardIndex;
     if (remaining < 6 && status !== 'loading') {
@@ -44,10 +44,8 @@ const EncounterScreen = () => {
     }
   }, [topCardIndex, users.length, status]);
 
-  // 3. Handle External Actions (Returning from Details screen)
 
   const handleSwipeComplete = (direction: 'left' | 'right') => {
-    // Reset trigger
     setTriggerSwipeDirection(null);
     
     const currentUser = users[topCardIndex]
@@ -73,7 +71,6 @@ const EncounterScreen = () => {
     }
   };
 
-  // Button handlers for the bottom bar
   const onButtonPress = (direction: 'left' | 'right') => {
       setTriggerSwipeDirection(direction);
   };
@@ -100,7 +97,7 @@ const EncounterScreen = () => {
                     item={user}
                     triggerSwipe={actualIndex === topCardIndex ? triggerSwipeDirection : null}
                 >
-                    <Card user={user} />
+                    <Card user={user} width={CARD_WIDTH} height={CARD_HEIGHT}/>
                 </SwipeableCard>
              );
            }).reverse() // We reverse so the first element in slice (topCard) is rendered LAST (on top of Z-index stack) by React

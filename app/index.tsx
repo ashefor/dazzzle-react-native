@@ -9,6 +9,7 @@ import { handlePermissionNavigation } from '@/utils/notificationHandler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 
 const { width } = Dimensions.get('window');
 
@@ -136,22 +137,44 @@ export default function HomeScreen() {
     }
   }, [authError, dispatch]);
 
+ // ... inside app/index.tsx
+
   useEffect(() => {
       const isReadyForRouting = !isInitializing && appConfig && userToken && userInfo && isProfileCompleted && !isCheckingPermissions;
 
       if (!isReadyForRouting) return;
 
       const performRouting = async () => {
-          // Add a small artificial delay so the user sees the branding 
-          // instead of a flicker if data loads instantly.
-          await new Promise(resolve => setTimeout(resolve, 800));
-
-          if (isSubActive) {
-              setIsCheckingPermissions(true);
-              await handlePermissionNavigation('/(tabs)', '/permissions'); 
-          } else {
+          // 1. Subscription Check (Keep your existing logic)
+          if (!isSubActive) {
               router.replace('./paywall');
+              return;
           }
+
+          // 2. NEW: Check for Notification Launch (Cold Start)
+          try {
+            const response = await Notifications.getLastNotificationResponseAsync();
+            const data = response?.notification.request.content.data;
+            
+            // Check if it's a chat message (type '1') and has a userId
+            if (data && (data.type === '1' || data.type === '2') && data.userId) {
+                // Navigate directly to the chat
+                // We use Number() to ensure it matches the route param expectation
+                router.replace({
+                  pathname: "/single-chat/[userId]",
+                  params: { 
+                      userId: String(data.userId),
+                  }
+                }); 
+                return; // STOP here. Do not go to tabs.
+            }
+          } catch (e) {
+            console.log("Failed to check notification response", e);
+          }
+
+          // 3. Default: Go to Tabs (Your existing logic)
+          setIsCheckingPermissions(true);
+          await handlePermissionNavigation('/(tabs)', '/permissions'); 
       };
 
       performRouting();

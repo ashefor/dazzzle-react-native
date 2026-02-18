@@ -197,6 +197,7 @@ const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
 const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [item, setItem] = useState<{ image_url: string } | null>(null);
+  const insets = useSafeAreaInsets();
   const closeModal = () => {
     setIsModalOpen(false);
     setItem(null);
@@ -224,7 +225,14 @@ const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
             animationType="fade"
             onRequestClose={closeModal}
         >
-                <View className='flex-1'>
+                <View style={{ 
+          flex: 1, 
+          backgroundColor: 'white',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right
+        }}>
                     <NavBar leftItem={<TouchableOpacity onPress={closeModal} className=' flex items-center justify-center'>
                         <Ionicons name="close-circle" size={24} color="black" />
                     </TouchableOpacity>} title={'View Image'} />
@@ -346,13 +354,17 @@ export default function UserDetailsScreen() {
             show();
             const data: any = await axiosRequest.post(`/block-user`, params);
             hide();
+            console.log('Block user response:', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
-                setUserDetails((prevUserDetails) => {
-                    return {
-                        ...prevUserDetails!,
-                        blockByMeUser: true
-                    }
-                })
+                dispatch(popCard());
+                // setUserDetails((prevUserDetails) => {
+                //     return {
+                //         ...prevUserDetails!,
+                //         blockByMeUser: true
+                //     }
+                // })
+                Toast.success('User blocked successfully');
+                router.replace('/(tabs)');
             }
         } catch (error: any) {
             Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while blocking the user. Please try again later.');
@@ -548,7 +560,7 @@ export default function UserDetailsScreen() {
 
     const createBlockNotificationAlert = () => {
         closeMenu();
-        Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user?', [
+        Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user? You will no longer see content from this user.', [
             {
                 text: 'Cancel',
                 onPress: () => {},
@@ -659,7 +671,7 @@ export default function UserDetailsScreen() {
             ) : (
                 !userDetails ? (
                     <View style={[styles.contentPadding, { marginTop: 20 }]}>
-                         <Skeleton style={{ width: '100%', height: 350, borderRadius: 24, marginBottom: 20 }} />
+                         <Skeleton style={{ width: '100%', height: Dimensions.get('screen').height * 0.35, borderRadius: 24, marginBottom: 20 }} />
                         <Text className='text-base font-firasemibold text-center'>User not found.</Text>
                     </View>
                 ) : (
@@ -896,7 +908,7 @@ const styles = StyleSheet.create({
     },
     mainImage: {
         width: '100%',
-        height: 350,
+        height: Dimensions.get('screen').height * 0.35,
         borderRadius: 24,
         marginBottom: 20,
         backgroundColor: '#f0f0f0',

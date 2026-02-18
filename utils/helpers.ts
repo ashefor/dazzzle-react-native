@@ -1,3 +1,27 @@
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get('window');
+    // const CARD_WIDTH = width * 0.9;
+    // const CARD_HEIGHT = height * 0.6;
+
+// 1. Define constraints
+const MAX_TABLET_WIDTH = 500; // Max width for iPad/Tablets so cards don't look like giant squares
+const MAX_HEIGHT_PERCENTAGE = 0.65; // Card stack should never exceed 65% of screen height
+
+// 2. Calculate Responsive Width
+// On phone: uses (Screen - 32). On Tablet: uses 500.
+const responsiveCardWidth = Math.min(width - 32, MAX_TABLET_WIDTH);
+
+// 3. Calculate Height
+// First, try the ideal aspect ratio (1.25)
+const idealHeight = responsiveCardWidth * 1.25;
+
+// Second, cap it at 65% of the screen height to ensure it fits on short devices
+export const CARD_HEIGHT = Math.round(Math.min(idealHeight, height * MAX_HEIGHT_PERCENTAGE));
+
+// (Optional) You can export CARD_WIDTH if your components need it
+export const CARD_WIDTH = responsiveCardWidth;
+
 export const arrayToObject = (data: any) => {
     const result: any = {};
     for (const key in data) {

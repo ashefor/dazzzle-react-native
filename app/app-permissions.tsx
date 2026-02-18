@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, AppState, Alert, Platform, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, Image, AppState, Alert, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
@@ -152,15 +152,15 @@ export default function PermissionsScreen() {
             />
         ) : (
             <CustomButton 
-                title={isAllGranted ? "Continue" : "Allow Access"} 
+                title={isAllGranted ? "Next" : "Continue"} 
                 handlePress={handleRequestPermissions} 
                 disabled={loading}
             />
         )}
         
-        <TouchableOpacity onPress={handleSkip} className="py-4">
+        {/* <TouchableOpacity onPress={handleSkip} className="py-4">
             <Text className="text-center font-firamedium text-gray-400">Skip for now</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );

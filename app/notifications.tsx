@@ -2,6 +2,7 @@ import NavBar from "@/components/NavBar";
 import { useLoader } from "@/context/loader/LoaderProvider";
 import { ReactionCodes } from "@/models/general";
 import axiosRequest from "@/utils/axios";
+import { clearAppBadge } from "@/utils/notificationHandler";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -65,6 +66,7 @@ const NotificationsScreen = () => {
     }, []);
 
     useEffect(() => {
+        clearAppBadge();
         fetchNotifications();
     }, []);
 

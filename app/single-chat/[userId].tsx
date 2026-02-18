@@ -244,7 +244,7 @@ export default function ChatRoomScreen() {
           <FlatList
             inverted
             data={reversedMessages}
-            keyExtractor={(item) => String(item.chat_id)}
+            keyExtractor={(item, index) => `${String(item.chat_id)}-${index}`}
             renderItem={renderItem}
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}
             // Remove keyboardDismissMode if you want keyboard to stay open while scrolling
@@ -301,6 +301,7 @@ const MessageItem = ({ item, styles, userId }: MessageItemProps) => {
   const isMine = !item.is_message_received;
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const insets = useSafeAreaInsets();
   const isText = String(item.type) === '1';
 
   const closeModal = () => setIsModalOpen(false);
@@ -366,7 +367,14 @@ const MessageItem = ({ item, styles, userId }: MessageItemProps) => {
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View className='flex-1'>
+        <View style={{ 
+          flex: 1, 
+          backgroundColor: 'white',
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right
+        }}>
             <NavBar leftItem={<TouchableOpacity onPress={closeModal} className=' flex items-center justify-center'>
               <Ionicons name="close-circle" size={24} color="black" />
             </TouchableOpacity>} title={'View Image'}/>
