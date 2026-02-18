@@ -1,21 +1,23 @@
 import CustomButton from "@/components/CustomButton";
 import Toast from "@/components/toast/toast";
-import { API_URL } from "@/constants/constants";
+import { API_URL, TOKEN_KEY } from "@/constants/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { ReactionCodes } from "@/models/general";
 import { CreatePaystackOrderResponse, CreditPlan, PremiumFeature, PremiumFeatureType, SubscriptionResponse } from "@/models/subscription";
-import { signUserOut } from "@/redux/thunks/authActions";
+import { signUserOut, fetchAuthenticatedUser } from "@/redux/thunks/authActions";
 import axiosRequest from "@/utils/axios";
 import dayjs from "dayjs";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { useEffect, useState, useRef } from "react";
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, StyleSheet } from "react-native";
 import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoader } from '@/context/loader/LoaderProvider';
 import * as WebBrowser from 'expo-web-browser';
+import { WebView } from 'react-native-webview';
 import { updateUserInfo } from "@/redux/slices/authSlice";
 import { handlePermissionNavigation } from "@/utils/notificationHandler";
+import { getItem } from "@/utils/asyncStorage";
 
 const defaultCreditPlans = [
     {
@@ -56,6 +58,16 @@ const PayWallScreen = () => {
     const [creditPlans, setCreditPlans] = useState<CreditPlan[]>(defaultCreditPlans);
     const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
     const [checking, setChecking] = useState(false);
+    
+    // WebView states
+    const [showPaymentWebView, setShowPaymentWebView] = useState(false);
+    const [paymentUrl, setPaymentUrl] = useState<string>('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const webViewRef = useRef<WebView>(null);
+    
+    // URL that indicates successful payment - CUSTOMIZE THIS TO YOUR PAYMENT SUCCESS URL
+    const PAYMENT_SUCCESS_URL = 'https://dazzzle.org/payment/success';
+    const PAYMENT_CANCEL_URL = 'https://dazzzle.org/payment/cancel';
 
     const processPaystackPayment = (response: CreatePaystackOrderResponse) => {
         popup.checkout({
@@ -78,6 +90,112 @@ const PayWallScreen = () => {
         hide();
         router.replace('/(auth)/sign-in');
     }
+
+    /**
+     * Verifies the user's payment status by fetching updated user details
+     * and routes based on whether they have an active premium subscription
+     */
+    const verifyPaymentAndRoute = async () => {
+        try {
+            setIsVerifying(true);
+            show();
+            
+            // Fetch updated user information including subscription status
+            const result = await dispatch(fetchAuthenticatedUser()).unwrap();
+            
+            hide();
+            setIsVerifying(false);
+            
+            const { user, userSubscription } = result;
+            
+            // Update user info in state
+            if (user) {
+                dispatch(updateUserInfo(user));
+            }
+            
+            // Check if user has active premium subscription
+            if (user?.is_premium && userSubscription) {
+                const isExpired = dayjs().isAfter(dayjs(userSubscription.expiry_at));
+                
+                if (!isExpired) {
+                    // User has valid premium subscription
+                    Toast.success('Payment verified successfully!');
+                    await handlePermissionNavigation('/(tabs)', '/app-permissions');
+                } else {
+                    // Subscription expired
+                    Alert.alert(
+                        'Subscription Expired',
+                        'Your subscription has expired. Please select a plan to continue.',
+                        [{ text: 'OK' }]
+                    );
+                }
+            } else {
+                // User is not premium or payment not verified
+                Alert.alert(
+                    'Payment Not Verified',
+                    'We could not verify your payment. If you completed the payment, please contact support.',
+                    [{ text: 'OK' }]
+                );
+            }
+        } catch (error: any) {
+            hide();
+            setIsVerifying(false);
+            console.error('Payment verification error:', error);
+            Alert.alert(
+                'Verification Error',
+                'Unable to verify payment status. Please try again or contact support.',
+                [{ text: 'OK' }]
+            );
+        }
+    };
+
+    /**
+     * Scenario 1: Handle manual close of the payment WebView
+     * Verifies payment status when user closes the browser
+     */
+    const handleWebViewClose = async () => {
+        setShowPaymentWebView(false);
+        
+        // Give a small delay to ensure UI updates smoothly
+        setTimeout(async () => {
+            await verifyPaymentAndRoute();
+        }, 300);
+    };
+
+    /**
+     * Scenario 2: Handle URL changes in the WebView
+     * Auto-closes when payment success URL is detected
+     */
+    const handleNavigationStateChange = async (navState: any) => {
+        const { url } = navState;
+        
+        console.log('WebView URL changed:', url);
+        
+        // Check if URL matches the success URL
+        if (url.includes(PAYMENT_SUCCESS_URL) || url.includes('success')) {
+            console.log('Payment success URL detected, closing WebView...');
+            
+            // Close WebView automatically
+            setShowPaymentWebView(false);
+            
+            // Verify payment and route
+            setTimeout(async () => {
+                await verifyPaymentAndRoute();
+            }, 300);
+        }
+        
+        // Optionally handle cancel/failure URL
+        if (url.includes(PAYMENT_CANCEL_URL) || url.includes('cancel') || url.includes('failed')) {
+            console.log('Payment cancelled/failed URL detected');
+            setShowPaymentWebView(false);
+            
+            Alert.alert(
+                'Payment Cancelled',
+                'Your payment was not completed. Please try again.',
+                [{ text: 'OK' }]
+            );
+        }
+    };
 
     const fetchSubscriptionDetails = async () => {
         try {
@@ -172,13 +290,25 @@ const PayWallScreen = () => {
                 const data = await axiosRequest.post(API_URL + '/premium-plan/capture-paystack-order', params);
                 hide();
                 const responseData = data.data as CreatePaystackOrderResponse;
+                
                 if (responseData && responseData.reference) {
-                    processPaystackPayment(responseData);
+                    // Construct the payment URL - CUSTOMIZE THIS URL TO YOUR PAYMENT PAGE
+                    // Example: You might want to redirect to your payment gateway with the order reference
+                    const paymentPageUrl = `https://dazzzle.org/user/premium/subscription-gate`;
+                    const access_token = await getItem(TOKEN_KEY);
+                    console.log('Redirecting to payment page:', paymentPageUrl, 'with reference:', access_token);
+                    const paymentPageUrlWithAuth = `${paymentPageUrl}?access_token=${access_token}`;
+                    // Set the payment URL and show WebView
+                    setPaymentUrl(paymentPageUrlWithAuth);
+                    setShowPaymentWebView(true);
+                    
+                    // Alternative: If you want to keep using Paystack's inline popup, uncomment below:
+                    // processPaystackPayment(responseData);
                 }
             }
         } catch (error: any) {
             hide();
-            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to log in');
+            Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to create payment order');
         }
     }
 
@@ -269,8 +399,110 @@ const PayWallScreen = () => {
                 </View>
                )}
             </ScrollView>
+            
+            {/* Payment WebView Modal */}
+            <Modal
+                visible={showPaymentWebView}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={handleWebViewClose}
+            >
+                <SafeAreaView style={styles.webViewContainer}>
+                    {/* Header with close button */}
+                    <View style={styles.webViewHeader}>
+                        <Text style={styles.webViewTitle}>Complete Payment</Text>
+                        <TouchableOpacity 
+                            onPress={handleWebViewClose}
+                            style={styles.closeButton}
+                        >
+                            <Text style={styles.closeButtonText}>✕</Text>
+                        </TouchableOpacity>
+                    </View>
+                    
+                    {/* WebView */}
+                    {paymentUrl ? (
+                        <WebView
+                            ref={webViewRef}
+                            source={{ uri: paymentUrl }}
+                            onNavigationStateChange={handleNavigationStateChange}
+                            startInLoadingState={true}
+                            renderLoading={() => (
+                                <View style={styles.loadingContainer}>
+                                    <ActivityIndicator size="large" color="#DD3FE5" />
+                                    <Text style={styles.loadingText}>Loading payment page...</Text>
+                                </View>
+                            )}
+                            onError={(syntheticEvent) => {
+                                const { nativeEvent } = syntheticEvent;
+                                console.error('WebView error:', nativeEvent);
+                                Alert.alert('Error', 'Failed to load payment page. Please try again.');
+                            }}
+                            onHttpError={(syntheticEvent) => {
+                                const { nativeEvent } = syntheticEvent;
+                                console.error('WebView HTTP error:', nativeEvent.statusCode);
+                            }}
+                            // Allow JavaScript
+                            javaScriptEnabled={true}
+                            domStorageEnabled={true}
+                            // Security settings
+                            originWhitelist={['*']}
+                            mixedContentMode="always"
+                        />
+                    ) : (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#DD3FE5" />
+                            <Text style={styles.loadingText}>Preparing payment...</Text>
+                        </View>
+                    )}
+                </SafeAreaView>
+            </Modal>
         </SafeAreaView>
     )
 }
+
+const styles = StyleSheet.create({
+    webViewContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    webViewHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E5E5',
+        backgroundColor: '#fff',
+    },
+    webViewTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#000',
+    },
+    closeButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F2F2F7',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        fontSize: 20,
+        color: '#000',
+        fontWeight: '600',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 14,
+        color: '#666',
+    },
+});
 
 export default PayWallScreen;
