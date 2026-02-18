@@ -10,17 +10,17 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Platform, Alert,
-  DeviceEventEmitter,
-  Modal, Dimensions
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    ActivityIndicator,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    Platform, Alert,
+    DeviceEventEmitter,
+    Modal, Dimensions
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import axiosRequest from '@/utils/axios';
@@ -30,6 +30,8 @@ import ChatRoomSkeleton from '@/components/ChatRoomSkeleton';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { UserConversation } from '@/models/chat';
 import { Ionicons } from '@expo/vector-icons';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 type MessageItemProps = {
   item: {
@@ -49,6 +51,7 @@ export default function ChatRoomScreen() {
   const { show, hide } = useLoader();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
   const bucket = useAppSelector(state => state.messages.byUserId[+userId]);
   const meta = useAppSelector(state => state.messages.userMeta[+userId]);
   const userData = meta?.userData;
@@ -144,54 +147,59 @@ export default function ChatRoomScreen() {
   // };
 
   const pickImage = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Use Enum for better type safety
-        allowsEditing: true,
-        allowsMultipleSelection: false,
-        quality: 0.8, // Slightly reduced quality is often better for mobile uploads
-        // base64: true, // <-- REMOVED: Unnecessary for FormData upload and causes lag
-      });
+    requirePremium(async () => {
+      try {
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images, // Use Enum for better type safety
+          allowsEditing: true,
+          allowsMultipleSelection: false,
+          quality: 0.8, // Slightly reduced quality is often better for mobile uploads
+          // base64: true, // <-- REMOVED: Unnecessary for FormData upload and causes lag
+        });
 
-      if (!result.canceled) {
-        const image = result.assets[0];
-        
-        // Android Fix: Ensure name and type are strictly defined
-        const uri = image.uri;
-        // Extract filename from URI
-        const fileName = uri.split('/').pop() || "upload.jpg";
-        // Infer mime type from file extension if not provided by picker
-        const match = /\.(\w+)$/.exec(fileName);
-        const type = image.mimeType || (match ? `image/${match[1]}` : `image/jpeg`);
+        if (!result.canceled) {
+          const image = result.assets[0];
+          
+          // Android Fix: Ensure name and type are strictly defined
+          const uri = image.uri;
+          // Extract filename from URI
+          const fileName = uri.split('/').pop() || "upload.jpg";
+          // Infer mime type from file extension if not provided by picker
+          const match = /\.(\w+)$/.exec(fileName);
+          const type = image.mimeType || (match ? `image/${match[1]}` : `image/jpeg`);
 
-        const formData = new FormData();
-        
-        formData.append("filepond", {
-          uri: uri,
-          name: fileName,
-          type: type,
-        } as any);
+          const formData = new FormData();
+          
+          formData.append("filepond", {
+            uri: uri,
+            name: fileName,
+            type: type,
+          } as any);
 
-        formData.append("unique_id", getRandomUniqueId());
-        formData.append("optionalLoggedInUserId", String(meta?.userData.optionalLoggedInUserId));
-        formData.append("type", "2");
+          formData.append("unique_id", getRandomUniqueId());
+          formData.append("optionalLoggedInUserId", String(meta?.userData.optionalLoggedInUserId));
+          formData.append("type", "2");
 
-        dispatch(startUpdateLoading({ user_id: +userId }));
-        
-        // When sending FormData, Axios automatically sets Content-Type to multipart/form-data
-        // Do NOT manually set 'Content-Type': 'multipart/form-data' in headers, 
-        // as that removes the boundary string needed for the server to parse it.
-        await dispatch(sendMessage({ user_id: +userId, params: formData })).unwrap();
-        
+          dispatch(startUpdateLoading({ user_id: +userId }));
+          
+          // When sending FormData, Axios automatically sets Content-Type to multipart/form-data
+          // Do NOT manually set 'Content-Type': 'multipart/form-data' in headers, 
+          // as that removes the boundary string needed for the server to parse it.
+          await dispatch(sendMessage({ user_id: +userId, params: formData })).unwrap();
+          
+          dispatch(stopUpdateLoading({ user_id: +userId }));
+          
+          // Scroll to bottom
+          // setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+        }
+      } catch (error) {
+        console.error('Error picking image:', error);
         dispatch(stopUpdateLoading({ user_id: +userId }));
-        
-        // Scroll to bottom
-        // setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
       }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      dispatch(stopUpdateLoading({ user_id: +userId }));
-    }
+    }, {
+      title: 'Send Images',
+      message: 'Upgrade to premium to send images and photos in messages!'
+    });
   };
 
   const acceptOrDeclineMessageRequest = async (message_request_status: '1' | '2') => {
@@ -214,17 +222,22 @@ export default function ChatRoomScreen() {
     const content = text.trim();
     if (!content) return;
     
-    const params = {
-      type: 1,
-      message: content,
-      unique_id: getRandomUniqueId(),
-      optionalLoggedInUserId: meta?.userData.optionalLoggedInUserId
-    }
-    
-    setText('');
-    dispatch(startUpdateLoading({ user_id: +userId }));
-    await dispatch(sendMessage({ user_id: +userId, params }));
-    dispatch(stopUpdateLoading({ user_id: +userId }));
+    requirePremium(async () => {
+      const params = {
+        type: 1,
+        message: content,
+        unique_id: getRandomUniqueId(),
+        optionalLoggedInUserId: meta?.userData.optionalLoggedInUserId
+      }
+      
+      setText('');
+      dispatch(startUpdateLoading({ user_id: +userId }));
+      await dispatch(sendMessage({ user_id: +userId, params }));
+      dispatch(stopUpdateLoading({ user_id: +userId }));
+    }, {
+      title: 'Send Messages',
+      message: 'Upgrade to premium to send messages and chat with other users!'
+    });
   };
 
   const renderItem = ({ item }: any) => <MessageItem item={item} styles={styles} userId={userId as string} />;
@@ -291,6 +304,13 @@ export default function ChatRoomScreen() {
           </Fragment>
         )}
       </View>
+      
+      {/* Premium Action Modal */}
+      <PremiumActionModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        {...modalOptions}
+      />
     </KeyboardAvoidingView>
   );
 }

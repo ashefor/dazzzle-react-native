@@ -12,6 +12,8 @@ import NavBar from '@/components/NavBar';
 import NotificationIcon from '@/components/icons/NotificationIcon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,10 +28,12 @@ const CARD_HEIGHT = Math.min(potentialHeight, height * 0.70);
 const EncounterScreen = () => {
   const dispatch = useAppDispatch();
   const route = useRoute<any>();
+  const { requirePremium, showModal, setShowModal, modalOptions, isPremium } = usePremiumAction();
   
   const { users, topCardIndex, status } = useAppSelector((state) => state.encounter);
   
   const [triggerSwipeDirection, setTriggerSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [pendingSwipe, setPendingSwipe] = useState<{ direction: 'left' | 'right', user: any } | null>(null);
 
   useEffect(() => {
     if (users.length === 0) {
@@ -44,42 +48,56 @@ const EncounterScreen = () => {
     }
   }, [topCardIndex, users.length, status]);
 
-
-  const handleSwipeComplete = (direction: 'left' | 'right') => {
-    setTriggerSwipeDirection(null);
-    
-    const currentUser = users[topCardIndex]
-    
+  const executeSwipe = (direction: 'left' | 'right', user: any) => {
     dispatch(popCard());
-
     dispatch(processSwipe({ 
-      userId: currentUser.id, 
+      userId: user.id, 
       action: direction === 'left' ? 'dislike' : 'like' 
     })).unwrap().then(() => {
+      setPendingSwipe(null);
     }).catch(() => {
-        // Handle error if needed (e.g., show toast)
+      setPendingSwipe(null);
     });
   };
 
-  const handleInfoPress = () => {
+  const handleSwipeComplete = (direction: 'left' | 'right') => {
+    setTriggerSwipeDirection(null);
     const currentUser = users[topCardIndex];
-    if (currentUser) {
-      router.navigate({
-        pathname: '/[userName]',
-        params: { userName: currentUser.username }
-      })
-    }
+    
+    // Execute swipe action (premium already checked before triggering animation)
+    executeSwipe(direction, currentUser);
+  };
+
+  const handleInfoPress = () => {
+    requirePremium(() => {
+      const currentUser = users[topCardIndex];
+      if (currentUser) {
+        // Allow viewing user profiles without premium
+        router.navigate({
+          pathname: '/[userName]',
+          params: { userName: currentUser.username }
+        })
+      }
+    })
   };
 
   const onButtonPress = (direction: 'left' | 'right') => {
+    const currentUser = users[topCardIndex];
+    
+    // Check premium BEFORE triggering swipe animation
+    requirePremium(() => {
       setTriggerSwipeDirection(direction);
+    }, {
+      title: direction === 'left' ? 'Dislike Users' : 'Like Users',
+      message: `Upgrade to premium to ${direction === 'left' ? 'pass on' : 'like'} users and unlock more features!`
+    });
   };
 
   const isDisabled = users.length === 0 || status === 'loading';
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => router.push('/notifications')} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+      <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Encounter 🔥</Text>} rightItem={<TouchableOpacity onPress={() => requirePremium(()=> router.push('/notifications'))} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
         <NotificationIcon color={"#DD3FE5"} />
       </TouchableOpacity>} />
 
@@ -96,6 +114,7 @@ const EncounterScreen = () => {
                     onSwipe={handleSwipeComplete}
                     item={user}
                     triggerSwipe={actualIndex === topCardIndex ? triggerSwipeDirection : null}
+                    enabled={isPremium}
                 >
                     <Card user={user} width={CARD_WIDTH} height={CARD_HEIGHT}/>
                 </SwipeableCard>
@@ -120,6 +139,13 @@ const EncounterScreen = () => {
             <InformationCircleIcon width={60} height={60} fill="black" />
         </TouchableOpacity>
       </View>
+      
+      {/* Premium Action Modal */}
+      <PremiumActionModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        {...modalOptions}
+      />
     </SafeAreaView>
   );
 };

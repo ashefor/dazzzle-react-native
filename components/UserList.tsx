@@ -7,6 +7,8 @@ import { ReactionCodes } from '@/models/general';
 import { LikedUserProfile } from '@/models/user';
 import Toast from '@/components/toast/toast';
 import { useLoader } from '@/context/loader/LoaderProvider';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from './PremiumActionModal';
 
 export interface UserListProps {
     /** The API endpoint to fetch users from */
@@ -39,6 +41,7 @@ const UserList: React.FC<UserListProps> = ({
 }) => {
     const { width } = useWindowDimensions();
     const { show, hide } = useLoader();
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
     
     // Grid calculation
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
@@ -127,15 +130,17 @@ const UserList: React.FC<UserListProps> = ({
         ]), [actionAlertTitle, actionAlertMessage, actionButtonText, performAction]);
 
     const renderItem = useCallback(({ item }: { item: LikedUserProfile }) => (
-        <TouchableWithoutFeedback onPress={() => router.push({
-                pathname: '/[userName]',
-                params: { userName: item.username }
+        <TouchableWithoutFeedback onPress={() => requirePremium(() => {
+                router.push({
+                    pathname: '/[userName]',
+                    params: { userName: item.username }
+                });
             })}>
             <View className='m-2' style={{ flex: 1 / numColumns }}>
                 <View className='relative h-52 w-full'>
                     {showActionButton && (
                         <View className='absolute top-4 right-4 z-10'>
-                            <TouchableOpacity onPress={() => createActionAlert(item._id)} className='p-2 bg-white rounded-full shadow-sm'>
+                            <TouchableOpacity onPress={() => requirePremium(() => createActionAlert(item._id))} className='p-2 bg-white rounded-full shadow-sm'>
                                 <Ionicons name="heart" size={20} color="red" />
                             </TouchableOpacity>
                         </View>
@@ -192,6 +197,12 @@ const UserList: React.FC<UserListProps> = ({
                 }
                 renderItem={renderItem}
             />
+
+            <PremiumActionModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                {...modalOptions}
+            /> 
         </View>
     );
 };

@@ -74,13 +74,8 @@ export default function AuthLayout() {
            return;
         }
 
-        // 2. Not Premium? -> Paywall
-        if (!userInfo.is_premium) {
-            router.replace('/paywall');
-            return;
-        }
-
-        // 3. All Good? -> Check Permissions then Go Home
+        // 2. All users can access the app (premium checks at action level)
+        // Go directly to app after checking permissions
         await handlePermissionNavigation('/(tabs)', '/app-permissions');
 
       } catch (err) {

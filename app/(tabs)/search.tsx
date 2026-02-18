@@ -12,6 +12,8 @@ import NavBar from '@/components/NavBar';
 import FilterIcon from '@/components/icons/FilterIcon';
 import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 interface FeaturedUser {
     _id: number
@@ -50,6 +52,7 @@ const FilterUsers = () => {
     const [filterParams, setFilterParams] = useState<BasicFilter | null>(null)
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
     const insets = useSafeAreaInsets();
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
     const snapPoints = useMemo(() => ["65%", "90%"], []);
 
@@ -180,7 +183,7 @@ const FilterUsers = () => {
             <BottomSheetHandle
                 {...props}
             >
-                 <View className="py-4 relative">
+                <View className="py-4 relative">
 
                     <View className=' w-full'>
                         <TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
@@ -205,9 +208,11 @@ const FilterUsers = () => {
 
     const renderItem = useCallback(({ item }: { item: FeaturedUser }) => {
         return (
-            <TouchableWithoutFeedback onPress={() => router.push({
+            <TouchableWithoutFeedback onPress={() => requirePremium(() => {
+                router.push({
                 pathname: '/[userName]',
                 params: { userName: item.username }
+            })
             })} className=''>
                 <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                     <View className='flex-1 rounded-xl overflow-hidden'>
@@ -227,37 +232,37 @@ const FilterUsers = () => {
 
     // Helper to animate paddingTop
     const animateKeyboardPadding = useCallback((toValue: number, duration = 250) => {
-      Animated.timing(keyboardPadding, {
-        toValue,
-        duration,
-        useNativeDriver: false, // paddingTop not supported by native driver
-      }).start();
+        Animated.timing(keyboardPadding, {
+            toValue,
+            duration,
+            useNativeDriver: false, // paddingTop not supported by native driver
+        }).start();
     }, [keyboardPadding]);
 
     useEffect(() => {
-      // Choose event names for platform
-      const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-      const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+        // Choose event names for platform
+        const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+        const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-      const onKeyboardShow = (e: any) => {
-        // e.endCoordinates.height is the keyboard height
-        const keyboardHeight = e?.endCoordinates?.height ?? 300;
-        // convert to a reasonable top padding value (you can tweak multiplier)
-        const topPadding = Math.min( keyboardHeight * 0.5, 120 ); // clamp to 120
-        animateKeyboardPadding(topPadding, 250);
-      };
+        const onKeyboardShow = (e: any) => {
+            // e.endCoordinates.height is the keyboard height
+            const keyboardHeight = e?.endCoordinates?.height ?? 300;
+            // convert to a reasonable top padding value (you can tweak multiplier)
+            const topPadding = Math.min(keyboardHeight * 0.5, 120); // clamp to 120
+            animateKeyboardPadding(topPadding, 250);
+        };
 
-      const onKeyboardHide = () => {
-        animateKeyboardPadding(0, 200);
-      };
+        const onKeyboardHide = () => {
+            animateKeyboardPadding(0, 200);
+        };
 
-      const showSub: EmitterSubscription = Keyboard.addListener(showEvent, onKeyboardShow);
-      const hideSub: EmitterSubscription = Keyboard.addListener(hideEvent, onKeyboardHide);
+        const showSub: EmitterSubscription = Keyboard.addListener(showEvent, onKeyboardShow);
+        const hideSub: EmitterSubscription = Keyboard.addListener(hideEvent, onKeyboardHide);
 
-      return () => {
-        showSub.remove();
-        hideSub.remove();
-      };
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
     }, [animateKeyboardPadding]);
 
     return (
@@ -320,15 +325,20 @@ const FilterUsers = () => {
                 }}
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
-                                keyboardBehavior="extend"
-                                enableBlurKeyboardOnGesture
-                                keyboardBlurBehavior='restore'
-                                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
+                keyboardBehavior="extend"
+                enableBlurKeyboardOnGesture
+                keyboardBlurBehavior='restore'
+                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
             >
                 <BottomSheetScrollView>
                     <UsersBasicFilter filterUsers={filterUsers} />
                 </BottomSheetScrollView>
             </BottomSheetModal>
+            <PremiumActionModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                {...modalOptions}
+            />
         </View>
 
     )

@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-  interpolate,
-  withTiming,
-  Extrapolation,
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+    runOnJS,
+    interpolate,
+    withTiming,
+    Extrapolation,
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
@@ -21,6 +21,7 @@ interface SwipeableCardProps {
   children: React.ReactNode;
   activeIndex: number;
   triggerSwipe?: 'left' | 'right' | null; // Prop to trigger swipe from outside
+  enabled?: boolean; // Prop to enable/disable manual swipe gestures
 }
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({
@@ -29,6 +30,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   children,
   activeIndex,
   triggerSwipe,
+  enabled = true,
 }) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -48,6 +50,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }, [triggerSwipe, activeIndex, index]);
 
   const panGesture = Gesture.Pan()
+    .enabled(enabled) // Disable gesture if not enabled
     .onUpdate((event) => {
       if (index !== activeIndex) return; // Only move top card
       translateX.value = event.translationX;

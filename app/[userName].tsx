@@ -45,6 +45,8 @@ import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomS
 import CustomButton from '@/components/CustomButton';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import { Skeleton } from '@/components/SkeletonLoader';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 
 const { width } = Dimensions.get('window');
@@ -250,6 +252,7 @@ export default function UserDetailsScreen() {
     const insets = useSafeAreaInsets();
     const { show, hide } = useLoader();
     const dispatch = useAppDispatch();
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
     // State
     const [activeTab, setActiveTab] = useState<'basic' | 'photos'>('basic');
@@ -397,45 +400,47 @@ export default function UserDetailsScreen() {
     }
 
     const likeUser = async () => {
-        try {
-            const userId = userDetails?.userData.userId;
-            if (!userId) {
-                return new Error('User ID not found');
-            }
-            show();
-            const data: any = await axiosRequest.post(`/${userId}/1/user-like-dislike`, {})
-            hide();
-            dispatch(popCard());
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const oldUserDetails = Object.assign({}, userDetails);
-                if (oldUserDetails) {
-                    let newLikeData = oldUserDetails.userLikeData || [];
-                    if (Array.isArray(newLikeData)) {
-                        if (newLikeData.some((like) => like.like == 1)) {
-                            // User has already liked, remove the like
-                            newLikeData = newLikeData.filter((like) => like.like != 1);
-                        } else {
-                            newLikeData.push({ like: 1, _id: Date.now() });
-                        }
-                    } else {
-                        if (newLikeData.like == 1) {
-                            newLikeData = [];
-                        } else {
-                            newLikeData = [{ like: 1, _id: Date.now() }];
-                        }
-                    }
-                    setUserDetails({
-                        ...oldUserDetails,
-                        userLikeData: newLikeData
-                    });
+        requirePremium(async () => {
+            try {
+                const userId = userDetails?.userData.userId;
+                if (!userId) {
+                    return new Error('User ID not found');
                 }
-            } else {
-                throw new Error('Failed to like user');
+                show();
+                const data: any = await axiosRequest.post(`/${userId}/1/user-like-dislike`, {})
+                hide();
+                dispatch(popCard());
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    const oldUserDetails = Object.assign({}, userDetails);
+                    if (oldUserDetails) {
+                        let newLikeData = oldUserDetails.userLikeData || [];
+                        if (Array.isArray(newLikeData)) {
+                            if (newLikeData.some((like) => like.like == 1)) {
+                                // User has already liked, remove the like
+                                newLikeData = newLikeData.filter((like) => like.like != 1);
+                            } else {
+                                newLikeData.push({ like: 1, _id: Date.now() });
+                            }
+                        } else {
+                            if (newLikeData.like == 1) {
+                                newLikeData = [];
+                            } else {
+                                newLikeData = [{ like: 1, _id: Date.now() }];
+                            }
+                        }
+                        setUserDetails({
+                            ...oldUserDetails,
+                            userLikeData: newLikeData
+                        });
+                    }
+                } else {
+                    throw new Error('Failed to like user');
+                }
+            } catch (error: any) {
+                hide();
+                Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while liking the user. Please try again later.');
             }
-        } catch (error: any) {
-            hide();
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while liking the user. Please try again later.');
-        }
+        });
     }
 
     const renderBackdrop = useCallback(
@@ -479,45 +484,47 @@ export default function UserDetailsScreen() {
     );
 
     const dislikeUser = async () => {
-        try {
-            const userId = userDetails?.userData.userId;
-            if (!userId) {
-                return new Error('User ID not found');
-            }
-            show();
-            const data: any = await axiosRequest.post(`/${userId}/0/user-like-dislike`, {})
-            hide();
-            dispatch(popCard());
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const oldUserDetails = Object.assign({}, userDetails);
-                if (oldUserDetails) {
-                    let newLikeData = oldUserDetails.userLikeData || [];
-                    if (Array.isArray(newLikeData)) {
-                        if (newLikeData.some((like) => like.like == 0)) {
-                            // User has already disliked, remove the dislike
-                            newLikeData = newLikeData.filter((like) => like.like != 0);
-                        } else {
-                            newLikeData.push({ like: 0, _id: Date.now() });
-                        }
-                    } else {
-                        if (newLikeData.like == 0) {
-                            newLikeData = [];
-                        } else {
-                            newLikeData = [{ like: 0, _id: Date.now() }];
-                        }
-                    }
-                    setUserDetails({
-                        ...oldUserDetails,
-                        userLikeData: newLikeData
-                    });
+        requirePremium(async () => {
+            try {
+                const userId = userDetails?.userData.userId;
+                if (!userId) {
+                    return new Error('User ID not found');
                 }
-            } else {
-                throw new Error('Failed to like user');
+                show();
+                const data: any = await axiosRequest.post(`/${userId}/0/user-like-dislike`, {})
+                hide();
+                dispatch(popCard());
+                if (data.reaction === ReactionCodes.SUCCESS) {
+                    const oldUserDetails = Object.assign({}, userDetails);
+                    if (oldUserDetails) {
+                        let newLikeData = oldUserDetails.userLikeData || [];
+                        if (Array.isArray(newLikeData)) {
+                            if (newLikeData.some((like) => like.like == 0)) {
+                                // User has already disliked, remove the dislike
+                                newLikeData = newLikeData.filter((like) => like.like != 0);
+                            } else {
+                                newLikeData.push({ like: 0, _id: Date.now() });
+                            }
+                        } else {
+                            if (newLikeData.like == 0) {
+                                newLikeData = [];
+                            } else {
+                                newLikeData = [{ like: 0, _id: Date.now() }];
+                            }
+                        }
+                        setUserDetails({
+                            ...oldUserDetails,
+                            userLikeData: newLikeData
+                        });
+                    }
+                } else {
+                    throw new Error('Failed to like user');
+                }
+            } catch (error: any) {
+                hide();
+                Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while disliking the user. Please try again later.');
             }
-        } catch (error: any) {
-            hide();
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while disliking the user. Please try again later.');
-        }
+        });
     }
 
     const toggleMenu = () => setMenuVisible(!isMenuVisible);
@@ -757,9 +764,11 @@ export default function UserDetailsScreen() {
                                     <HeartbreakIcon fill={hasUserDisliked(userDetails.userLikeData) ? "#FF383C" : "#fff"} stroke={hasUserDisliked(userDetails.userLikeData) ? "#fff" : "#141B34"} />
                                     <Text className={`text-xs font-firaregular ${hasUserDisliked(userDetails.userLikeData) ? "text-[#FF383C]" : "text-[#141B34]"}`}>{hasUserDisliked(userDetails.userLikeData) ? "Disliked" : "Dislike"}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => router.navigate({
-                                    pathname: '/single-chat/[userId]',
-                                    params: { userId: userDetails?.userData.userId }
+                                <TouchableOpacity onPress={() => requirePremium(() => {
+                                    router.navigate({
+                                        pathname: '/single-chat/[userId]',
+                                        params: { userId: userDetails?.userData.userId }
+                                    });
                                 })} className='items-center justify-center space-y-0.5'>
                                     <CommentIcon />
                                     <Text className="text-xs font-firaregular">Message</Text>
@@ -821,6 +830,12 @@ export default function UserDetailsScreen() {
                     </View>
                 </BottomSheetView>
             </BottomSheetModal>
+
+            <PremiumActionModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                {...modalOptions}
+            />
         </View>
     );
 }

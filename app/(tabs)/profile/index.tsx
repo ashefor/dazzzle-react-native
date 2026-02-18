@@ -25,15 +25,24 @@ import axiosRequest from '@/utils/axios';
 import { ReactionCodes } from '@/models/general';
 import Toast from '@/components/toast/toast';
 import { getItem, setItem } from '@/utils/asyncStorage';
+import dayjs from 'dayjs';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { show, hide } = useLoader();
   const dispatch = useAppDispatch();
+  const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
   const { userInfo, loggingOut } = useAppSelector(state => state.auth);
+  const { currentSubscription } = useAppSelector(state => state.subscription);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const notificationSettingsBottomSheetModalRef = useRef<BottomSheetModal>(null);
   const deleteAccountBottomSheetModalRef = useRef<BottomSheetModal>(null);
+  
+  const isPremium = userInfo?.is_premium || false;
+  const isExpired = currentSubscription ? dayjs().isAfter(dayjs(currentSubscription.expiry_at)) : false;
+  
 
   const handleLogOut = async () => {
     try {
@@ -162,15 +171,56 @@ export default function ProfileScreen() {
             </View> */}
             </LinearGradient>
           </View>
+          
+          {/* Premium Upgrade Section
+          {(!isPremium || isExpired) && (
+            <TouchableOpacity 
+              style={styles.premiumUpgradeCard}
+              onPress={() => router.push('/paywall')}
+            >
+              <LinearGradient
+                colors={['#FFD700', '#FFA500']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.premiumGradient}
+              >
+                <View style={styles.premiumContent}>
+                  <Text style={styles.premiumIcon}>👑</Text>
+                  <View style={styles.premiumTextContainer}>
+                    <Text style={styles.premiumTitle}>Unlock Premium Features</Text>
+                    <Text style={styles.premiumSubtitle}>
+                      Like users, send messages, and see who likes you!
+                    </Text>
+                  </View>
+                  <ArrowForwardIcon stroke="#fff" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          )} */}
+          
+          {isPremium && !isExpired && currentSubscription && (
+            <View style={styles.premiumStatusCard}>
+              <View style={styles.premiumStatusContent}>
+                <Text style={styles.premiumStatusIcon}>✨</Text>
+                <View style={styles.premiumStatusTextContainer}>
+                  <Text style={styles.premiumStatusTitle}>Premium Active</Text>
+                  <Text style={styles.premiumStatusSubtitle}>
+                    Expires on {dayjs(currentSubscription.expiry_at).format('MMM DD, YYYY')}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+          
           <Section title="Account">
-            <MenuItem onPress={() => router.push('/profile/profile-settings')} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
+            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/profile-settings'))} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
             {/* <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" /> */}
-            <MenuItem onPress={() => router.push('/profile/blocked-users')} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
-            <MenuItem onPress={() => notificationSettingsBottomSheetModalRef.current?.present()} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
+            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/blocked-users'))} icon={<UserBlockIcon stroke={"#8E8E93"} />} label="My Blocked List" />
+            <MenuItem onPress={() => requirePremium(() => notificationSettingsBottomSheetModalRef.current?.present())} icon={<NotificationIcon width={20} height={20} color={"#8E8E93"} />} label="Notification Settings" isLast />
           </Section>
           <Section title="Security">
-            <MenuItem onPress={() => router.push('/profile/change-password')} icon={<LockIcon stroke={"#8E8E93"} />} label="Change Password" />
-            <MenuItem onPress={() => router.push('/profile/change-email')} icon={<MailIcon stroke={"#8E8E93"} />} label="Change Email" isLast />
+            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/change-password'))} icon={<LockIcon stroke={"#8E8E93"} />} label="Change Password" />
+            <MenuItem onPress={() => requirePremium(()=> router.push('/profile/change-email'))} icon={<MailIcon stroke={"#8E8E93"} />} label="Change Email" isLast />
           </Section>
 
           <Section title="Legal">
@@ -305,6 +355,11 @@ export default function ProfileScreen() {
           </View>
         </BottomSheetView>
       </BottomSheetModal>
+      <PremiumActionModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        {...modalOptions}
+      />
     </Fragment>
   );
 }
@@ -591,5 +646,71 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: 'Onest_500Medium',
     marginLeft: 8,
+  },
+  // Premium Upgrade Styles
+  premiumUpgradeCard: {
+    marginBottom: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#FFA500',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  premiumGradient: {
+    padding: 16,
+  },
+  premiumContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumIcon: {
+    fontSize: 40,
+    marginRight: 12,
+  },
+  premiumTextContainer: {
+    flex: 1,
+  },
+  premiumTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  premiumSubtitle: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.9,
+  },
+  // Premium Status Styles
+  premiumStatusCard: {
+    marginBottom: 20,
+    borderRadius: 16,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 2,
+    borderColor: '#86EFAC',
+    padding: 16,
+  },
+  premiumStatusContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumStatusIcon: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  premiumStatusTextContainer: {
+    flex: 1,
+  },
+  premiumStatusTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#166534',
+    marginBottom: 4,
+  },
+  premiumStatusSubtitle: {
+    fontSize: 14,
+    color: '#15803D',
   },
 });

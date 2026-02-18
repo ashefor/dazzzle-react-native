@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     color: 'white',
     marginLeft: 5,
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Onest_500Medium'
   },
   nameText: {
     color: 'white',
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: 'Onest_600SemiBold',
   },
 });
 

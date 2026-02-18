@@ -9,12 +9,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChatListsSkeleton from '@/components/ChatListsSkeleton';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useIsFocused } from '@react-navigation/native';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 export default function ChatsScreen() {
     const dispatch = useAppDispatch();
     const insets = useSafeAreaInsets();
     const isFocused = useIsFocused()
     const { items, loading } = useAppSelector((state => state.chats));
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
     const [search, setSearch] = useState('');
 
@@ -32,12 +35,12 @@ export default function ChatsScreen() {
     }, [items, search]);
 
     const renderItem = ({ item }: { item: MessengerUser & { unreadCount?: number } }) => (
-        <TouchableOpacity style={styles.row} onPress={() => {
+        <TouchableOpacity style={styles.row} onPress={() => requirePremium(() => {
             router.navigate({
                 pathname: '/single-chat/[userId]',
                 params: { userId: item.user_id.toString() },
             })
-        }}>
+        })}>
             <Image source={{ uri: item.profile_picture }} style={styles.avatar} />
             <View style={{ flex: 1 }}>
                 <View style={styles.rowTop}>
@@ -88,6 +91,11 @@ export default function ChatsScreen() {
                 />
                     </KeyboardAvoidingView>
             )}
+            <PremiumActionModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                {...modalOptions}
+            /> 
         </View>
     );
 }
