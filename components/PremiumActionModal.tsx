@@ -8,11 +8,11 @@ import {
     StyleSheet,
     Alert,
     Platform,
-    Linking,
     ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+import * as WebBrowser from 'expo-web-browser';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { fetchAuthenticatedUser } from '@/redux/thunks/authActions';
 import { updateUserInfo } from '@/redux/slices/authSlice';
@@ -31,9 +31,14 @@ interface PremiumActionModalProps {
     message?: string;
 }
 
-const PAYMENT_SUCCESS_URL = 'https://dazzzle.org/payment/success';
+const PAYMENT_SUCCESS_URL = 'https://dazzzle.org/user/premium/success';
 const PAYMENT_CANCEL_URL = 'https://dazzzle.org/payment/cancel';
-const UPGRADE_WEBSITE_URL = 'https://dazzzle.org/user/premium/subscription-gate'; // External website for iOS users
+const UPGRADE_WEBSITE_URL = 'https://dazzzle.org/user/premium/subscription-gate';
+
+// For optimal UX: Change your website to redirect to these deep links instead of HTTPS URLs:
+// Success: 'dazzzle://payment/success' (browser will auto-close)
+// Cancel:  'dazzzle://payment/cancel'  (browser will auto-close)
+// Current: Website redirects to HTTPS URLs (user must tap 'Done' to close browser)
 
 export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
     visible,
@@ -82,16 +87,46 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
                 ? `${UPGRADE_WEBSITE_URL}?access_token=${token}`
                 : UPGRADE_WEBSITE_URL;
             
-            const canOpen = await Linking.canOpenURL(url);
-            if (canOpen) {
-                await Linking.openURL(url);
-                onClose();
+            // Open in SFSafariViewController (iOS) or Chrome Custom Tabs (Android)
+            // This provides better UX while staying Apple-compliant
+            // 
+            // CURRENT: Website redirects to HTTPS URL -> user must tap "Done" to close
+            // OPTIMAL: Website redirects to 'dazzzle://payment/success' -> auto-closes
+            const result = await WebBrowser.openAuthSessionAsync(url, 'dazzzle://payment');
+            
+            console.log('WebBrowser result:', result);
+            
+            // Handle different result types
+            if (result.type === 'success' && result.url) {
+                // Website redirected to deep link (dazzzle://payment/*)
+                // Browser auto-closed - this is the optimal flow
+                const redirectUrl = result.url;
+                console.log('Deep link redirect detected:', redirectUrl);
+                
+                if (redirectUrl.includes('success')) {
+                    // Payment successful - verify account status
+                    show();
+                    await verifyPaymentAndRoute();
+                } else if (redirectUrl.includes('cancel') || redirectUrl.includes('failed')) {
+                    // Payment cancelled
+                    Alert.alert(
+                        'Upgrade Cancelled',
+                        'Your upgrade was not completed. Please try again.',
+                        [{ text: 'OK' }]
+                    );
+                } else {
+                    // Unknown redirect - check account status to be safe
+                    await checkAccountStatus();
+                }
             } else {
-                Alert.alert('Error', 'Unable to open website. Please try again.');
+                // User manually closed browser (current flow with HTTPS redirect)
+                // Website navigated to HTTPS success page, user tapped "Done"
+                console.log('Browser closed by user, checking account status...');
+                await checkAccountStatus();
             }
         } catch (error) {
-            console.error('Error opening website:', error);
-            Alert.alert('Error', 'Unable to open website. Please try again.');
+            console.error('Error opening browser:', error);
+            Alert.alert('Error', 'Unable to open upgrade page. Please try again.');
         }
     };
 
@@ -119,14 +154,14 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
                 } else {
                     Alert.alert(
                         'Account Status',
-                        'Your access has expired. Please upgrade on our website to continue.',
+                        'Your access has expired. Please upgrade again to continue',
                         [{ text: 'OK' }]
                     );
                 }
             } else {
                 Alert.alert(
                     'Account Status',
-                    'Please complete your upgrade on our website to unlock all features.',
+                    'We could not verify your upgrade. If you completed it, please contact support.',
                     [{ text: 'OK' }]
                 );
             }
@@ -279,7 +314,9 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
                                 />
                             </View>
                             
-                            {checkingStatus ? <ActivityIndicator size="small" color="#DD3FE5" /> : <TouchableOpacity onPress={checkAccountStatus} style={styles.checkStatusButton}>
+                            {checkingStatus ? <View style={styles.checkStatusButton}>
+                                <ActivityIndicator size="small" color="#DD3FE5" />
+                            </View> : <TouchableOpacity onPress={checkAccountStatus} style={styles.checkStatusButton}>
                                 <Text style={styles.checkStatusText}>
                                     Already upgraded? Check status
                                 </Text>
@@ -287,7 +324,7 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
                         </View>
 
                         <Text style={styles.footerNote}>
-                            You'll be redirected to our website to complete your upgrade securely.
+                            You'll be taken to our secure website to complete your upgrade.
                         </Text>
                     </ScrollView>
                 </SafeAreaView>

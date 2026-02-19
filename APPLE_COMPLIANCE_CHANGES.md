@@ -5,13 +5,17 @@ Implemented "Reader App" solution (Netflix/Spotify model) to comply with Apple A
 
 ## What Changed
 
-### ✅ iOS: External Website Upgrade (Apple-Compliant)
+### ✅ iOS: External Browser Upgrade (Apple-Compliant)
 - **Removed**: In-app payment processing via WebView on iOS
-- **Added**: "Upgrade on Website" button that opens Safari to your website
+- **Added**: "Upgrade" button that opens SFSafariViewController to your website
+- **Technology**: Uses `expo-web-browser` (SFSafariViewController on iOS)
+- **User Experience**: Opens in-app browser with professional look and feel
 - **Compliant with**: Apple Guideline 3.1.3(a) - Reader Apps
 - **Benefits**: 
   - No 30% Apple commission
   - Keep your existing Paystack payment system
+  - Better UX than external Safari (stays in-app context)
+  - Automatic account status check when user returns
   - App will pass Apple review
 
 ### ✅ Android: In-App Upgrade (Unchanged)
@@ -37,15 +41,17 @@ Removed Apple-flagged terms and replaced with compliant alternatives:
 ### 1. **PremiumActionModal.tsx** - Main Payment/Upgrade Modal
 **Changes:**
 - Platform detection: Different UI for iOS vs Android
-- iOS: Shows information screen with "Upgrade on Website" button
+- iOS: Shows information screen with "Upgrade" button
 - Android: Shows WebView with payment flow
-- Opens Safari/external browser on iOS (using `Linking.openURL`)
-- Includes "Check Status" button for iOS users who upgraded on web
+- Opens SFSafariViewController on iOS (using `expo-web-browser`)
+- Automatically checks account status when user returns from browser
+- Includes manual "Check Status" button for additional verification
 
 **New Features:**
 - Beautiful upgrade benefits list
-- Clear messaging about external redirect
-- Account status verification
+- In-app browser on iOS (SFSafariViewController) for better UX
+- Automatic account status verification when browser is dismissed
+- Clear messaging about website redirect
 
 ### 2. **usePremiumAction.ts** - Premium Check Hook
 **Changes:**
@@ -76,9 +82,12 @@ Removed Apple-flagged terms and replaced with compliant alternatives:
 ### iOS Flow:
 1. User taps on locked feature (like, message, etc.)
 2. Modal appears with upgrade benefits
-3. User taps "Upgrade on Website"
-4. **Safari opens** to: `https://dazzzle.org/user/premium/subscription-gate?access_token=USER_TOKEN`
+3. User taps "Upgrade"
+4. **SFSafariViewController opens** (in-app browser) to: `https://dazzzle.org/user/premium/subscription-gate?access_token=USER_TOKEN`
 5. User completes upgrade on your website (existing Paystack flow)
+6. User taps "Done" to close the browser
+7. **App automatically checks** account status
+8. If upgraded successfully, user gets access immediately
 6. User returns to app
 7. User taps "Already upgraded? Check status"
 8. App verifies account status with server
@@ -143,11 +152,12 @@ https://dazzzle.org/upgrade
 
 ### iOS Testing:
 - [ ] Tap locked feature → Modal appears
-- [ ] Tap "Upgrade on Website" → Safari opens
+- [ ] Tap "Upgrade" → SFSafariViewController opens (in-app browser)
 - [ ] Complete upgrade on website
-- [ ] Return to app
-- [ ] Tap "Already upgraded? Check status"
+- [ ] Tap "Done" to close browser
+- [ ] App automatically checks account status
 - [ ] Verify features unlock
+- [ ] (Alternative) Use manual "Check status" button if needed
 
 ### Android Testing:
 - [ ] Tap locked feature → WebView modal appears
