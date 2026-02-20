@@ -267,7 +267,7 @@ const FilterUsers = () => {
 
     return (
         <View className='flex-1 bg-white' style={{ paddingTop: insets.top }}>
-            <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Search</Text>} rightItem={<TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.present()} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+            <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Search</Text>} rightItem={<TouchableOpacity onPress={() => requirePremium(() => searchBottomSheetModalRef.current?.present())} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
                 <FilterIcon stroke={"#DD3FE5"} />
             </TouchableOpacity>} />
             <View className='flex-1 h-full'>
