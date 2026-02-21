@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { router } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, StyleSheet } from "react-native";
-import { usePaystack } from 'react-native-paystack-webview';
+// import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoader } from '@/context/loader/LoaderProvider';
 import * as WebBrowser from 'expo-web-browser';
@@ -49,7 +49,7 @@ const defaultCreditPlans = [
 ]
 
 const PayWallScreen = () => {
-    const { popup } = usePaystack();
+    // const { popup } = usePaystack();
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
     const { userInfo } = useAppSelector(state => state.auth);
@@ -70,18 +70,18 @@ const PayWallScreen = () => {
     const PAYMENT_CANCEL_URL = 'https://dazzzle.org/payment/cancel';
 
     const processPaystackPayment = (response: CreatePaystackOrderResponse) => {
-        popup.checkout({
-            email: response.email || '',
-            amount: Number(response.amount) / 100,
-            reference: response.reference,
-            metadata: {
-                custom_fields: response
-            },
-            onSuccess: (res) => verifyPaystackPayment(res),
-            onCancel: () => console.log('User cancelled'),
-            onLoad: (res) => console.log('WebView Loaded:', res),
-            onError: (err) => console.log('WebView Error:', err)
-        });
+        // popup.checkout({
+        //     email: response.email || '',
+        //     amount: Number(response.amount) / 100,
+        //     reference: response.reference,
+        //     metadata: {
+        //         custom_fields: response
+        //     },
+        //     onSuccess: (res) => verifyPaystackPayment(res),
+        //     onCancel: () => console.log('User cancelled'),
+        //     onLoad: (res) => console.log('WebView Loaded:', res),
+        //     onError: (err) => console.log('WebView Error:', err)
+        // });
     };
 
     const handleLogOut = async () => {

@@ -198,7 +198,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )} */}
           
-          {isPremium && !isExpired && currentSubscription && (
+          {/* {isPremium && !isExpired && currentSubscription && (
             <View style={styles.premiumStatusCard}>
               <View style={styles.premiumStatusContent}>
                 <Text style={styles.premiumStatusIcon}>✨</Text>
@@ -210,7 +210,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
-          )}
+          )} */}
           
           <Section title="Account">
             <MenuItem onPress={() => requirePremium(()=> {
