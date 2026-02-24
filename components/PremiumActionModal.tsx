@@ -21,7 +21,6 @@ import Toast from '@/components/toast/toast';
 import dayjs from 'dayjs';
 import { TOKEN_KEY } from '@/constants/constants';
 import { getItem } from '@/utils/asyncStorage';
-import CustomButton from './CustomButton';
 
 interface PremiumActionModalProps {
     visible: boolean;
@@ -255,7 +254,10 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
         onClose();
     };
 
-    // iOS: Direct users to website (Apple-compliant "Reader App")
+    // iOS: Apple App Store guideline 3.1.1 prohibits in-app purchase flows for digital
+    // content that use external payment processors. We show a neutral informational modal
+    // only. Users who subscribed via dazzzle.org will have their premium status applied
+    // automatically from the backend. No prices, no purchase buttons, no external purchase links.
     if (isIOS) {
         return (
             <Modal
@@ -266,23 +268,28 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
             >
                 <SafeAreaView style={styles.container}>
                     <View style={styles.header}>
-                        <Text style={styles.headerTitle}>{title}</Text>
+                        <Text style={styles.headerTitle}>Premium Feature</Text>
                         <TouchableOpacity
-                                disabled={checkingStatus || isVerifying} onPress={handleClose} style={styles.closeButton}>
+                            disabled={checkingStatus || isVerifying}
+                            onPress={handleClose}
+                            style={styles.closeButton}
+                        >
                             <Text style={styles.closeButtonText}>✕</Text>
                         </TouchableOpacity>
                     </View>
-                    
+
                     <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
                         <View style={styles.iconContainer}>
-                            <Text style={styles.upgradeIcon}>✨</Text>
+                            <Text style={styles.upgradeIcon}>⭐</Text>
                         </View>
-                        
-                        <Text style={styles.messageTitle}>Unlock All Features</Text>
-                        <Text style={styles.message}>{message}</Text>
+
+                        <Text style={styles.messageTitle}>Premium Members Only</Text>
+                        <Text style={styles.message}>
+                            This feature is available to premium members. Manage your membership at dazzzle.org.
+                        </Text>
 
                         <View style={styles.featuresContainer}>
-                            <Text style={styles.featuresTitle}>What you'll get:</Text>
+                            <Text style={styles.featuresTitle}>Premium includes:</Text>
                             <View style={styles.featureItem}>
                                 <Text style={styles.bulletPoint}>•</Text>
                                 <Text style={styles.featureText}>Unlimited likes and connections</Text>
@@ -306,26 +313,18 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
                         </View>
 
                         <View style={styles.buttonContainer}>
-                            <View style={styles.upgradeButton}>
-                                <CustomButton
-                                disabled={checkingStatus || isVerifying}
-                                    title="Upgrade"
-                                    handlePress={handleUpgradeOnWebsite}
-                                />
-                            </View>
-                            
-                            {checkingStatus ? <View style={styles.checkStatusButton}>
-                                <ActivityIndicator size="small" color="#DD3FE5" />
-                            </View> : <TouchableOpacity onPress={checkAccountStatus} style={styles.checkStatusButton}>
-                                <Text style={styles.checkStatusText}>
-                                    Already upgraded? Check status
-                                </Text>
-                            </TouchableOpacity>}
+                            {checkingStatus || isVerifying ? (
+                                <View style={styles.checkStatusButton}>
+                                    <ActivityIndicator size="small" color="#DD3FE5" />
+                                </View>
+                            ) : (
+                                <TouchableOpacity onPress={checkAccountStatus} style={styles.checkStatusButton}>
+                                    <Text style={styles.checkStatusText}>
+                                        Already a member? Tap to verify
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
-
-                        <Text style={styles.footerNote}>
-                            You'll be taken to our secure website to complete your upgrade.
-                        </Text>
                     </ScrollView>
                 </SafeAreaView>
             </Modal>

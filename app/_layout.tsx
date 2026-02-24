@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import ToastWrapper from '@/components/toast/ToastWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { PaystackProvider } from 'react-native-paystack-webview';
+// import { PaystackProvider } from 'react-native-paystack-webview';
 import { Provider } from 'react-redux';
 import { initializeStorePromise, store } from '@/redux/store';
 import { LoaderProvider } from '@/context/loader/LoaderProvider';
@@ -87,9 +87,9 @@ export default function RootLayout() {
             <ThemeProvider value={DefaultTheme}>
               <LoaderProvider>
                 <KeyboardProvider>
-                  <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
+                  {/* <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}> */}
                       <NavigationStack />
-                  </PaystackProvider>
+                  {/* </PaystackProvider> */}
                 </KeyboardProvider>
               </LoaderProvider>
             </ThemeProvider>

@@ -9,7 +9,7 @@ import axiosRequest from "@/utils/axios";
 import dayjs from "dayjs";
 import { router } from "expo-router";
 import { useEffect, useState, useRef } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, StyleSheet } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, StyleSheet, Platform } from "react-native";
 // import { usePaystack } from 'react-native-paystack-webview';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoader } from '@/context/loader/LoaderProvider';
@@ -335,6 +335,67 @@ const PayWallScreen = () => {
             hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to verify payment');
         }
+    }
+
+    // iOS: No purchase UI allowed by Apple App Store guidelines (guideline 3.1.1).
+    // Show a neutral gate — premium access is granted based on backend subscription state.
+    // Users must subscribe via dazzzle.org directly (outside the app).
+    if (Platform.OS === 'ios') {
+        return (
+            <SafeAreaView className='bg-white flex-1'>
+                <ScrollView className='flex-1' contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+                    {checking ? (
+                        <View className="flex-1 justify-center items-center">
+                            <View className='flex-row items-center justify-center mb-6'>
+                                <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
+                                <Text className='text-3xl text-primary' style={{ fontFamily: "LilitaOne_400Regular" }}>dazzzle</Text>
+                            </View>
+                            <ActivityIndicator size="large" color="#DD3FE5" />
+                            <Text className="text-sm font-medium text-gray-700 mt-6">Checking your subscription...</Text>
+                        </View>
+                    ) : (
+                        <View className="w-full justify-center px-4 my-6 py-10">
+                            <View className='flex-row items-center justify-center mb-4'>
+                                <Image source={require('@/assets/images/logo.png')} style={{ width: 48, height: 48, tintColor: '#DD3FE5' }} resizeMode='contain' />
+                                <Text className='text-3xl text-primary' style={{ fontFamily: "LilitaOne_400Regular" }}>dazzzle</Text>
+                            </View>
+                            <Text className="text-black-200 text-2xl font-firabold text-center">Premium Membership Required</Text>
+                            <Text className="text-black-200 text-base font-firamedium text-center mt-2 mb-6">
+                                A premium membership is required to access Dazzzle.
+                            </Text>
+                            {premiumfeatures && premiumfeatures.length > 0 && (
+                                <View className="space-y-3 my-4 bg-gray-50 rounded-xl p-5">
+                                    <Text className="text-black-200 text-base font-firabold mb-2">Premium includes:</Text>
+                                    {premiumfeatures.map((feature, index) => (
+                                        <View key={index} className="flex flex-row items-center justify-start">
+                                            <View className="w-1.5 h-1.5 bg-tertiary rounded-full mr-2" />
+                                            <Text className="text-black-200 text-sm">{feature}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                            <Text className="text-gray-500 text-sm text-center mt-4 mb-6">
+                                Visit dazzzle.org to manage your membership.
+                            </Text>
+                            <CustomButton
+                                title={checking ? 'Checking...' : 'Check Subscription Status'}
+                                handlePress={async () => {
+                                    setChecking(true);
+                                    await dispatch(fetchAuthenticatedUser());
+                                    await handlePermissionNavigation('/(tabs)', '/app-permissions');
+                                    setChecking(false);
+                                }}
+                            />
+                            <View className='justify-center pt-5 flex-row gap-2'>
+                                <TouchableOpacity onPress={() => handleLogOut()}>
+                                    <Text className='text-sm text-primary font-firaregular underline'>Log Out</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
+                </ScrollView>
+            </SafeAreaView>
+        );
     }
 
     return (

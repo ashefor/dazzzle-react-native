@@ -11,9 +11,9 @@ PODS:
   - EXJSONUtils (0.15.0)
   - EXManifests (0.16.6):
     - ExpoModulesCore
-  - EXNotifications (0.31.4):
+  - EXNotifications (0.31.5):
     - ExpoModulesCore
-  - Expo (53.0.25):
+  - Expo (53.0.27):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -292,7 +292,7 @@ PODS:
     - GooglePlaces (= 7.3.0)
   - ExpoHaptics (14.1.4):
     - ExpoModulesCore
-  - ExpoHead (5.1.10):
+  - ExpoHead (5.1.11):
     - ExpoModulesCore
   - ExpoImagePicker (16.1.4):
     - ExpoModulesCore
@@ -1699,7 +1699,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-keyboard-controller (1.20.2):
+  - react-native-keyboard-controller (1.20.7):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1714,7 +1714,7 @@ PODS:
     - React-hermes
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.20.2)
+    - react-native-keyboard-controller/common (= 1.20.7)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1724,7 +1724,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller/common (1.20.2):
+  - react-native-keyboard-controller/common (1.20.7):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2857,8 +2857,8 @@ SPEC CHECKSUMS:
   EXImageLoader: 4d3d3284141f1a45006cc4d0844061c182daf7ee
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: 691a779b04e4f2c96da46fb9bef4f86174fefcb5
-  EXNotifications: be5e949edf1d60b70e77178b81aa505298fadd07
-  Expo: a9aaba7e05fb1445c5605b2b1be1904efa2aaaff
+  EXNotifications: 6770976336aacdc7dc7aed7b538dd8f7ad2c55e8
+  Expo: 7e07803ccc34cdf144a0d51cc2684a60628b6593
   expo-dev-client: 9b1e78baf0dd87b005f035d180bbb07c05917fad
   expo-dev-launcher: 35dc0269b5fc1f628abc00e08e5a969e7809eff4
   expo-dev-menu: 0771fa9c5c405e07aa15e55a699b8a4a984ea77a
@@ -2871,7 +2871,7 @@ SPEC CHECKSUMS:
   ExpoFont: cf508bc2e6b70871e05386d71cab927c8524cc8e
   ExpoGooglePlacesAutocomplete: 5cc4c3d3d9e05ed7c9fbd7a00829b2114d58585c
   ExpoHaptics: 0ff6e0d83cd891178a306e548da1450249d54500
-  ExpoHead: f85951372332180434f1aae973f6e3c94fccbed4
+  ExpoHead: cfc12096c9a68cbe25de93a8bfc4781c7689467e
   ExpoImagePicker: 0963da31800c906e01c03e25d7c849f16ebf02a2
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
   ExpoLinearGradient: 7734c8059972fcf691fb4330bcdf3390960a152d
@@ -2923,7 +2923,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: fae8da2c01aeb7f26ad739731b6dba61fd02fd97
   React-microtasksnativemodule: 20454ffccff553f0ee73fd20873aa8555a5867fb
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-keyboard-controller: 394dfa7d8e678d835c32f5d1d06cfab494d71d56
+  react-native-keyboard-controller: 95736758cec8bc19d56a21bf984093aa2c243587
   react-native-maps: 9febd31278b35cd21e4fad2cf6fa708993be5dab
   react-native-pager-view: f238ed7fb53458bd03366944a33686f067c83e9a
   react-native-safe-area-context: 562163222d999b79a51577eda2ea8ad2c32b4d06
