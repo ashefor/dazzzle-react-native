@@ -8,6 +8,7 @@ import usersSlice from "./slices/usersSlice";
 import chatsSlice from "./slices/chatsSlice";
 import messagesSlice from "./slices/messagesSlice";
 import encounterSlice from "./slices/encounterSlice";
+import iapSlice from "./slices/iapSlice"; // ← new
 
 export const store = configureStore({
     reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
         chats: chatsSlice,
         messages: messagesSlice,
         encounter: encounterSlice,
+        iap: iapSlice, // ← new
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
         serializableCheck: false,

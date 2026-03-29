@@ -20,6 +20,7 @@ import {
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import NavigationStack from '@/components/NavigationStack';
 
+import { IAPProvider } from '@/context/IAPProvider'; // ← new
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -88,7 +89,9 @@ export default function RootLayout() {
               <LoaderProvider>
                 <KeyboardProvider>
                   <PaystackProvider publicKey='pk_live_67c43aae73865b3ab28ff664f702855471f5f468' defaultChannels={['card', 'bank_transfer', 'bank', 'ussd', 'qr', 'mobile_money', 'apple_pay', 'eft']}>
-                      <NavigationStack />
+                      <IAPProvider>
+                        <NavigationStack />
+                      </IAPProvider>
                   </PaystackProvider>
                 </KeyboardProvider>
               </LoaderProvider>

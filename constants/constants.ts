@@ -1110,3 +1110,24 @@ export const defaultInterests = [
 
 export const INPUT_MAX_HEIGHT = 80;
 export const CONNECTION_STATE_HEIGHT = 24;
+
+
+// ...existing code...
+
+/**
+ * iOS App Store product IDs — must match App Store Connect exactly.
+ * These map 1-to-1 with your existing CreditPlan._uid strings so the
+ * paywall can resolve the right plan after a successful IAP.
+ */
+export const IAP_PRODUCT_IDS = [
+  'com.dazzzle.app.sub.oneweek',    // maps to "One Week Subscription"
+  'com.dazzzle.app.sub.onemonth',   // maps to "One Month Subscription"
+] as const;
+
+export type IAPProductId = (typeof IAP_PRODUCT_IDS)[number];
+
+/** Map IAP product ID → your backend CreditPlan _uid */
+export const IAP_PRODUCT_TO_PLAN_UID: Record<IAPProductId, string> = {
+  'com.dazzzle.app.sub.oneweek':  '9a4d25be-7e3a-4d4e-bce9-66629e12c7a1',
+  'com.dazzzle.app.sub.onemonth': 'ee88daa5-9d7e-431d-9bd3-ff45c34a1ad8',
+};

@@ -134,3 +134,20 @@ export interface SubscriptionResponse {
   }
   
   
+  // ...existing code...
+
+// ── iOS IAP ───────────────────────────────────────────────────────────────────
+
+export interface IAPValidationPayload {
+  productId: string;
+  transactionId: string | null;
+  /** Base-64 encoded App Store receipt */
+  transactionReceipt: string | null | undefined;
+  /** Plan UID resolved from IAP_PRODUCT_TO_PLAN_UID */
+  planUid: string;
+}
+
+export interface IAPValidationResponse {
+  reaction: string;
+  message: string;
+}
