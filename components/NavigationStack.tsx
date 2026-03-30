@@ -1,8 +1,9 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { useSubscriptionChecker } from '@/hooks/useSubscriptionChecker';
 
 const NavigationStack = () => {
-    // useSubscriptionChecker()
+    useSubscriptionChecker()
 
     return (
         <Stack screenOptions={{

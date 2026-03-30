@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Slot, useRouter } from 'expo-router';
 import { useAppSelector } from '@/hooks/reduxHooks';
+import dayjs from 'dayjs';
 import { Alert, View, Text, Image, StyleSheet } from 'react-native';
 import { handlePermissionNavigation } from '@/utils/notificationHandler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,6 +54,7 @@ const AuthLoadingScreen = () => {
 // --- MAIN LAYOUT ---
 export default function AuthLayout() {
   const { userInfo, isProfileCompleted, error } = useAppSelector(state => state.auth);
+  const { currentSubscription } = useAppSelector(state => state.subscription);
   const router = useRouter();
 
   useEffect(() => {
@@ -74,8 +76,11 @@ export default function AuthLayout() {
            return;
         }
 
-        // 2. Not Premium? -> Paywall
-        if (!userInfo.is_premium) {
+        // 2. Not Premium or Expired? -> Paywall
+        const isExpired = currentSubscription?.expiry_at
+          ? dayjs().isAfter(dayjs(currentSubscription.expiry_at))
+          : true;
+        if (!userInfo.is_premium || isExpired) {
             router.replace('/paywall');
             return;
         }
