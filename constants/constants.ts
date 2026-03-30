@@ -1,4 +1,4 @@
-export const TOKEN_KEY = 'dazzzle-access-token';
+export const TOKEN_KEY = 'dazzzle-token';
 export const USER_KEY = 'dazzzle-user';
 export const FCM_TOKEN = 'dazzzle-fcm-token';
 export const REFRESH_TOKEN = 'dazzzle-access-token-refresh';

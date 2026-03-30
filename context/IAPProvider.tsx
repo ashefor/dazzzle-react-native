@@ -98,7 +98,9 @@ export function IAPProvider({ children }: { children: ReactNode }) {
   React.useEffect(() => {
     if (Platform.OS !== 'ios' || !connected) return;
     console.log('[IAP] Connected to StoreKit, fetching products...');
-    fetchIAPProducts({ skus: [...IAP_PRODUCT_IDS], type: 'in-app' }).catch((err) =>
+    fetchIAPProducts({ skus: [...IAP_PRODUCT_IDS], type: 'in-app' }).then((sku) => {
+      console.log('[IAP] Products loaded:', sku);
+    }).catch((err) =>
       console.error('[IAP] fetchProducts failed:', err),
     );
   }, [connected]); // eslint-disable-line react-hooks/exhaustive-deps

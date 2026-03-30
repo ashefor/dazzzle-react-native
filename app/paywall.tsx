@@ -298,6 +298,8 @@ import {
   ActivityIndicator,
   Platform
 } from "react-native";
+import { router } from "expo-router";
+import { signUserOut } from "@/redux/thunks/authActions";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoader } from "@/context/loader/LoaderProvider";
 import * as WebBrowser from "expo-web-browser";
@@ -306,6 +308,7 @@ import { handlePermissionNavigation } from "@/utils/notificationHandler";
 import { useIAPContext } from "@/context/IAPProvider";
 import { resetIAP } from "@/redux/slices/iapSlice";
 import type { Product } from "expo-iap";
+import { usePaystack } from "react-native-paystack-webview";
 
 // ─── Default plan data (used while API loads) ─────────────────────────────────
 
@@ -338,6 +341,13 @@ const defaultCreditPlans: CreditPlan[] = [
   },
 ];
 
+const defaultPremiumFeatures: string[] = [
+  "Unlimited Likes",
+  "See Who Likes You",
+  "Boost Your Profile",
+  "Notifications for New Matches",
+]
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatAsCurrency = (amount: string) =>
@@ -354,7 +364,7 @@ const convertFeaturesToStrings = (obj: PremiumFeature): string[] =>
 
 const PayWallScreen = () => {
   // Paystack (Android)
-  // const { popup } = usePaystack();
+  const { popup } = usePaystack();
 
   // IAP (iOS)
   const {
@@ -371,7 +381,7 @@ const PayWallScreen = () => {
   const iapStatus = useAppSelector((s) => s.iap.status);
   const iapError = useAppSelector((s) => s.iap.error);
 
-  const [premiumFeatures, setPremiumFeatures] = useState<string[]>([]);
+  const [premiumFeatures, setPremiumFeatures] = useState<string[]>(defaultPremiumFeatures);
   const [creditPlans, setCreditPlans] = useState<CreditPlan[]>(defaultCreditPlans);
   const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
   const [checking, setChecking] = useState(false);
@@ -384,12 +394,14 @@ const PayWallScreen = () => {
       hide();
       const premiumPlanData = data.data?.premiumPlanData as SubscriptionResponse;
       if (premiumPlanData) {
+        console.log('Fetched subscription details:', premiumPlanData);
         setPremiumFeatures(convertFeaturesToStrings(premiumPlanData.premiumFeature));
         setCreditPlans(
           premiumPlanData.creditPlans.filter((p) => p.credits !== 0)
         );
       }
     } catch (error: any) {
+      console.error("Error fetching subscription details:", JSON.stringify(error, null, 2));
       hide();
       Alert.alert(
         "Error",
@@ -402,7 +414,7 @@ const PayWallScreen = () => {
     const init = async () => {
       if (currentSubscription) {
         if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
-          fetchSubscriptionDetails();
+          // fetchSubscriptionDetails();
         } else {
           setChecking(true);
           try {
@@ -418,7 +430,7 @@ const PayWallScreen = () => {
           }
         }
       } else {
-        fetchSubscriptionDetails();
+        // fetchSubscriptionDetails();
       }
     };
     init();
@@ -489,17 +501,17 @@ const PayWallScreen = () => {
   };
 
   const processPaystackPayment = (paystackOrderData: CreatePaystackOrderResponse) => {
-    // popup.checkout({
-    //   amount: paystackOrderData.amount,
-    //   email: paystackOrderData.email,
-    //   reference: paystackOrderData.reference,
-    //   onSuccess: (data) => {
-    //     verifyPaystackPayment(data.reference);
-    //   },
-    //   onCancel: () => {
-    //     Alert.alert("Payment Cancelled", "Your payment was cancelled");
-    //   },
-    // });
+    popup.checkout({
+      amount: paystackOrderData.amount,
+      email: paystackOrderData.email,
+      reference: paystackOrderData.reference,
+      onSuccess: (data) => {
+        verifyPaystackPayment(data.reference);
+      },
+      onCancel: () => {
+        Alert.alert("Payment Cancelled", "Your payment was cancelled");
+      },
+    });
   };
 
   const verifyPaystackPayment = async (reference: string) => {
@@ -521,8 +533,19 @@ const PayWallScreen = () => {
     }
   };
 
+  const handleLogOut = async () => {
+    show();
+    await dispatch(signUserOut()).unwrap();
+    hide();
+    router.replace('/(auth)/sign-in');
+  }
+
   const openPrivacyPolicy = async () => {
     await WebBrowser.openBrowserAsync("https://dazzzle.org/privacy-policy");
+  };
+
+  const openTermsOfUse = async () => {
+    await WebBrowser.openBrowserAsync("https://dazzzle.org/terms-of-use");
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -532,91 +555,114 @@ const PayWallScreen = () => {
   const isIAPBusy = iapStatus === 'loading';
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
-      <ScrollView>
-        {/* Hero image */}
-        <View>
-          {/* <Image
-            source={require("@/assets/images/paywall.png")}
-            style={{ height: 260 }}
-            resizeMode="cover"
-            className="w-full h-full"
-          /> */}
-        </View>
-
-        <View className="p-4 gap-4">
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}>
+        <View className="p-4  mt-6">
           {checking ? (
-            <ActivityIndicator color="#fff" />
+            <View className="flex-1 items-center justify-center py-20">
+              <ActivityIndicator color="#DD3FE5" size="large" />
+            </View>
           ) : (
-            <View className="gap-4">
-              <Text className="text-white text-3xl font-onestsemibold">
-                Upgrade to{" "}
-                <Text className="text-secondary">Premium </Text>
-              </Text>
+           <View className="gap-2">
+            <View>
+              <Text className=" text-2xl font-firabold text-center">Choose your plan</Text>
+                    <Text className=" text-base font-firamedium text-center underline underline-offset-8 underline-tertiary">Unlock Premium Features</Text>
+                    {premiumFeatures && (
+                        <View className="space-y-3 my-7">
+                            {premiumFeatures.map((feature, index) => (
+                                <View key={index} className="flex flex-row items-center justify-start pl-5">
+                                    <View className="w-1 h-1 bg-primary rounded-full mr-1" />
+                                    <Text className=" text-sm">{feature}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+              </View>
+              <View className="">
+                {Platform.OS === "ios" && (
+                  <IOSPlanSection
+                    iapProducts={iapProducts}
+                    iapConnected={iapConnected}
+                    creditPlans={creditPlans}
+                    selectedProductId={selectedCreditPlan?._uid}
+                    isIAPBusy={isIAPBusy}
+                    onSelectProduct={(product, matchedPlan) => {
+                      // We map IAP product back to CreditPlan structure so we can use single CTA if needed
+                      if (matchedPlan) {
+                        setSelectedCreditPlan(matchedPlan);
+                      } else {
+                        // fallback mock plan so the button enables
+                        setSelectedCreditPlan({
+                          _id: Math.random(),
+                          _uid: product.id,
+                          status: 1,
+                          title: product.title,
+                          credits: 1,
+                          price: "0",
+                          image: "",
+                          is_subscription_package: 1,
+                          users__id: 1,
+                          created_at: "",
+                          updated_at: ""
+                        });
+                      }
+                    }}
+                  />
+                )}
 
-              {/* Feature list */}
-              <View className="gap-2">
-                <Text className="text-white text-sm font-onestregular">
-                  Get unlimited access to all features
-                </Text>
-                {premiumFeatures.map((feature, index) => (
-                  <View className="gap-2 flex-row items-center" key={index}>
-                    <View className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                      <Text className="text-xs text-primary font-onestbold">✓</Text>
-                    </View>
-                    <Text className="text-white text-sm font-onestregular">
-                      {feature}
-                    </Text>
-                  </View>
-                ))}
+                {Platform.OS === "android" && (
+                  <AndroidPlanSection
+                    creditPlans={creditPlans}
+                    selectedCreditPlan={selectedCreditPlan}
+                    onSelectPlan={setSelectedCreditPlan}
+                    formatAsCurrency={formatAsCurrency}
+                  />
+                )}
               </View>
 
-              {/* ── iOS: App Store products ─────────────────────────────── */}
-              {Platform.OS === "ios" && (
-                <IOSPlanSection
-                  iapProducts={iapProducts}
-                  iapConnected={iapConnected}
-                  creditPlans={creditPlans}
-                  isIAPBusy={isIAPBusy}
-                  onPurchase={handleIOSPurchase}
-                  onRestore={restorePurchases}
+              <View className="mt-2">
+                <CustomButton
+                  title={
+                    selectedCreditPlan
+                      ? (Platform.OS === "ios" ? "Subscribe Now" : `Subscribe for ${formatAsCurrency(selectedCreditPlan.price)}`)
+                      : "Select a Plan"
+                  }
+                  handlePress={() => {
+                     if (Platform.OS === "ios" && selectedCreditPlan) {
+                        const product = iapProducts.find((p) => p.id === selectedCreditPlan._uid || (IAP_PRODUCT_TO_PLAN_UID as Record<string, string>)[p.id] === selectedCreditPlan._uid);
+                        if (product) handleIOSPurchase(product);
+                     } else {
+                        createPaystackOrder();
+                     }
+                  }}
+                  disabled={!selectedCreditPlan || isIAPBusy}
                 />
-              )}
+ {Platform.OS === "ios" && (
+                    <View className="justify-center items-center gap-2 my-3">
+                      <Text className=" text-xs">or</Text>
+                      <TouchableOpacity onPress={restorePurchases} disabled={isIAPBusy}>
+                        <Text className="text-primary text-xs font-firamedium">
+                          Click to Restore Purchases
+                        </Text>
+                      </TouchableOpacity>
+                      </View>
+                  )}
+                 <View className="flex flex-wrap flex-1 flex-row gap-1 mt-3 items-center justify-center">
+                        <Text className=" text-xs text-center">
+                        By subscribing, you agree to our 
+                    </Text>
+                     <TouchableOpacity onPress={openPrivacyPolicy}>
+                            <Text className="text-primary text-xs text-center">
+                                 Terms of Service and Privacy Policy.
+                            </Text>
+                            </TouchableOpacity>
+                    </View>
+                    <View className='justify-center pt-5 flex-row gap-2'>
+                        <TouchableOpacity onPress={() => handleLogOut()}>
+                            <Text className='text-sm font-firaregular underline'>Log Out</Text>
+                        </TouchableOpacity>
 
-              {/* ── Android: Paystack plan cards ────────────────────────── */}
-              {Platform.OS === "android" && (
-                <AndroidPlanSection
-                  creditPlans={creditPlans}
-                  selectedCreditPlan={selectedCreditPlan}
-                  onSelectPlan={setSelectedCreditPlan}
-                  onSubscribe={createPaystackOrder}
-                  formatAsCurrency={formatAsCurrency}
-                />
-              )}
-
-              {/* Footer links */}
-              <View className="flex-row items-center justify-center gap-3">
-                <TouchableOpacity onPress={openPrivacyPolicy}>
-                  <Text className="text-white/50 text-xs font-onestregular">
-                    Privacy Policy
-                  </Text>
-                </TouchableOpacity>
-                <Text className="text-white/50 text-xs font-onestregular">•</Text>
-                <TouchableOpacity>
-                  <Text className="text-white/50 text-xs font-onestregular">
-                    Terms of Use
-                  </Text>
-                </TouchableOpacity>
-                {Platform.OS === "ios" && (
-                  <>
-                    <Text className="text-white/50 text-xs font-onestregular">•</Text>
-                    <TouchableOpacity onPress={restorePurchases} disabled={isIAPBusy}>
-                      <Text className="text-white/50 text-xs font-onestregular">
-                        Restore Purchases
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
+                    </View>
               </View>
             </View>
           )}
@@ -638,24 +684,24 @@ interface IOSPlanSectionProps {
   iapProducts: Product[];
   iapConnected: boolean;
   creditPlans: CreditPlan[];
+  selectedProductId?: string;
   isIAPBusy: boolean;
-  onPurchase: (product: Product) => void;
-  onRestore: () => void;
+  onSelectProduct: (product: Product, matchedPlan?: CreditPlan) => void;
 }
 
 function IOSPlanSection({
   iapProducts,
   iapConnected,
   creditPlans,
+  selectedProductId,
   isIAPBusy,
-  onPurchase,
-  onRestore,
+  onSelectProduct,
 }: IOSPlanSectionProps) {
   if (!iapConnected) {
     return (
       <View className="py-6 items-center gap-2">
-        <ActivityIndicator color="#fff" />
-        <Text className="text-white/60 text-xs font-onestregular">
+        <ActivityIndicator color="#DD3FE5" />
+        <Text className="text-slate-500 text-xs font-firaregular">
           Connecting to App Store…
         </Text>
       </View>
@@ -665,7 +711,7 @@ function IOSPlanSection({
   if (iapProducts.length === 0) {
     return (
       <View className="py-6 items-center">
-        <Text className="text-white/60 text-sm font-onestregular">
+        <Text className="text-slate-500 text-sm font-firaregular">
           No products available right now.
         </Text>
       </View>
@@ -673,16 +719,22 @@ function IOSPlanSection({
   }
 
   return (
-    <View className="gap-3">
-      {iapProducts.map((product) => (
-        <IOSProductCard
-          key={product.id}
-          product={product}
-          creditPlans={creditPlans}
-          isLoading={isIAPBusy}
-          onPress={() => onPurchase(product)}
-        />
-      ))}
+    <View className="space-y-4">
+      {iapProducts.map((product) => {
+        const planUid = (IAP_PRODUCT_TO_PLAN_UID as Record<string, string>)[product.id] as string | undefined;
+        const matchedPlan = planUid ? creditPlans.find((p) => p._uid === planUid) : undefined;
+        const isSelected = selectedProductId === (matchedPlan?._uid || product.id);
+
+        return (
+          <IOSProductCard
+            key={product.id}
+            product={product}
+            matchedPlan={matchedPlan}
+            isSelected={isSelected}
+            onPress={() => onSelectProduct(product, matchedPlan)}
+          />
+        );
+      })}
     </View>
   );
 }
@@ -691,32 +743,31 @@ function IOSPlanSection({
 
 interface IOSProductCardProps {
   product: Product;
-  creditPlans: CreditPlan[];
-  isLoading: boolean;
+  matchedPlan?: CreditPlan;
+  isSelected: boolean;
   onPress: () => void;
 }
 
-function IOSProductCard({ product, creditPlans, isLoading, onPress }: IOSProductCardProps) {
-  // Show the backend plan title if mapped, otherwise fall back to App Store title
-  const planUid = (IAP_PRODUCT_TO_PLAN_UID as Record<string, string>)[product.id] as string | undefined;
-  const matchedPlan = planUid ? creditPlans.find((p) => p._uid === planUid) : undefined;
+function IOSProductCard({ product, matchedPlan, isSelected, onPress }: IOSProductCardProps) {
   const displayTitle = matchedPlan?.title ?? product.title;
 
   return (
-    <TouchableOpacity
+    <View className="flex-1 mb-4">
+      <TouchableOpacity
       onPress={onPress}
-      disabled={isLoading}
       activeOpacity={0.75}
-      className="p-4 rounded-2xl bg-white/10"
+      className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${
+        isSelected ? "bg-tertiary border-transparent" : "bg-white"
+      }`}
     >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-1 mr-3">
-          <Text className="font-onestsemibold text-base text-white">
+      <View className=" justify-between">
+        <View className="flex-1">
+          <Text className={`font-firasemibold text-base ${isSelected ? "text-primary" : "text-slate-800"}`}>
             {displayTitle}
           </Text>
-          {product.description ? (
+          {product.description && !matchedPlan ? (
             <Text
-              className="font-onestregular text-xs text-white/60 mt-1"
+              className="font-firaregular text-xs text-slate-500 mt-1"
               numberOfLines={2}
             >
               {product.description}
@@ -724,17 +775,14 @@ function IOSProductCard({ product, creditPlans, isLoading, onPress }: IOSProduct
           ) : null}
         </View>
 
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <View className="bg-secondary px-3 py-1.5 rounded-xl">
-            <Text className="font-onestbold text-sm text-primary">
-              {product.displayPrice}
-            </Text>
-          </View>
-        )}
+        <View className="">
+          <Text className={`font-firabold text-sm ${isSelected ? "text-primary" : "text-slate-800"}`}>
+            {product.displayPrice}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
+    </View>
   );
 }
 
@@ -744,7 +792,6 @@ interface AndroidPlanSectionProps {
   creditPlans: CreditPlan[];
   selectedCreditPlan: CreditPlan | null;
   onSelectPlan: (plan: CreditPlan) => void;
-  onSubscribe: () => void;
   formatAsCurrency: (amount: string) => string;
 }
 
@@ -752,45 +799,37 @@ function AndroidPlanSection({
   creditPlans,
   selectedCreditPlan,
   onSelectPlan,
-  onSubscribe,
   formatAsCurrency,
 }: AndroidPlanSectionProps) {
   return (
-    <View className="gap-3">
-      {creditPlans.map((plan) => (
-        <TouchableOpacity
-          key={plan._id}
-          onPress={() => onSelectPlan(plan)}
-          className={`p-4 rounded-2xl ${
-            selectedCreditPlan?._id === plan._id ? "bg-secondary" : "bg-white/10"
-          }`}
-        >
-          <Text
-            className={`font-onestsemibold text-base ${
-              selectedCreditPlan?._id === plan._id ? "text-primary" : "text-white"
-            }`}
+    <View className="gap-4">
+      {creditPlans.map((plan) => {
+        const isSelected = selectedCreditPlan?._id === plan._id;
+        return (
+          <TouchableOpacity
+            key={plan._id}
+            onPress={() => onSelectPlan(plan)}
+            className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${
+        isSelected ? "bg-tertiary border-transparent" : "bg-white"
+      }`}
           >
-            {plan.title}
-          </Text>
-          <Text
-            className={`font-onestregular text-sm ${
-              selectedCreditPlan?._id === plan._id ? "text-primary" : "text-white/70"
-            }`}
-          >
-            {formatAsCurrency(plan.price)}
-          </Text>
-        </TouchableOpacity>
-      ))}
-
-      <CustomButton
-        title={
-          selectedCreditPlan
-            ? `Subscribe for ${formatAsCurrency(selectedCreditPlan.price)}`
-            : "Select a Plan"
-        }
-        handlePress={onSubscribe}
-        disabled={!selectedCreditPlan}
-      />
+            <Text
+              className={`font-firasemibold text-base ${
+                isSelected ? "text-primary" : "text-slate-800"
+              }`}
+            >
+              {plan.title}
+            </Text>
+            <Text
+              className={`font-firabold text-sm ${
+                isSelected ? "text-primary" : "text-slate-800"
+              }`}
+            >
+              {formatAsCurrency(plan.price)}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }

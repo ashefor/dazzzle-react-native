@@ -8,6 +8,8 @@ import { useLoader } from '@/context/loader/LoaderProvider';
 import NavBar from '@/components/NavBar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
+import { PremiumActionModal } from '@/components/PremiumActionModal';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
 
 const { width } = Dimensions.get('window');
 const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
@@ -19,7 +21,8 @@ const BlockedUsers = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [paginationDetails, setPaginationDetails] = useState<{ totalCount: number, nextPageUrl: string } | null>(null);
     const insets = useSafeAreaInsets();
-    const isFocused = useIsFocused()
+    const isFocused = useIsFocused();
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
     const fetchBlockedUsers = async () => {
         try {
@@ -116,37 +119,47 @@ const BlockedUsers = () => {
 const LikeItem = memo(({ item }: { item: LikedUserProfile }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
     return (
-        <TouchableWithoutFeedback
-            onPress={() => router.push({
-                pathname: '/[userName]',
-                params: { userName: item.username }
-            })}
-        >
-            <View className='m-2 h-52' style={{ width: (width / numColumns) - 16 }}>
-                <View className='flex-1 rounded-xl overflow-hidden bg-[#ccc]'>
-                    <ImageBackground
-                        source={{ uri: item.userImageUrl }}
-                        resizeMode='cover'
-                        className='flex-1'
-                        onLoadStart={() => setLoading(true)}
-                        onLoadEnd={() => setLoading(false)}
-                    >
-                        <View className='bg-black/50 h-full flex flex-col justify-end p-4 relative'>
-                            {loading && (
-                                <View className="absolute top-2 left-2 flex items-center justify-center">
-                                    <ActivityIndicator color="white" />
-                                </View>
-                            )}
-                            <Text className='text-sm font-firabold text-white' numberOfLines={1}>{item.userFullName}</Text>
-                            <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
-                            <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
-                        </View>
-                    </ImageBackground>
+        <>
+            <TouchableWithoutFeedback
+                onPress={() => requirePremium(() => {
+                    router.push({
+                        pathname: '/[userName]',
+                        params: { userName: item.username }
+                    })
+                })}
+            >
+                <View className='m-2 h-52' style={{ width: (width / numColumns) - 16 }}>
+                    <View className='flex-1 rounded-xl overflow-hidden bg-[#ccc]'>
+                        <ImageBackground
+                            source={{ uri: item.userImageUrl }}
+                            resizeMode='cover'
+                            className='flex-1'
+                            onLoadStart={() => setLoading(true)}
+                            onLoadEnd={() => setLoading(false)}
+                        >
+                            <View className='bg-black/50 h-full flex flex-col justify-end p-4 relative'>
+                                {loading && (
+                                    <View className="absolute top-2 left-2 flex items-center justify-center">
+                                        <ActivityIndicator color="white" />
+                                    </View>
+                                )}
+                                <Text className='text-sm font-firabold text-white' numberOfLines={1}>{item.userFullName}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.detailString}</Text>
+                                <Text className='text-xs font-firamedium text-white'>{item.countryName}</Text>
+                            </View>
+                        </ImageBackground>
+                    </View>
                 </View>
-            </View>
-        </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
+            <PremiumActionModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                {...modalOptions}
+            />
+        </>
     );
 });
 
