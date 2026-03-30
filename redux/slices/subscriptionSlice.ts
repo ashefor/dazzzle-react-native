@@ -32,6 +32,9 @@ export const subscriptionSlice = createSlice({
     initialState,
     reducers: {
         setActiveSubscription: (state, action) => {
+            if (!action.payload) {
+                return { ...state, currentSubscription: null, isActive: false };
+            }
             const now = new Date();
             const endDate = new Date(action.payload.expiry_at);
             return {
