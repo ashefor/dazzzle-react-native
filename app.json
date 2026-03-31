@@ -18,7 +18,7 @@
       "bundleIdentifier": "com.dazzzle.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSUserTrackingUsageDescription": "Allow this app to track your activity across other companies' apps and websites"
+        "NSUserTrackingUsageDescription": "Dazzzle uses tracking to show you relevant matches and personalized content, and to measure the effectiveness of our ads. Your data helps us improve your dating experience."
       },
       "googleServicesFile": "./GoogleService-Info.plist"
     },
@@ -78,7 +78,7 @@
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "Allow this app to track your activity across other companies' apps and websites"
+          "userTrackingPermission": "Dazzzle uses tracking to show you relevant matches and personalized content, and to measure the effectiveness of our ads. Your data helps us improve your dating experience."
         }
       ]
     ],
