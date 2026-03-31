@@ -557,7 +557,7 @@ const PayWallScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}>
-        <View className="p-4  mt-6">
+        <View className="p-4 mt-6">
           {checking ? (
             <View className="flex-1 items-center justify-center py-20">
               <ActivityIndicator color="#DD3FE5" size="large" />
@@ -635,12 +635,13 @@ const PayWallScreen = () => {
                         createPaystackOrder();
                      }
                   }}
+                  isLoading={isIAPBusy}
                   disabled={!selectedCreditPlan || isIAPBusy}
                 />
  {Platform.OS === "ios" && (
                     <View className="justify-center items-center gap-2 my-3">
                       <Text className=" text-xs">or</Text>
-                      <TouchableOpacity onPress={restorePurchases} disabled={isIAPBusy}>
+                      <TouchableOpacity className="py-2.5 px-4 w-auto border border-primary flex items-center justify-center rounded-[26px]" onPress={restorePurchases} disabled={isIAPBusy}>
                         <Text className="text-primary text-xs font-firamedium">
                           Click to Restore Purchases
                         </Text>

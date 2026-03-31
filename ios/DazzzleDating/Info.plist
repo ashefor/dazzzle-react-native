@@ -64,7 +64,7 @@
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
     </array>
     <key>NSUserTrackingUsageDescription</key>
-    <string>Allow this app to track your activity across other companies' apps and websites</string>
+    <string>Dazzzle uses tracking to show you relevant matches and personalized content, and to measure the effectiveness of our ads. Your data helps us improve your dating experience.</string>
     <key>RCTNewArchEnabled</key>
     <true/>
     <key>UILaunchStoryboardName</key>

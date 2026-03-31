@@ -2,7 +2,6 @@ import React, { createContext, useContext, useCallback, ReactNode } from 'react'
 import { Platform, Alert } from 'react-native';
 import {
   useIAP,
-  finishTransaction,
   ErrorCode,
   type Product,
   type Purchase,
@@ -60,12 +59,17 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         dispatch(setIAPSuccess(productId));
         Toast.success('Subscription successful');
         await handlePermissionNavigation('/(tabs)', '/app-permissions');
-      } catch (err) {
+      } catch (err: any) {
         console.error('[IAP] purchase processing error:', err);
         dispatch(setIAPError('Failed to complete purchase. Please try again.'));
         Alert.alert(
           'Purchase Error',
           'Failed to complete your purchase. Please contact support if you were charged.',
+        );
+                    Alert.alert('Error', err && err.errorMessage ? err.errorMessage : 'Your purchase was successful but we had trouble processing it. Please contact support with your receipt if you were charged.');
+        Alert.alert(
+          'Purchase Error 2',
+          JSON.stringify(err, null, 2),
         );
       }
     },
