@@ -147,7 +147,7 @@ export default function HomeScreen() {
       const performRouting = async () => {
           // 1. Subscription Check (Keep your existing logic)
           if (!isSubActive) {
-              router.replace('./(tabs)');
+              router.replace('/paywall');
               return;
           }
 

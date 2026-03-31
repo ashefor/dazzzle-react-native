@@ -2,6 +2,7 @@ import React, { createContext, useContext, useCallback, ReactNode } from 'react'
 import { Platform, Alert } from 'react-native';
 import {
   useIAP,
+  finishTransaction,
   ErrorCode,
   type Product,
   type Purchase,
@@ -50,6 +51,7 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         const planUid = IAP_PRODUCT_TO_PLAN_UID[productId];
 
         await validateWithBackend(purchase, planUid);
+        await finishTransaction({ purchase });
 
         if (userInfo) {
           dispatch(updateUserInfo({ ...userInfo, is_premium: true }));

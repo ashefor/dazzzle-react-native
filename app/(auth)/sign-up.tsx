@@ -1,4 +1,4 @@
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import React, { JSX, useCallback, useRef, useState } from 'react'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
@@ -13,7 +13,7 @@ import { useLoader } from '@/context/loader/LoaderProvider'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as yup from 'yup'
 import { Formik } from 'formik'
-import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller"
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import LottieView from 'lottie-react-native'
@@ -82,9 +82,13 @@ const SignIn = () => {
         );
     return (
        <SafeAreaView className='flex-1 bg-white'>
-                <KeyboardAvoidingView behavior={'padding'}>
+                {/* <KeyboardAvoidingView behavior={'padding'}>
                     <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
-                        <View className='w-full h-full justify-center'>
+                        
+                    </ScrollView>
+                </KeyboardAvoidingView> */}
+                <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+                    <View className='w-full h-full justify-center'>
                             <Formik
                                 initialValues={{ password: '', username: '', repeat_password: '', email: '', accepted_terms: false }}
                                 onSubmit={createAccount}
@@ -170,7 +174,7 @@ const SignIn = () => {
                                                 </View>
                                             </View>
 
-                                            <View className='mt-auto'>
+                                            <View className=''>
                                                 <CustomButton title='Register' disabled={!isValid} handlePress={handleSubmit} />
                                             </View>
                                         </View>
@@ -184,8 +188,7 @@ const SignIn = () => {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </ScrollView>
-                </KeyboardAvoidingView>
+                </KeyboardAwareScrollView>
 
                  <BottomSheetModal
                 ref={bottomSheetModalRef}

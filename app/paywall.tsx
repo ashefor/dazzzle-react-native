@@ -518,7 +518,7 @@ const PayWallScreen = () => {
     try {
       show();
       const data: any = await axiosRequest.post(
-        API_URL + "/premium-plan/verify-paystack-order",
+        API_URL + "/premium-plan/paystack-order-submit",
         { reference }
       );
       hide();

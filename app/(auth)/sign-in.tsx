@@ -32,9 +32,9 @@ const SignIn = () => {
                             initialValues={{ password: '', email_or_username: '' }}
                             onSubmit={logUserIn}
                             validationSchema={signInValidationSchema}
-                            validateOnMount={true} // FIX: Ensures button is disabled initially
+                            // validateOnMount={true}
                         >
-                            {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => {
+                            {({ handleBlur, handleSubmit, values, errors, touched, isValid, setFieldValue, setFieldTouched }) => {
                                 return (
                                     <View className='flex-1'>
                                         <View>
@@ -46,17 +46,20 @@ const SignIn = () => {
                                         <View className='my-5 space-y-3'>
                                             <View>
                                                 <FormField
-                                                    title="Username"
-                                                    placeholder='Enter username'
+                                                    title="Email or Username"
+                                                    placeholder='Enter email or username'
                                                     value={values.email_or_username}
                                                     editable={!loading}
-                                                    
-                                                    onChangeText={(text) => handleChange('email_or_username')(text.trim())}
+
+                                                    onChangeText={(text) => {
+                                                        setFieldValue('email_or_username', text.trim(), true);
+                                                        setFieldTouched('email_or_username', true, false);
+                                                    }}
                                                     onBlur={handleBlur('email_or_username')}
-                                                    
+
                                                     errorMessage={errors.email_or_username}
                                                     touched={touched.email_or_username}
-                                                    
+
                                                     textContentType="username"
                                                     autoComplete="username"
                                                     keyboardType="email-address"
@@ -69,14 +72,16 @@ const SignIn = () => {
                                                     value={values.password}
                                                     editable={!loading}
                                                     secureTextEntry
-                                                    
-                                                    onChangeText={handleChange('password')}
+
+                                                    onChangeText={(text) => {
+                                                        setFieldValue('password', text, true);
+                                                        setFieldTouched('password', true, false);
+                                                    }}
                                                     onBlur={handleBlur('password')}
-                                                    
+
                                                     errorMessage={errors.password}
                                                     touched={touched.password}
 
-                                                    // FIX: Explicit Autofill Props
                                                     textContentType="password"
                                                     autoComplete="password"
                                                 />
@@ -84,9 +89,8 @@ const SignIn = () => {
                                         </View>
 
                                         <View className='mt-auto'>
-                                            <CustomButton 
-                                                // FIX: Button is now correctly disabled on mount because of validateOnMount
-                                                disabled={loading || !isValid} 
+                                            <CustomButton
+                                                disabled={loading || !isValid}
                                                 title={loading ? 'Loading...' : 'Sign In'} 
                                                 handlePress={handleSubmit} 
                                             />
