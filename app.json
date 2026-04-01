@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dazzzle Dating",
     "slug": "dazzzle-react-native",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon-new.png",
     "splash": {
@@ -26,7 +26,10 @@
       "edgeToEdgeEnabled": true,
       "package": "com.dazzzle.app",
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.RECORD_AUDIO",
+        "com.google.android.gms.permission.AD_ID"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/foreground.png",
@@ -92,6 +95,10 @@
       "eas": {
         "projectId": "c3498daf-a4a4-4eff-9672-bcc669e3eb2d"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/c3498daf-a4a4-4eff-9672-bcc669e3eb2d"
     }
   }
 }

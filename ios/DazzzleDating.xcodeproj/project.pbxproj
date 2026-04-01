@@ -8,30 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2C0A2B52E7834E1A9B48FDB7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 048D4FE3963840E6938F9225 /* GoogleService-Info.plist */; };
-		347E29D1C1151792B53E96C9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E3940EAE5E1C82509BC7E366 /* PrivacyInfo.xcprivacy */; };
+		3013427EF75662E33D0FC574 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C646F332435538FB0A6E268 /* ExpoModulesProvider.swift */; };
+		34C3601F9C56553E312AAD23 /* libPods-DazzzleDating.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96F91EA8B0EB9052900A9282 /* libPods-DazzzleDating.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		BA13DC2FE3744A02998331DF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8CCFA489893F4472B5AF6E4B /* GoogleService-Info.plist */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		CE4687CE52A9937D24413A35 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1D3A5758E05155BB53E2AEA1 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		F7F84C78A242EC3F2FA76210 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16321CA7AB024AD3609AFBB6 /* ExpoModulesProvider.swift */; };
-		FE0CD0BB713999D483668CA4 /* libPods-DazzzleDating.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D2D8C1D85630A3D43C4569B /* libPods-DazzzleDating.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		048D4FE3963840E6938F9225 /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "DazzzleDating/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* DazzzleDating.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DazzzleDating.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = DazzzleDating/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DazzzleDating/Info.plist; sourceTree = "<group>"; };
-		16321CA7AB024AD3609AFBB6 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		2D2D8C1D85630A3D43C4569B /* libPods-DazzzleDating.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DazzzleDating.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5BDEC643F22F0A5657E89142 /* Pods-DazzzleDating.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.debug.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.debug.xcconfig"; sourceTree = "<group>"; };
+		1C646F332435538FB0A6E268 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		1D3A5758E05155BB53E2AEA1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = DazzzleDating/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3922EBA931CA931EF5EA8A74 /* Pods-DazzzleDating.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.release.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.release.xcconfig"; sourceTree = "<group>"; };
+		8CCFA489893F4472B5AF6E4B /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "DazzzleDating/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		96F91EA8B0EB9052900A9282 /* libPods-DazzzleDating.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DazzzleDating.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = DazzzleDating/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E3940EAE5E1C82509BC7E366 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = DazzzleDating/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		E63BE9558BDA56F085312ACC /* Pods-DazzzleDating.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.release.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DazzzleDating/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* DazzzleDating-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DazzzleDating-Bridging-Header.h"; path = "DazzzleDating/DazzzleDating-Bridging-Header.h"; sourceTree = "<group>"; };
+		FAF58E5C262883873D443C85 /* Pods-DazzzleDating.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.debug.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,21 +39,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE0CD0BB713999D483668CA4 /* libPods-DazzzleDating.a in Frameworks */,
+				34C3601F9C56553E312AAD23 /* libPods-DazzzleDating.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		05608234BFFE96D3928B1BBB /* DazzzleDating */ = {
-			isa = PBXGroup;
-			children = (
-				16321CA7AB024AD3609AFBB6 /* ExpoModulesProvider.swift */,
-			);
-			name = DazzzleDating;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* DazzzleDating */ = {
 			isa = PBXGroup;
 			children = (
@@ -63,29 +55,28 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				048D4FE3963840E6938F9225 /* GoogleService-Info.plist */,
-				E3940EAE5E1C82509BC7E366 /* PrivacyInfo.xcprivacy */,
+				8CCFA489893F4472B5AF6E4B /* GoogleService-Info.plist */,
+				1D3A5758E05155BB53E2AEA1 /* PrivacyInfo.xcprivacy */,
 			);
 			name = DazzzleDating;
+			sourceTree = "<group>";
+		};
+		248F0203F89D754A4E70823C /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FAF58E5C262883873D443C85 /* Pods-DazzzleDating.debug.xcconfig */,
+				3922EBA931CA931EF5EA8A74 /* Pods-DazzzleDating.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				2D2D8C1D85630A3D43C4569B /* libPods-DazzzleDating.a */,
+				96F91EA8B0EB9052900A9282 /* libPods-DazzzleDating.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		6956225483A321D685482DAB /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				5BDEC643F22F0A5657E89142 /* Pods-DazzzleDating.debug.xcconfig */,
-				E63BE9558BDA56F085312ACC /* Pods-DazzzleDating.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -102,8 +93,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				6956225483A321D685482DAB /* Pods */,
-				EEA82D86FF16D9E92ABC3B0C /* ExpoModulesProviders */,
+				248F0203F89D754A4E70823C /* Pods */,
+				851A1DEABA76C009E82DF65E /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -118,6 +109,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		851A1DEABA76C009E82DF65E /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				D81C84E3AD7E46F0F67F5EDD /* DazzzleDating */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -127,12 +126,12 @@
 			path = DazzzleDating/Supporting;
 			sourceTree = "<group>";
 		};
-		EEA82D86FF16D9E92ABC3B0C /* ExpoModulesProviders */ = {
+		D81C84E3AD7E46F0F67F5EDD /* DazzzleDating */ = {
 			isa = PBXGroup;
 			children = (
-				05608234BFFE96D3928B1BBB /* DazzzleDating */,
+				1C646F332435538FB0A6E268 /* ExpoModulesProvider.swift */,
 			);
-			name = ExpoModulesProviders;
+			name = DazzzleDating;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,13 +142,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "DazzzleDating" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				E1DDA878F6D22EAD3CE97DFB /* [Expo] Configure project */,
+				9F389D74F2F05A6ACBCB7E9E /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				973320F10BE3EE205CD6C422 /* [CP] Embed Pods Frameworks */,
+				033DD1435BBE837B70223BA2 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -199,8 +198,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				2C0A2B52E7834E1A9B48FDB7 /* GoogleService-Info.plist in Resources */,
-				347E29D1C1151792B53E96C9 /* PrivacyInfo.xcprivacy in Resources */,
+				BA13DC2FE3744A02998331DF /* GoogleService-Info.plist in Resources */,
+				CE4687CE52A9937D24413A35 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,6 +222,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
+		};
+		033DD1435BBE837B70223BA2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -297,29 +318,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		973320F10BE3EE205CD6C422 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E1DDA878F6D22EAD3CE97DFB /* [Expo] Configure project */ = {
+		9F389D74F2F05A6ACBCB7E9E /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -351,7 +350,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				F7F84C78A242EC3F2FA76210 /* ExpoModulesProvider.swift in Sources */,
+				3013427EF75662E33D0FC574 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,12 +359,13 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5BDEC643F22F0A5657E89142 /* Pods-DazzzleDating.debug.xcconfig */;
+			baseConfigurationReference = FAF58E5C262883873D443C85 /* Pods-DazzzleDating.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = DazzzleDating/DazzzleDating.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K82L7K83KB;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -396,12 +396,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E63BE9558BDA56F085312ACC /* Pods-DazzzleDating.release.xcconfig */;
+			baseConfigurationReference = 3922EBA931CA931EF5EA8A74 /* Pods-DazzzleDating.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = DazzzleDating/DazzzleDating.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K82L7K83KB;
 				INFOPLIST_FILE = DazzzleDating/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
