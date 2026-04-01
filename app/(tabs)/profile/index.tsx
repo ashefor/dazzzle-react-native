@@ -28,6 +28,7 @@ import { getItem, setItem } from '@/utils/asyncStorage';
 import dayjs from 'dayjs';
 import { usePremiumAction } from '@/hooks/usePremiumAction';
 import { PremiumActionModal } from '@/components/PremiumActionModal';
+import WalletIcon from '@/components/icons/WalletIcon';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -219,7 +220,7 @@ export default function ProfileScreen() {
               title: 'View Profile Settings',
               message: 'Upgrade your account to view profile settings and unlock all features!'
             })} icon={<IdCardIcon stroke={"#8E8E93"} />} label="Profile Settings" />
-            {/* <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" /> */}
+            <MenuItem onPress={() => router.push('/profile/wallet-transactions')} icon={<WalletIcon stroke={"#8E8E93"} />} label="Wallet & Subscription" />
             <MenuItem onPress={() => requirePremium(()=> {
               router.push('/profile/blocked-users')
             }, {

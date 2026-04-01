@@ -3,6 +3,7 @@ import { Platform, Alert } from 'react-native';
 import {
   useIAP,
   finishTransaction,
+  getAvailablePurchases,
   ErrorCode,
   type Product,
   type Purchase,
@@ -76,10 +77,9 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         console.error('[IAP] backend validation error:', err);
         dispatch(setIAPError(err?.errorMessage ?? 'Activation failed'));
         Alert.alert(
-          'Activation Failed',
-          'Your payment was received but we could not activate your subscription. Please contact support with your receipt.',
-        );
-        Alert.alert('Error', err && err.errorMessage ? err.errorMessage : 'An unknown error occurred during activation. Please try again later.');
+        "Activation Failed",
+        err?.errorMessage ?? "Your payment was received but we could not activate your subscription. Please contact support with your receipt."
+      );
       }
     },
     [dispatch, userInfo],
@@ -105,7 +105,6 @@ export function IAPProvider({ children }: { children: ReactNode }) {
     fetchProducts: fetchIAPProducts,
     requestPurchase,
     restorePurchases: restoreIAPPurchases,
-    getAvailablePurchases,
   } = useIAP({ onPurchaseSuccess, onPurchaseError });
 
   // ── Load products once connected ──────────────────────────────────────────
@@ -144,15 +143,28 @@ export function IAPProvider({ children }: { children: ReactNode }) {
     if (Platform.OS !== 'ios') return;
     try {
       dispatch(setIAPLoading());
-      await restoreIAPPurchases();
-      await getAvailablePurchases();
+      // Use the root API directly — it returns the purchases so we can process them.
+      // The hook's restoreIAPPurchases/getAvailablePurchases only update internal state
+      // and don't trigger onPurchaseSuccess, so nothing would happen after calling them.
+      const purchases = await getAvailablePurchases({ onlyIncludeActiveItemsIOS: true });
+      if (!purchases || purchases.length === 0) {
+        dispatch(resetIAP());
+        Alert.alert('No Subscriptions Found', 'We could not find any active subscriptions linked to your Apple ID.');
+        return;
+      }
+      // Process each restored purchase through the same validation flow as a new purchase
+      for (const purchase of purchases) {
+        await onPurchaseSuccess(purchase);
+      }
     } catch (err: any) {
       console.error('[IAP] restorePurchases error:', err);
       dispatch(setIAPError(err?.errorMessage ?? 'Failed to restore purchases.'));
-      Alert.alert('Restore Failed', 'Unable to restore purchases. Please try again.');
-      Alert.alert('Restore Failed here', err?.errorMessage ?? 'Failed to restore purchases.');
+      Alert.alert(
+        "Restore Failed",
+        err?.errorMessage ?? "Unable to restore purchases. Please try again."
+      );
     }
-  }, [dispatch, restoreIAPPurchases, getAvailablePurchases]);
+  }, [dispatch, onPurchaseSuccess, restoreIAPPurchases]);
 
   return (
     <IAPContext.Provider

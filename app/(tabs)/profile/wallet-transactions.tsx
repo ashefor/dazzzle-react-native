@@ -51,6 +51,12 @@ const Skeleton = ({ style }: { style?: any }) => (
     />
 );
 
+const formatCreditAsAmountWithComma = (credits: string | number) => {
+    const amount = typeof credits === 'string' ? parseFloat(credits) : credits;
+    if (isNaN(amount)) return credits;
+    return amount.toLocaleString();
+}
+
 const TransactionSkeleton = () => (
     <View className="flex-row items-center justify-between py-4 border-b border-gray-100">
         <View className="flex-row items-center">
@@ -95,7 +101,7 @@ const TransactionItem = ({ transaction, onPress }: { transaction: WalletTransact
                     <Text className="text-xs text-[#AEAEB2] font-firaregular">{transaction.created_at}</Text>
                 </View>
                 <Text className="text">
-                    {transaction.credits}
+                    {formatCreditAsAmountWithComma(transaction.credits)}
                 </Text>
             </View>
         </TouchableOpacity>
