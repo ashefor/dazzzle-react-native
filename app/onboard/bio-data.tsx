@@ -103,7 +103,7 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                                     />
                                     </View>
                                     <View className="space-y-2">
-                                        <Text className='text-base text-black font-firamedium'>Phone Number</Text>
+                                        <Text className='text-base text-black font-firamedium'>Phone Number <Text className='text-sm text-[#8C8C8C] font-firaregular'>(Optional)</Text></Text>
                                         <View className='border border-[#ccc] w-full px-4 bg-[#F2F2F7] rounded-md focus:border-primary items-center flex-row'>
                                             <View
                                                 className='flex-1 flex-row gap-x-2 h-12 items-center font-firaregular text-black divide divide-x divide-[#ccc]'>

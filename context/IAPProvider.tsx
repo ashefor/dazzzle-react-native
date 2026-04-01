@@ -74,11 +74,12 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         await handlePermissionNavigation('/(tabs)', '/app-permissions');
       } catch (err: any) {
         console.error('[IAP] backend validation error:', err);
-        dispatch(setIAPError(err?.message ?? 'Activation failed'));
+        dispatch(setIAPError(err?.errorMessage ?? 'Activation failed'));
         Alert.alert(
           'Activation Failed',
           'Your payment was received but we could not activate your subscription. Please contact support with your receipt.',
         );
+        Alert.alert('Error', err && err.errorMessage ? err.errorMessage : 'An unknown error occurred during activation. Please try again later.');
       }
     },
     [dispatch, userInfo],
@@ -90,7 +91,7 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         dispatch(resetIAP());
         return;
       }
-      const message = (err as { message?: string })?.message ?? 'An error occurred during purchase.';
+      const message = (err as { errorMessage?: string })?.errorMessage ?? 'An error occurred during purchase.';
       console.error('[IAP] StoreKit error:', err);
       dispatch(setIAPError(message));
       Alert.alert('Purchase Failed', message);
@@ -130,7 +131,7 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         if ((err as { code?: string })?.code === ErrorCode.UserCancelled) {
           dispatch(resetIAP());
         } else {
-          const message = (err as { message?: string })?.message ?? 'Purchase request failed.';
+          const message = (err as { errorMessage?: string })?.errorMessage ?? 'Purchase request failed.';
           dispatch(setIAPError(message));
         }
       }
@@ -145,10 +146,11 @@ export function IAPProvider({ children }: { children: ReactNode }) {
       dispatch(setIAPLoading());
       await restoreIAPPurchases();
       await getAvailablePurchases();
-    } catch (err) {
+    } catch (err: any) {
       console.error('[IAP] restorePurchases error:', err);
-      dispatch(setIAPError('Failed to restore purchases.'));
+      dispatch(setIAPError(err?.errorMessage ?? 'Failed to restore purchases.'));
       Alert.alert('Restore Failed', 'Unable to restore purchases. Please try again.');
+      Alert.alert('Restore Failed here', err?.errorMessage ?? 'Failed to restore purchases.');
     }
   }, [dispatch, restoreIAPPurchases, getAvailablePurchases]);
 
@@ -179,7 +181,7 @@ async function validateWithBackend(purchase: Purchase, planUid: string, environm
   const response: any = await axiosRequest.post('/premium-plan/verify-iap-receipt', {
     productId: purchase.productId,
     transactionId: purchase.transactionId ?? null,
-    purchaseToken: purchase.purchaseToken ?? null,
+    jwsRepresentation: purchase.purchaseToken ?? null,
     environment,
     planUid,
     platform: 'ios',
