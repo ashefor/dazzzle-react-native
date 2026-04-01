@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useState, ReactNode } from 'react';
 import { Platform, Alert } from 'react-native';
 import {
   useIAP,
+  finishTransaction,
   ErrorCode,
   type Product,
   type Purchase,
+  type PurchaseIOS,
 } from 'expo-iap';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import {
@@ -27,6 +29,8 @@ interface IAPContextValue {
   products: Product[];
   /** Whether the IAP connection to the App Store is live */
   connected: boolean;
+  /** Whether products are still being fetched after connection */
+  productsLoading: boolean;
   /** Trigger a purchase for a given App Store product ID */
   purchaseProduct: (productId: string) => Promise<void>;
   /** Re-fetch purchases the user already owns (restore purchases) */
@@ -40,36 +44,40 @@ const IAPContext = createContext<IAPContextValue | null>(null);
 export function IAPProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const { userInfo } = useAppSelector((s) => s.auth);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   const onPurchaseSuccess = useCallback(
     async (purchase: Purchase) => {
-      try {
-        dispatch(setIAPLoading());
+      dispatch(setIAPLoading());
 
+      // Always finish the transaction FIRST, before hitting the backend.
+      // If we don't, Apple re-delivers the unfinished transaction on every
+      // app restart and onPurchaseSuccess fires again showing an error alert.
+      try {
+        await finishTransaction({ purchase });
+      } catch (finishErr) {
+        console.warn('[IAP] finishTransaction error (non-fatal):', finishErr);
+      }
+
+      try {
         const productId = purchase.productId as IAPProductId;
         const planUid = IAP_PRODUCT_TO_PLAN_UID[productId];
+        const environment = (purchase as PurchaseIOS).environmentIOS ?? null;
 
-        await validateWithBackend(purchase, planUid);
-        await finishTransaction({ purchase });
+        await validateWithBackend(purchase, planUid, environment);
 
         if (userInfo) {
           dispatch(updateUserInfo({ ...userInfo, is_premium: true }));
         }
-
         dispatch(setIAPSuccess(productId));
-        Toast.success('Subscription successful');
+        Toast.success('Subscription activated!');
         await handlePermissionNavigation('/(tabs)', '/app-permissions');
       } catch (err: any) {
-        console.error('[IAP] purchase processing error:', err);
-        dispatch(setIAPError('Failed to complete purchase. Please try again.'));
+        console.error('[IAP] backend validation error:', err);
+        dispatch(setIAPError(err?.message ?? 'Activation failed'));
         Alert.alert(
-          'Purchase Error',
-          'Failed to complete your purchase. Please contact support if you were charged.',
-        );
-                    Alert.alert('Error', err && err.errorMessage ? err.errorMessage : 'Your purchase was successful but we had trouble processing it. Please contact support with your receipt if you were charged.');
-        Alert.alert(
-          'Purchase Error 2',
-          JSON.stringify(err, null, 2),
+          'Activation Failed',
+          'Your payment was received but we could not activate your subscription. Please contact support with your receipt.',
         );
       }
     },
@@ -95,7 +103,6 @@ export function IAPProvider({ children }: { children: ReactNode }) {
     products,
     fetchProducts: fetchIAPProducts,
     requestPurchase,
-    finishTransaction,
     restorePurchases: restoreIAPPurchases,
     getAvailablePurchases,
   } = useIAP({ onPurchaseSuccess, onPurchaseError });
@@ -103,12 +110,10 @@ export function IAPProvider({ children }: { children: ReactNode }) {
   // ── Load products once connected ──────────────────────────────────────────
   React.useEffect(() => {
     if (Platform.OS !== 'ios' || !connected) return;
-    console.log('[IAP] Connected to StoreKit, fetching products...');
-    fetchIAPProducts({ skus: [...IAP_PRODUCT_IDS], type: 'in-app' }).then((sku) => {
-      console.log('[IAP] Products loaded:', sku);
-    }).catch((err) =>
-      console.error('[IAP] fetchProducts failed:', err),
-    );
+    setProductsLoading(true);
+    fetchIAPProducts({ skus: [...IAP_PRODUCT_IDS], type: 'in-app' })
+      .catch((err) => console.error('[IAP] fetchProducts failed:', err))
+      .finally(() => setProductsLoading(false));
   }, [connected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Purchase action ───────────────────────────────────────────────────────
@@ -140,7 +145,6 @@ export function IAPProvider({ children }: { children: ReactNode }) {
       dispatch(setIAPLoading());
       await restoreIAPPurchases();
       await getAvailablePurchases();
-      // onPurchaseSuccess fires for each restored item via the hook's callbacks
     } catch (err) {
       console.error('[IAP] restorePurchases error:', err);
       dispatch(setIAPError('Failed to restore purchases.'));
@@ -153,6 +157,7 @@ export function IAPProvider({ children }: { children: ReactNode }) {
       value={{
         products: products ?? [],
         connected,
+        productsLoading,
         purchaseProduct,
         restorePurchases,
       }}
@@ -170,11 +175,12 @@ export function useIAPContext(): IAPContextValue {
 }
 
 // ── Backend validation ────────────────────────────────────────────────────────
-async function validateWithBackend(purchase: Purchase, planUid: string): Promise<void> {
+async function validateWithBackend(purchase: Purchase, planUid: string, environment: string | null): Promise<void> {
   const response: any = await axiosRequest.post('/premium-plan/verify-iap-receipt', {
     productId: purchase.productId,
     transactionId: purchase.transactionId ?? null,
     purchaseToken: purchase.purchaseToken ?? null,
+    environment,
     planUid,
     platform: 'ios',
   });

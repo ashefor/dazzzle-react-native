@@ -370,6 +370,7 @@ const PayWallScreen = () => {
   const {
     products: iapProducts,
     connected: iapConnected,
+    productsLoading: iapProductsLoading,
     purchaseProduct,
     restorePurchases,
   } = useIAPContext();
@@ -583,6 +584,7 @@ const PayWallScreen = () => {
                   <IOSPlanSection
                     iapProducts={iapProducts}
                     iapConnected={iapConnected}
+                    iapProductsLoading={iapProductsLoading}
                     creditPlans={creditPlans}
                     selectedProductId={selectedCreditPlan?._uid}
                     isIAPBusy={isIAPBusy}
@@ -684,6 +686,7 @@ export default PayWallScreen;
 interface IOSPlanSectionProps {
   iapProducts: Product[];
   iapConnected: boolean;
+  iapProductsLoading: boolean;
   creditPlans: CreditPlan[];
   selectedProductId?: string;
   isIAPBusy: boolean;
@@ -693,12 +696,13 @@ interface IOSPlanSectionProps {
 function IOSPlanSection({
   iapProducts,
   iapConnected,
+  iapProductsLoading,
   creditPlans,
   selectedProductId,
   isIAPBusy,
   onSelectProduct,
 }: IOSPlanSectionProps) {
-  if (!iapConnected) {
+  if (!iapConnected || iapProductsLoading) {
     return (
       <View className="py-6 items-center gap-2">
         <ActivityIndicator color="#DD3FE5" />
