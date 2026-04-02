@@ -64,7 +64,6 @@ export function IAPProvider({ children }: { children: ReactNode }) {
         const productId = purchase.productId as IAPProductId;
         const planUid = IAP_PRODUCT_TO_PLAN_UID[productId];
         const environment = (purchase as PurchaseIOS).environmentIOS ?? null;
-
         await validateWithBackend(purchase, planUid, environment);
 
         if (userInfo) {

@@ -557,27 +557,27 @@ const PayWallScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View className="p-4 mt-6">
           {checking ? (
             <View className="flex-1 items-center justify-center py-20">
               <ActivityIndicator color="#DD3FE5" size="large" />
             </View>
           ) : (
-           <View className="gap-2">
-            <View>
-              <Text className=" text-2xl font-firabold text-center">Choose your plan</Text>
-                    <Text className=" text-base font-firamedium text-center underline underline-offset-8 underline-tertiary">Unlock Premium Features</Text>
-                    {premiumFeatures && (
-                        <View className="space-y-3 my-7">
-                            {premiumFeatures.map((feature, index) => (
-                                <View key={index} className="flex flex-row items-center justify-start pl-5">
-                                    <View className="w-1 h-1 bg-primary rounded-full mr-1" />
-                                    <Text className=" text-sm">{feature}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    )}
+            <View className="gap-2">
+              <View>
+                <Text className=" text-2xl font-firabold text-center">Choose your plan</Text>
+                <Text className=" text-base font-firamedium text-center underline underline-offset-8 underline-tertiary">Unlock Premium Features</Text>
+                {premiumFeatures && (
+                  <View className="space-y-3 my-7">
+                    {premiumFeatures.map((feature, index) => (
+                      <View key={index} className="flex flex-row items-center justify-start pl-5">
+                        <View className="w-1 h-1 bg-primary rounded-full mr-1" />
+                        <Text className=" text-sm">{feature}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
               <View className="">
                 {Platform.OS === "ios" && (
@@ -630,42 +630,42 @@ const PayWallScreen = () => {
                       : "Select a Plan"
                   }
                   handlePress={() => {
-                     if (Platform.OS === "ios" && selectedCreditPlan) {
-                        const product = iapProducts.find((p) => p.id === selectedCreditPlan._uid || (IAP_PRODUCT_TO_PLAN_UID as Record<string, string>)[p.id] === selectedCreditPlan._uid);
-                        if (product) handleIOSPurchase(product);
-                     } else {
-                        createPaystackOrder();
-                     }
+                    if (Platform.OS === "ios" && selectedCreditPlan) {
+                      const product = iapProducts.find((p) => p.id === selectedCreditPlan._uid || (IAP_PRODUCT_TO_PLAN_UID as Record<string, string>)[p.id] === selectedCreditPlan._uid);
+                      if (product) handleIOSPurchase(product);
+                    } else {
+                      createPaystackOrder();
+                    }
                   }}
                   isLoading={isIAPBusy}
                   disabled={!selectedCreditPlan || isIAPBusy}
                 />
- {Platform.OS === "ios" && (
-                    <View className="justify-center items-center gap-2 my-3">
-                      <Text className=" text-xs">or</Text>
-                      <TouchableOpacity className={`py-2.5 px-4 w-auto border border-primary flex items-center justify-center rounded-[26px]`} onPress={restorePurchases} disabled={isIAPBusy}>
-                        <Text className="text-primary text-xs font-firamedium">
-                          Click to Restore Purchases
-                        </Text>
-                      </TouchableOpacity>
-                      </View>
-                  )}
-                 <View className="flex flex-wrap flex-1 flex-row gap-1 mt-3 items-center justify-center">
-                        <Text className=" text-xs text-center">
-                        By subscribing, you agree to our 
+                {Platform.OS === "ios" && (
+                  <View className="justify-center items-center gap-2 my-3">
+                    <Text className=" text-xs">or</Text>
+                    <TouchableOpacity className={`py-2.5 px-4 w-auto border border-primary flex items-center justify-center rounded-[26px]`} onPress={restorePurchases} disabled={isIAPBusy}>
+                      <Text className="text-primary text-xs font-firamedium">
+                        Click to Restore Purchases
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <View className="flex flex-wrap flex-1 flex-row gap-1 mt-3 items-center justify-center">
+                  <Text className=" text-xs text-center">
+                    By subscribing, you agree to our
+                  </Text>
+                  <TouchableOpacity onPress={openPrivacyPolicy}>
+                    <Text className="text-primary text-xs text-center">
+                      Terms of Service and Privacy Policy.
                     </Text>
-                     <TouchableOpacity onPress={openPrivacyPolicy}>
-                            <Text className="text-primary text-xs text-center">
-                                 Terms of Service and Privacy Policy.
-                            </Text>
-                            </TouchableOpacity>
-                    </View>
-                    <View className='justify-center pt-5 flex-row gap-2'>
-                        <TouchableOpacity onPress={() => handleLogOut()}>
-                            <Text className='text-sm font-firaregular underline'>Log Out</Text>
-                        </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
+                <View className='justify-center pt-5 flex-row gap-2'>
+                  <TouchableOpacity onPress={() => handleLogOut()}>
+                    <Text className='text-sm font-firaregular underline'>Log Out</Text>
+                  </TouchableOpacity>
 
-                    </View>
+                </View>
               </View>
             </View>
           )}
@@ -759,34 +759,33 @@ function IOSProductCard({ product, matchedPlan, isSelected, onPress }: IOSProduc
   return (
     <View className="flex-1 mb-4">
       <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${
-        isSelected ? "bg-tertiary border-transparent" : "bg-white"
-      }`}
-    >
-      <View className=" justify-between">
-        <View className="flex-1">
-          <Text className={`font-firasemibold text-base ${isSelected ? "text-primary" : "text-slate-800"}`}>
-            {displayTitle}
-          </Text>
-          {product.description && !matchedPlan ? (
-            <Text
-              className="font-firaregular text-xs text-slate-500 mt-1"
-              numberOfLines={2}
-            >
-              {product.description}
+        onPress={onPress}
+        activeOpacity={0.75}
+        className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${isSelected ? "bg-tertiary border-transparent" : "bg-white"
+          }`}
+      >
+        <View className=" justify-between">
+          <View className="flex-1">
+            <Text className={`font-firasemibold text-base ${isSelected ? "text-primary" : "text-slate-800"}`}>
+              {displayTitle}
             </Text>
-          ) : null}
-        </View>
+            {product.description && !matchedPlan ? (
+              <Text
+                className="font-firaregular text-xs text-slate-500 mt-1"
+                numberOfLines={2}
+              >
+                {product.description}
+              </Text>
+            ) : null}
+          </View>
 
-        <View className="">
-          <Text className={`font-firabold text-sm ${isSelected ? "text-primary" : "text-slate-800"}`}>
-            {product.displayPrice}
-          </Text>
+          <View className="">
+            <Text className={`font-firabold text-sm ${isSelected ? "text-primary" : "text-slate-800"}`}>
+              {product.displayPrice}
+            </Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -814,21 +813,18 @@ function AndroidPlanSection({
           <TouchableOpacity
             key={plan._id}
             onPress={() => onSelectPlan(plan)}
-            className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${
-        isSelected ? "bg-tertiary border-transparent" : "bg-white"
-      }`}
+            className={`px-4 py-2.5 bg-[#FFFFFF1A] rounded-xl border border-tertiary ${isSelected ? "bg-tertiary border-transparent" : "bg-white"
+              }`}
           >
             <Text
-              className={`font-firasemibold text-base ${
-                isSelected ? "text-primary" : "text-slate-800"
-              }`}
+              className={`font-firasemibold text-base ${isSelected ? "text-primary" : "text-slate-800"
+                }`}
             >
               {plan.title}
             </Text>
             <Text
-              className={`font-firabold text-sm ${
-                isSelected ? "text-primary" : "text-slate-800"
-              }`}
+              className={`font-firabold text-sm ${isSelected ? "text-primary" : "text-slate-800"
+                }`}
             >
               {formatAsCurrency(plan.price)}
             </Text>

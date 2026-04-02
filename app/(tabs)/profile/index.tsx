@@ -156,6 +156,7 @@ export default function ProfileScreen() {
                 <View>
                   <Text style={styles.profileName}>{userInfo?.full_name || userInfo?.first_name + ' ' + userInfo?.last_name}</Text>
                   <Text style={styles.profileLocation}>{userInfo?.username}</Text>
+                   <Text style={styles.profileLocation}>{userInfo?.email}</Text>
                 </View>
               </View>
 

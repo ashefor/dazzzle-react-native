@@ -11,6 +11,7 @@ import { Text } from 'react-native';
 import { useAppDispatch } from '@/hooks/reduxHooks';
 import { DeviceEventEmitter } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { fetchAuthenticatedUser } from '@/redux/thunks/authActions';
 
 export default function TabLayout() {
   const dispatch = useAppDispatch();
@@ -53,6 +54,7 @@ const registerNotificationListeners = () => {
 };
 
 useEffect(() => {
+    dispatch(fetchAuthenticatedUser());
     registerNotificationListeners();
     return () => {
         if (notificationListener.current) {
