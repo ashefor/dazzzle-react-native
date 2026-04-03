@@ -1,6 +1,6 @@
 // counterSlice.js
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { fetchAuthenticatedUser, signUserOut, userLogin } from '../thunks/authActions';
+import { deleteUserAccount, fetchAuthenticatedUser, signUserOut, userLogin } from '../thunks/authActions';
 import { clear, setItem } from '@/utils/asyncStorage';
 import { LoggedInUserProfile } from '@/models/user';
 import { fetchUserProfileData } from '../thunks/userActions';
@@ -104,6 +104,20 @@ export const userSlice = createSlice({
             state.loggingOut = false;
             state.error = action.payload;
         })
+        builder.addCase(deleteUserAccount.pending, (state, action) => {
+            state.loading = true;
+        }),
+        builder.addCase(deleteUserAccount.fulfilled, (state, action) => {
+            state.loading = false;
+            state.userInfo = null;
+            state.userToken = '';
+            state.isProfileCompleted = false;
+            clear()
+        }),
+        builder.addCase(deleteUserAccount.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        }),
         builder.addCase(fetchUserProfileData.pending, (state) => {
             state.userProfileData = null
             state.loadingUserProfileData = true
