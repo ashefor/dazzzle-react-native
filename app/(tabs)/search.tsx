@@ -284,7 +284,7 @@ const FilterUsers = () => {
                         keyExtractor={(item, index) => `${item.username}-${index}`}
                         numColumns={numColumns}
                         ListFooterComponent={filterParams && (totalCount > users.length) ? <TouchableOpacity onPress={() => fetchMoreUsers()} className='flex items-center justify-center my-4'>
-                            {isLoadingMore && <ActivityIndicator size='small' color='#fff' />}
+                            {isLoadingMore && <ActivityIndicator size='small' color="#DD3FE5" />}
                             <Text className='text-white'>Load More</Text>
                         </TouchableOpacity> : null}
                         refreshing={refreshing}
@@ -293,7 +293,7 @@ const FilterUsers = () => {
                             <RefreshControl
                                 refreshing={refreshing}
                                 onRefresh={refreshUsers}
-                                tintColor='#fff'
+                                tintColor='#DD3FE5'
                             />
                         }
                         onEndReachedThreshold={0.5}
