@@ -45,11 +45,13 @@ const FilterUsers = () => {
     const { width } = useWindowDimensions();
     const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
     const [users, setUsers] = useState<FeaturedUser[]>([]);
+    const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [totalCount, setTotalCount] = useState(0);
     const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [filterParams, setFilterParams] = useState<BasicFilter | null>(null)
+    const [sliderActive, setSliderActive] = useState(false)
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
     const insets = useSafeAreaInsets();
     const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
@@ -64,6 +66,7 @@ const FilterUsers = () => {
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { getFeatureUserList } = data.data;
                 setUsers(getFeatureUserList);
+                setHasLoadedUsers(true);
             }
             hide();
         } catch (error) {
@@ -88,7 +91,9 @@ const FilterUsers = () => {
                 const data: any = await axiosRequest.get('/get-featured-user-data');
                 if (data.reaction === ReactionCodes.SUCCESS) {
                     const { getFeatureUserList } = data.data;
+                    console.log('Refreshed Users:', data.data);
                     setUsers(getFeatureUserList);
+                    setHasLoadedUsers(true);
                 }
             }
             setRefreshing(false);
@@ -106,6 +111,7 @@ const FilterUsers = () => {
                     const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
                     const newUsers = [users, filterData];
                     setUsers(newUsers.flat());
+                    setHasLoadedUsers(true);
                     setTotalCount(totalCount);
                     setNextPageUrl(nextPageUrl);
                 }
@@ -142,10 +148,14 @@ const FilterUsers = () => {
             setFilterParams(params);
             // const oldUSers = [...users];
             setUsers([]);
+            setHasLoadedUsers(false);
             show();
             const data: any = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`);
+            console.log('Filter Params:', filterParams);
+            console.log('Filter API Response:', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
+                console.log('Filter Response:', data.data);
                 setUsers(filterData);
                 setNextPageUrl(nextPageUrl);
                 setTotalCount(totalCount);
@@ -153,12 +163,18 @@ const FilterUsers = () => {
             hide();
         } catch (error) {
             hide();
+        } finally {
+            // setUsers(oldUSers);
+            setRefreshing(false);
+            setHasLoadedUsers(true);
+            hide();
         }
     }
 
     const clearFilter = () => {
         setFilterParams(null);
         setUsers([]);
+        setHasLoadedUsers(false);
         fetchLikedUsers();
     }
 
@@ -175,7 +191,7 @@ const FilterUsers = () => {
     );
 
     const MAX_HEIGHT_PX = useMemo(() => {
-        return Dimensions.get("screen").height * 0.8
+        return Dimensions.get("screen").height * 0.9
     }, [])
 
     const renderHeaderHandle = useCallback(
@@ -210,9 +226,9 @@ const FilterUsers = () => {
         return (
             <TouchableWithoutFeedback onPress={() => requirePremium(() => {
                 router.push({
-                pathname: '/[userName]',
-                params: { userName: item.username }
-            })
+                    pathname: '/[userName]',
+                    params: { userName: item.username }
+                })
             })} className=''>
                 <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
                     <View className='flex-1 rounded-xl overflow-hidden'>
@@ -271,16 +287,27 @@ const FilterUsers = () => {
                 <FilterIcon stroke={"#DD3FE5"} />
             </TouchableOpacity>} />
             <View className='flex-1 h-full'>
-                {filterParams && <View style={{ justifyContent: 'space-between', alignItems: 'center' }} className='px-4 py-2'>
-                    <Text className='text-white'>Showing filter</Text>
-                    <TouchableOpacity onPress={clearFilter} className='items-center justify-center'>
-                        <Ionicons name="close" size={24} color="#ffffff" />
+                {filterParams && <View style={{ justifyContent: 'flex-start', width: 'auto', flex: 0, alignItems: 'center', flexDirection: 'row', }} className='px-4 py-2'>
+                    <Text className='text-sm'>Clear Filters</Text>
+                    <TouchableOpacity onPress={clearFilter} className='items-center justify-center p-0.5 rounded-full bg-[#E0E0E0] ml-2'>
+                        <Ionicons name="close" size={20} color="#DD3FE5" />
                     </TouchableOpacity>
                 </View>}
                 <View style={{ flexGrow: 1 }} className='h-full flex-1'>
                     <FlatList
                         className='p-1 flex-1 h-full'
                         data={users}
+                        ListEmptyComponent={
+                            hasLoadedUsers ? (
+                                <View className='flex-1 items-center justify-center mt-20 py-10 bg-primary/10 mx-4 rounded-xl'>
+                                    <Text className='text-gray-500 font-firamedium'>No users found</Text>
+                                    <Text className='text-gray-500 font-firamedium'>Try adjusting your filters or refresh</Text>
+                                    <TouchableOpacity onPress={refreshUsers} className='mt-4 px-4 py-2 bg-primary rounded-full'>
+                                        <Text className='text-white'>Refresh</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : null
+                        }
                         keyExtractor={(item, index) => `${item.username}-${index}`}
                         numColumns={numColumns}
                         ListFooterComponent={filterParams && (totalCount > users.length) ? <TouchableOpacity onPress={() => fetchMoreUsers()} className='flex items-center justify-center my-4'>
@@ -302,15 +329,17 @@ const FilterUsers = () => {
                 </View>
             </View>
             <BottomSheetModal
-                enableDynamicSizing={false}
+                enableDynamicSizing={true}
                 maxDynamicContentSize={MAX_HEIGHT_PX}
                 enablePanDownToClose={true}
-                snapPoints={['80%']}
+                enableContentPanningGesture={false}
+                // snapPoints={['80%']}
                 ref={searchBottomSheetModalRef}
                 handleIndicatorStyle={{
                     backgroundColor: "red",
                     display: "none"
                 }}
+                topInset={insets.top}
                 handleStyle={{ padding: 0 }}
                 style={{
                     shadowColor: "#000",
@@ -325,13 +354,14 @@ const FilterUsers = () => {
                 }}
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
-                keyboardBehavior="extend"
-                enableBlurKeyboardOnGesture
-                keyboardBlurBehavior='restore'
-                android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
+                keyboardBehavior="interactive"
+                keyboardBlurBehavior="none"
+                {...(Platform.OS === "android"
+                    ? { android_keyboardInputMode: "adjustResize" }
+                    : {})}
             >
-                <BottomSheetScrollView>
-                    <UsersBasicFilter filterUsers={filterUsers} />
+                <BottomSheetScrollView scrollEnabled={!sliderActive}>
+                    <UsersBasicFilter filterUsers={filterUsers} onSliderStart={() => setSliderActive(true)} onSliderEnd={() => setSliderActive(false)} filterParams={filterParams} />
                 </BottomSheetScrollView>
             </BottomSheetModal>
             <PremiumActionModal

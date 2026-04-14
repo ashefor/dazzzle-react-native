@@ -62,7 +62,8 @@ export default function ProfileScreen() {
       show();
       await dispatch(deleteUserAccount())
       hide();
-      router.replace('/landing')
+      console.log('Account deleted successfully');
+      // router.replace('/landing')
     } catch (error) {
       hide();
       Alert.alert('Error', 'Unable to delete account at the moment. Please try again later.');

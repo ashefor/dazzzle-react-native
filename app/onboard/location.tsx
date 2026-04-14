@@ -13,6 +13,7 @@ import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import { OnboardPagesProps } from '.'
 import FormField from '@/components/FormField'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';;
 
@@ -138,11 +139,11 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
 
     return (
         <View className='flex-1 space-y-4'>
-            <View className='px-4'>
+            <View className='px-4 pb-2'>
                 <Text className='text-2xl text-black font-firabold'>Choose location</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
-            <ScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
+            <KeyboardAwareScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
                 <View className="relative z-50 w-full">
                     <FormField
                         title=''
@@ -239,7 +240,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                         </TouchableOpacity>
                     </View>
                 </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </View>
     )
 }

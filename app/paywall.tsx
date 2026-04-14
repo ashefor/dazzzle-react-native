@@ -277,7 +277,7 @@
 
 import CustomButton from "@/components/CustomButton";
 import Toast from "@/components/toast/toast";
-import { API_URL, IAP_PRODUCT_TO_PLAN_UID } from "@/constants/constants";
+import { IAP_PRODUCT_TO_PLAN_UID } from "@/constants/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { ReactionCodes } from "@/models/general";
 import {
@@ -309,6 +309,8 @@ import { useIAPContext } from "@/context/IAPProvider";
 import { resetIAP } from "@/redux/slices/iapSlice";
 import type { Product } from "expo-iap";
 import { usePaystack } from "react-native-paystack-webview";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 // ─── Default plan data (used while API loads) ─────────────────────────────────
 
@@ -650,8 +652,8 @@ const PayWallScreen = () => {
                     </TouchableOpacity>
                   </View>
                 )}
-                <View className="flex flex-wrap flex-1 flex-row gap-1 mt-3 items-center justify-center">
-                  <Text className=" text-xs text-center">
+                <View>
+                  <Text className="text-xs text-center">
                     By subscribing, you agree to our
                   </Text>
                   <TouchableOpacity onPress={openPrivacyPolicy}>
@@ -806,7 +808,7 @@ function AndroidPlanSection({
   formatAsCurrency,
 }: AndroidPlanSectionProps) {
   return (
-    <View className="gap-4">
+    <View className="gap-4 mb-4">
       {creditPlans.map((plan) => {
         const isSelected = selectedCreditPlan?._id === plan._id;
         return (

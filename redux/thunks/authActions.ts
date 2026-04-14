@@ -4,11 +4,10 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
-import { API_URL } from '@/constants/constants'
 import dayjs from 'dayjs'
 import { RootState } from '../store'
 
-// const backendURL = 'http://127.0.0.1:5000'
+const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 // export const registerUser = createAsyncThunk(
 //   'auth/register',
@@ -200,11 +199,13 @@ export const deleteUserAccount = createAsyncThunk(
                     ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
                 }
             }
+            console.log('Initiating account deletion with config:', config);
             const response = await axios.post(
                 `${API_URL}/delete-account`,
                 {},
                 config
             )
+            console.log('Delete Account Response:', response.data);
             const authApiResponse = response.data as AuthApiResponse;
             const { reaction, message, data } = response.data;
             let errorMessage = message;
@@ -223,6 +224,22 @@ export const deleteUserAccount = createAsyncThunk(
             clear();
             return true;
         } catch (error: any) {
+            console.error('Account deletion failed:', JSON.stringify(error, null, 2));
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response ? {
+                    status: error.response.status,
+                    data: error.response.data,
+                    headers: error.response.headers
+                } : null,
+                request: error.request ? {
+                    method: error.request.method,
+                    url: error.request.url,
+                    headers: error.request.headers,
+                    data: error.request.data
+                } : null
+            });
+            console.error('Stack trace:', error.response.data.message);
             // return custom error message from API if any
             if (error.response && error.response.data.message) {
                 return rejectWithValue(error.response.data.message)

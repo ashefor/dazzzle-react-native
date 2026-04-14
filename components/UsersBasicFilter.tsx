@@ -16,21 +16,30 @@ export type BasicFilter = {
 
 const genderOptions = [
     { value: 'All', id: 'all' },
-    { value: 'Male', id: 'male' },
-    { value: 'Female', id: 'female' },
-    { value: 'Secret', id: 'secret' },
+    { value: 'Male', id: '1' },
+    { value: 'Female', id: '2' },
+    { value: 'Secret', id: '3' },
 ]
 
-const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) => void }) => {
+const userTypeOptions = [
+    {
+        value: 'Yes', id: '1'
+    },
+    { value: 'No', id: '0'
+    }
+]
+
+const UsersBasicFilter = ({ filterUsers, onSliderStart, onSliderEnd, filterParams: initialFilterParams }: { filterUsers: (value: BasicFilter) => void, onSliderStart?: () => void, onSliderEnd?: () => void, filterParams?: BasicFilter | null }) => {
     const insets = useSafeAreaInsets();
-    const [filterParams, setFilterParams] = useState<BasicFilter>({
+    const [filterParams, setFilterParams] = useState<BasicFilter>(initialFilterParams || {
         username: '',
         age: [18, 60],
         looking_for: 'all',
-        distance: ''
+        distance: '',
+        user_type: '0'
     })
 
-    const updateFilterParams = useCallback((key: string, value: any) => {
+    const updateFilterParams = useCallback((key: keyof BasicFilter, value: any) => {
         setFilterParams({
             ...filterParams,
             [key]: value
@@ -55,6 +64,9 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
     return (
         <View style={{ gap: 28, paddingHorizontal: 20, paddingBottom: insets.bottom + 20, paddingTop: 20 }}>
             <View style={{ gap: 20 }}>
+                <View className='space-y-1'>
+                    <SelectPicker options={userTypeOptions} onSelectOption={(params) => updateFilterParams('user_type', params)} defaultOption={filterParams.user_type} title='Only Verified Users' />
+                </View>
                 <View>
                     <CustomTextInput
                         label="Username"
@@ -72,13 +84,13 @@ const UsersBasicFilter = ({ filterUsers }: { filterUsers: (value: BasicFilter) =
                             step={1}
                             enableLabel={true}
                             customLabel={(value) =>
-                                <Text className='text-primary'>Between: {value.oneMarkerValue} and {value.twoMarkerValue} </Text>}
+                                <Text style={{marginLeft: -14}} className='text-primary'>Between: {value.oneMarkerValue} and {value.twoMarkerValue} </Text>}
                             markerStyle={{ backgroundColor: '#DD3FE5', borderWidth: 0 }}
-                            sliderLength={Dimensions.get('window').width - 50}
+                            sliderLength={Dimensions.get('window').width - 64}
                             selectedStyle={{ backgroundColor: '#DD3FE5' }}
                             trackStyle={{ backgroundColor: '#ccc' }}
-                            // onValuesChange={(values) => console.log(values)}
-                            onValuesChangeFinish={(values) => updateFilterParams('age', values)}
+                            onValuesChangeStart={onSliderStart}
+                            onValuesChangeFinish={(values) => { updateFilterParams('age', values); onSliderEnd?.(); }}
                         />
                     </View>
                 </View>

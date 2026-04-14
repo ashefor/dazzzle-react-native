@@ -41,6 +41,7 @@ const SignIn = () => {
     const createAccount = async (formValues: SigUpForm) => {
         try {
             show();
+            console.log('Creating account with values:', formValues);
             const response: any = await axiosRequest.post('/user/process-sign-up', formValues);
             hide();
             if (response.reaction === ReactionCodes.SUCCESS) {

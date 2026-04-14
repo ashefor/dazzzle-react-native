@@ -15,7 +15,6 @@ import NavBar from '@/components/NavBar'
 import ArrowBackIcon from '@/components/icons/ArrowBackIcon'
 import OnboardRelationshipType from './relationship-type'
 import OnboardChooseInterests from './choose-interests'
-import { KeyboardAvoidingView } from "react-native-keyboard-controller"
 
 export interface OnboardPagesProps {
     pageData?: any,
@@ -105,9 +104,7 @@ const OnboardPage = () => {
                         ))}
                     </View>
                 </View>
-                <KeyboardAvoidingView behavior={"padding"}
-                     style={{ flex: 1 }}>
-                    <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
+                <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
                         <View key={1}>
                             <OnboardBioData pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                         </View>
@@ -124,7 +121,6 @@ const OnboardPage = () => {
                             <OnboardChooseInterests onLogOut={handleLogOut} />
                         </View>
                     </PagerView>
-                </KeyboardAvoidingView>
             </View>
         </Fragment>
     )

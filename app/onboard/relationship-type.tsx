@@ -56,7 +56,7 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
 
     return (
         <View className='w-full h-full flex-1 space-y-4'>
-            <View className='px-4'>
+            <View className='px-4 pb-2'>
                 <Text className='text-2xl text-black font-firabold'>Relationship Type</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>

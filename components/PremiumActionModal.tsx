@@ -19,7 +19,6 @@ import { updateUserInfo } from '@/redux/slices/authSlice';
 import { useLoader } from '@/context/loader/LoaderProvider';
 import Toast from '@/components/toast/toast';
 import dayjs from 'dayjs';
-import { TOKEN_KEY } from '@/constants/constants';
 import { getItem } from '@/utils/asyncStorage';
 
 interface PremiumActionModalProps {
@@ -33,6 +32,7 @@ interface PremiumActionModalProps {
 const PAYMENT_SUCCESS_URL = 'https://dazzzle.org/user/premium/success';
 const PAYMENT_CANCEL_URL = 'https://dazzzle.org/payment/cancel';
 const UPGRADE_WEBSITE_URL = 'https://dazzzle.org/user/premium/subscription-gate';
+const TOKEN_KEY = process.env.EXPO_PUBLIC_TOKEN_KEY || 'dazzzle-token';
 
 // For optimal UX: Change your website to redirect to these deep links instead of HTTPS URLs:
 // Success: 'dazzzle://payment/success' (browser will auto-close)

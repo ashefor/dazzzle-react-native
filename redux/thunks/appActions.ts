@@ -1,8 +1,9 @@
 // // authActions.js
-import axios from 'axios'
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import { BasicAppInterface, ReactionCodes } from '@/models/general'
-import { API_URL } from '@/constants/constants'
+import axios from 'axios';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { BasicAppInterface, ReactionCodes } from '@/models/general';
+// import { API_URL } from '@/constants/constants'
+const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 export const fetchAppConfig = createAsyncThunk(
     'user/prepare-sign-up',

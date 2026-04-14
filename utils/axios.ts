@@ -2,8 +2,9 @@
 // import { store } from "@/redux/store";
 import axios, { AxiosRequestConfig } from "axios";
 import { getItem } from "./asyncStorage";
-import { API_URL } from "@/constants/constants";
 import { ReactionCodes } from "@/models/general";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 export interface CustomAxiosRequestConfig extends AxiosRequestConfig {
     showGlobalLoader?: boolean;

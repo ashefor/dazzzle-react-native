@@ -67,7 +67,7 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut, goToNex
     return (
         <>
             <View className='flex-1 space-y-4'>
-                <View className='px-4'>
+                <View className='px-4 pb-2'>
                     <Text className='text-2xl text-black font-firabold'>Interest</Text>
                     <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                 </View>
