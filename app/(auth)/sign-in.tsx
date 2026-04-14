@@ -51,10 +51,7 @@ const SignIn = () => {
                                                     value={values.email_or_username}
                                                     editable={!loading}
 
-                                                    onChangeText={(text) => {
-                                                        setFieldValue('email_or_username', text.trim(), true);
-                                                        setFieldTouched('email_or_username', true, false);
-                                                    }}
+                                                    onChangeText={(text) => setFieldValue('email_or_username', text.trim())}
                                                     onBlur={handleBlur('email_or_username')}
 
                                                     errorMessage={errors.email_or_username}
@@ -73,10 +70,7 @@ const SignIn = () => {
                                                     editable={!loading}
                                                     secureTextEntry
 
-                                                    onChangeText={(text) => {
-                                                        setFieldValue('password', text, true);
-                                                        setFieldTouched('password', true, false);
-                                                    }}
+                                                    onChangeText={(text) => setFieldValue('password', text)}
                                                     onBlur={handleBlur('password')}
 
                                                     errorMessage={errors.password}
