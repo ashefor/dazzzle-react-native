@@ -6,8 +6,9 @@ import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import dayjs from 'dayjs'
 import { RootState } from '../store'
+import { API_URL } from '@/constants/constants'
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
+// const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 // export const registerUser = createAsyncThunk(
 //   'auth/register',

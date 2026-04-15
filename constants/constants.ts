@@ -4,6 +4,9 @@ export const FCM_TOKEN = 'dazzzle-fcm-token';
 export const REFRESH_TOKEN = 'dazzzle-access-token-refresh';
 export const USE_BIOMETRICS = 'dazzzle-use-biometrics';
 export const CREDENTIALS_KEY = 'dazzzle-credentials';
+export const API_URL = 'https://dazzzle.org/api';
+export const GMAPS_API_KEY = 'AIzaSyA4B2t-wfTGUClRl6FxE9Y5fFFYgyo6ems';
+export const TOKEN_KEY = 'dazzzle-token';
 
 interface Item {
     id: number;

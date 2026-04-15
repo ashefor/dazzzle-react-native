@@ -277,7 +277,7 @@
 
 import CustomButton from "@/components/CustomButton";
 import Toast from "@/components/toast/toast";
-import { IAP_PRODUCT_TO_PLAN_UID } from "@/constants/constants";
+import { API_URL, IAP_PRODUCT_TO_PLAN_UID } from "@/constants/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { ReactionCodes } from "@/models/general";
 import {
@@ -310,7 +310,7 @@ import { resetIAP } from "@/redux/slices/iapSlice";
 import type { Product } from "expo-iap";
 import { usePaystack } from "react-native-paystack-webview";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
+// const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
 // ─── Default plan data (used while API loads) ─────────────────────────────────
 
