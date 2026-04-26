@@ -92,7 +92,7 @@ const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
             {/* Basic Information Section */}
             <ProfileInfoSectionHeader title="Basic information" />
             <View className="bg-[#F2F2F7] mx-4 rounded-xl px-3 py-1">
-                <ProfileInfoItem icon={<Feather name="phone" size={18} color="#666" />} label="Phone No." value={mobile_number} />
+                {/* <ProfileInfoItem icon={<Feather name="phone" size={18} color="#666" />} label="Phone No." value={mobile_number} /> */}
                 <ProfileInfoItem icon={<Feather name="calendar" size={18} color="#666" />} label="Date of Birth" value={birthday} />
                 <ProfileInfoItem icon={<MaterialCommunityIcons name="gender-male-female" size={18} color="#666" />} label="Gender" value={gender_text} />
                 <ProfileInfoItem icon={<Feather name="users" size={18} color="#666" />} label="Rel. Status" value={formatted_relationship_status} />
