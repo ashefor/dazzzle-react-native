@@ -3,7 +3,6 @@ import { Platform, Alert } from 'react-native';
 import {
   useIAP,
   finishTransaction,
-  getAvailablePurchases,
   ErrorCode,
   type Product,
   type Purchase,
@@ -17,6 +16,8 @@ import {
   resetIAP,
 } from '@/redux/slices/iapSlice';
 import { updateUserInfo } from '@/redux/slices/authSlice';
+import { setActiveSubscription } from '@/redux/slices/subscriptionSlice';
+import type { SubscriptionResponse } from '@/models/subscription';
 import { IAP_PRODUCT_IDS, IAP_PRODUCT_TO_PLAN_UID, type IAPProductId } from '@/constants/constants';
 import axiosRequest from '@/utils/axios';
 import { ReactionCodes } from '@/models/general';
@@ -103,7 +104,6 @@ export function IAPProvider({ children }: { children: ReactNode }) {
     products,
     fetchProducts: fetchIAPProducts,
     requestPurchase,
-    restorePurchases: restoreIAPPurchases,
   } = useIAP({ onPurchaseSuccess, onPurchaseError });
 
   // ── Load products once connected ──────────────────────────────────────────
@@ -137,33 +137,46 @@ export function IAPProvider({ children }: { children: ReactNode }) {
     [dispatch, requestPurchase],
   );
 
-  // ── Restore purchases ─────────────────────────────────────────────────────
+  // ── Restore purchases (backend-based, no Apple credential prompt) ──────────
+  // Apple Guideline 3.1.1: consumable IAPs cannot be restored via StoreKit's
+  // getAvailablePurchases (which prompts for Apple ID/password). Instead we
+  // check our own backend — the user is already authenticated via Bearer token
+  // so the server can look up their active subscription directly.
   const restorePurchases = useCallback(async () => {
     if (Platform.OS !== 'ios') return;
     try {
       dispatch(setIAPLoading());
-      // Use the root API directly — it returns the purchases so we can process them.
-      // The hook's restoreIAPPurchases/getAvailablePurchases only update internal state
-      // and don't trigger onPurchaseSuccess, so nothing would happen after calling them.
-      const purchases = await getAvailablePurchases({ onlyIncludeActiveItemsIOS: true });
-      if (!purchases || purchases.length === 0) {
+      const data: SubscriptionResponse = await axiosRequest.get(
+        '/premium-plan/get-plan-details',
+        { showGlobalLoader: false } as any,
+      ) as any;
+
+      if (!data?.isPremiumUser || !data?.userSubscriptionData) {
         dispatch(resetIAP());
-        Alert.alert('No Subscriptions Found', 'We could not find any active subscriptions linked to your Apple ID.');
+        Alert.alert(
+          'No Active Subscription',
+          'We could not find an active subscription linked to your account.',
+        );
         return;
       }
-      // Process each restored purchase through the same validation flow as a new purchase
-      for (const purchase of purchases) {
-        await onPurchaseSuccess(purchase);
+
+      // Sync subscription & premium status into Redux from the backend record
+      dispatch(setActiveSubscription(data.userSubscriptionData));
+      if (userInfo) {
+        dispatch(updateUserInfo({ ...userInfo, is_premium: true }));
       }
+      dispatch(resetIAP());
+      Toast.success('Subscription restored!');
+      await handlePermissionNavigation('/(tabs)', '/app-permissions');
     } catch (err: any) {
       console.error('[IAP] restorePurchases error:', err);
       dispatch(setIAPError(err?.errorMessage ?? 'Failed to restore purchases.'));
       Alert.alert(
-        "Restore Failed",
-        err?.errorMessage ?? "Unable to restore purchases. Please try again."
+        'Restore Failed',
+        err?.errorMessage ?? 'Unable to restore purchases. Please try again.',
       );
     }
-  }, [dispatch, onPurchaseSuccess, restoreIAPPurchases]);
+  }, [dispatch, userInfo]);
 
   return (
     <IAPContext.Provider
