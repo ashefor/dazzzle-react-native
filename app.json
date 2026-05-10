@@ -24,7 +24,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.dazzzle.app",
+      "package": "com.dazzzle.mobile",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "com.google.android.gms.permission.AD_ID",
