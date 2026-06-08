@@ -25,6 +25,7 @@ import { Feather, Fontisto, Ionicons, MaterialCommunityIcons, MaterialIcons } fr
 import { router, useLocalSearchParams } from 'expo-router';
 import axiosRequest from '@/utils/axios';
 import { ReactionCodes } from '@/models/general';
+import { reportReasonOptions } from '@/constants/constants';
 import { SingleUserDetails } from '@/models/user';
 import EllipsisIcon from '@/components/EllipsisIcon';
 import UserDetailsSkeleton from '@/components/UserDetailsSkeleton';
@@ -260,6 +261,7 @@ export default function UserDetailsScreen() {
     const [userDetails, setUserDetails] = useState<SingleUserDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [reportReason, setReportReason] = useState('');
+    const [reportCategory, setReportCategory] = useState('');
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     // Layout Measurements (Reset these on data fetch to prevent jumpiness)
@@ -546,9 +548,15 @@ export default function UserDetailsScreen() {
             if (!userId) {
                 return new Error('User ID not found');
             }
+            if (!reportCategory) {
+                Alert.alert('Select a reason', 'Please choose a reason for your report.');
+                return;
+            }
             show();
             const params = {
-                report_reason: reportReason
+                report_reason: reportReason.trim()
+                    ? `[${reportCategory}] ${reportReason.trim()}`
+                    : reportCategory
             }
             const data: any = await axiosRequest.post(`/${userId}/report-user`, params)
             hide();
@@ -796,11 +804,41 @@ export default function UserDetailsScreen() {
                 enableBlurKeyboardOnGesture
                 keyboardBlurBehavior='restore'
                 android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
-                onDismiss={() => setReportReason('')}
+                onDismiss={() => { setReportReason(''); setReportCategory(''); }}
             >
 
                 <BottomSheetView>
                     <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16 }}>
+                        <Text style={{ fontFamily: 'Onest_500Medium', fontSize: 14, color: '#000', marginBottom: 10 }}>
+                            Why are you reporting this account?
+                        </Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                            {reportReasonOptions.map((reason) => {
+                                const selected = reportCategory === reason;
+                                return (
+                                    <TouchableOpacity
+                                        key={reason}
+                                        onPress={() => setReportCategory(reason)}
+                                        style={{
+                                            paddingVertical: 8,
+                                            paddingHorizontal: 14,
+                                            borderRadius: 20,
+                                            borderWidth: 1,
+                                            borderColor: selected ? '#DD3FE5' : '#cccccc80',
+                                            backgroundColor: selected ? '#DD3FE51A' : '#F2F2F7',
+                                        }}
+                                    >
+                                        <Text style={{
+                                            fontFamily: 'Onest_400Regular',
+                                            fontSize: 13,
+                                            color: selected ? '#DD3FE5' : '#5B5B5B',
+                                        }}>
+                                            {reason}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
                         <View className="bg-[#F2F2F7] text-black rounded-xl px-4 min-h-[100px] max-h-[200px] focus:border-primary border border-[#cccccc80]">
                             <BottomSheetTextInput
                                 multiline
@@ -815,7 +853,7 @@ export default function UserDetailsScreen() {
                                     textAlignVertical: 'top',
                                     fontFamily: 'Onest_400Regular',
                                 }}
-                                placeholder="Write your report here..."
+                                placeholder="Add more details (optional)..."
                                 autoCapitalize="none"
                                 importantForAutofill='no'
                                 placeholderTextColor={"#5B5B5B3A"}

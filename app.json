@@ -27,8 +27,6 @@
       "package": "com.dazzzle.mobile",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "com.google.android.gms.permission.AD_ID",
-        "android.permission.RECORD_AUDIO",
         "com.google.android.gms.permission.AD_ID"
       ],
       "adaptiveIcon": {
@@ -99,6 +97,7 @@
     "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/c3498daf-a4a4-4eff-9672-bcc669e3eb2d"
-    }
+    },
+    "owner": "dazzzle"
   }
 }

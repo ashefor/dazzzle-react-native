@@ -29,6 +29,7 @@ import dayjs from 'dayjs';
 import { usePremiumAction } from '@/hooks/usePremiumAction';
 import { PremiumActionModal } from '@/components/PremiumActionModal';
 import WalletIcon from '@/components/icons/WalletIcon';
+import { CHILD_SAFETY_URL } from '@/constants/constants';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -84,6 +85,10 @@ export default function ProfileScreen() {
 
   const openPrivacyPolicy = async () => {
     await WebBrowser.openBrowserAsync('https://dazzzle.org/privacy-policy');
+  };
+
+  const openChildSafety = async () => {
+    await WebBrowser.openBrowserAsync(CHILD_SAFETY_URL);
   };
 
   const openInstagram = async () => {
@@ -252,7 +257,8 @@ export default function ProfileScreen() {
           </Section>
 
           <Section title="Legal">
-            <MenuItem onPress={openPrivacyPolicy} icon={<ShieldIcon stroke={"#8E8E93"} />} label="Privacy Policy" isLast />
+            <MenuItem onPress={openPrivacyPolicy} icon={<ShieldIcon stroke={"#8E8E93"} />} label="Privacy Policy" />
+            <MenuItem onPress={openChildSafety} icon={<ShieldIcon stroke={"#8E8E93"} />} label="Child Safety Standards" isLast />
           </Section>
 
           <Section title="More">

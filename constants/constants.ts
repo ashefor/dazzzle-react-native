@@ -7,6 +7,17 @@ export const CREDENTIALS_KEY = 'dazzzle-credentials';
 export const API_URL = 'https://dazzzle.org/api';
 export const GMAPS_API_KEY = 'AIzaSyA4B2t-wfTGUClRl6FxE9Y5fFFYgyo6ems';
 export const TOKEN_KEY = 'dazzzle-token';
+export const CHILD_SAFETY_URL = 'https://dazzzle.org/child-safety-standards';
+
+// Predefined categories for reporting a user (Google Play child-safety compliance).
+export const reportReasonOptions: string[] = [
+    'Spam or scam',
+    'Harassment or bullying',
+    'Inappropriate or sexual content',
+    'Child sexual abuse or exploitation (CSAE)',
+    'Impersonation or fake profile',
+    'Other',
+];
 
 interface Item {
     id: number;
