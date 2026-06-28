@@ -15,7 +15,7 @@ import { OnboardPagesProps } from '.'
 import FormField from '@/components/FormField'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
-const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyACkmHiKXczRqjk8clNErV4XFrxVahjrvU';;
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
     const dispatch = useAppDispatch();
@@ -45,7 +45,6 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
 
         try {
             const results = await Promise.all(fetchPromises);
-
             const allPredictions = results
                 .filter((res) => res.status === 'OK')
                 .flatMap((res) => res.predictions);
@@ -76,17 +75,22 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
 
 
     const fetchLocationFromLatLong = async (latitude: number, longitude: number) => {
-        const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`);
-        const results = data.results[0];
-        const address = results.formatted_address;
-        const params = {
-            placeData: results.address_components,
-            locality: results.vicinity,
-            longitude: longitude,
-            latitude: latitude
+        try {
+            const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`);
+            const results = data.results[0];
+            const address = results.formatted_address;
+            const params = {
+                placeData: results.address_components,
+                locality: results.vicinity,
+                longitude: longitude,
+                latitude: latitude
+            }
+            setLocation(address);
+            setGoogleMapsLocation(params);
+        } catch (error) {
+            console.error('Error fetching location from lat/long:', error);
+            Alert.alert('Error', 'Failed to fetch location from lat/long');
         }
-        setLocation(address);
-        setGoogleMapsLocation(params);
     }
 
     const fetchLocationFromPlacesApi = async (placeId?: string) => {
@@ -94,7 +98,6 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
             try {
                 show();;
                 const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`);
-                hide();
                 const results = data.result;
                 const location = results.geometry.location;
                 const address = results.formatted_address;
@@ -107,6 +110,9 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                 setLocation(address);
                 setGoogleMapsLocation(params);
             } catch (error) {
+                console.error('Error fetching location details:', error);
+                Alert.alert('Error', 'Failed to fetch location details');
+            } finally {
                 hide();
             }
         } else {

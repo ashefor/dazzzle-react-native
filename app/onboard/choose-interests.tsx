@@ -106,7 +106,7 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut, goToNex
                     borderRadius: 28,
                 }}
                 backdropComponent={renderBackdrop}
-                onDismiss={() => router.replace('/(tabs)')}
+                onDismiss={() => router.replace('/paywall')}
             >
 
                 <BottomSheetView>
