@@ -10,7 +10,7 @@ import Toast from '@/components/toast/toast'
 import Checkbox from 'expo-checkbox'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as yup from 'yup'
 import { Formik } from 'formik'
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller"
@@ -82,13 +82,13 @@ const SignIn = () => {
             []
         );
     return (
-       <View className='flex-1 bg-white'>
+       <SafeAreaView className='flex-1 bg-white'>
                 {/* <KeyboardAvoidingView behavior={'padding'}>
                     <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
                         
                     </ScrollView>
                 </KeyboardAvoidingView> */}
-                <KeyboardAwareScrollView contentInset={insets} contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+                <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
                     <View className='w-full h-full justify-center'>
                             <Formik
                                 initialValues={{ password: '', username: '', repeat_password: '', email: '', accepted_terms: false }}
@@ -238,7 +238,7 @@ const SignIn = () => {
                 </BottomSheetView>
             </BottomSheetModal>
 
-       </View>
+       </SafeAreaView>
     )
 }
 
