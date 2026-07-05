@@ -82,10 +82,14 @@ const SignIn = () => {
                                             </View>
                                         </View>
 
+                                        <TouchableOpacity className='self-end' onPress={() => router.push('/(auth)/forgot-password')}>
+                                            <Text className='text-sm text-primary font-firaregular'>Forgot Password?</Text>
+                                        </TouchableOpacity>
+
                                         <View className='mt-auto'>
                                             <CustomButton
                                                 disabled={loading || !isValid}
-                                                title={loading ? 'Loading...' : 'Sign In'} 
+                                                title={loading ? 'Loading...' : 'Sign In'}
                                                 handlePress={handleSubmit} 
                                             />
                                         </View>
