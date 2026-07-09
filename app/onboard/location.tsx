@@ -149,7 +149,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                 <Text className='text-2xl text-black font-firabold'>Choose location</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
-            <KeyboardAwareScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
+            <KeyboardAwareScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16 }}>
                 <View className="relative z-50 w-full">
                     <FormField
                         title=''
