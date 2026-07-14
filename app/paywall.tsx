@@ -642,7 +642,7 @@ const PayWallScreen = () => {
                   isLoading={isIAPBusy}
                   disabled={!selectedCreditPlan || isIAPBusy}
                 />
-                {Platform.OS === "ios" && (
+                {/* {Platform.OS === "ios" && (
                   <View className="justify-center items-center gap-2 my-3">
                     <Text className=" text-xs">or</Text>
                     <TouchableOpacity className={`py-2.5 px-4 w-auto border border-primary flex items-center justify-center rounded-[26px]`} onPress={restorePurchases} disabled={isIAPBusy}>
@@ -651,7 +651,7 @@ const PayWallScreen = () => {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                )}
+                )} */}
                 <View>
                   <Text className="text-xs text-center">
                     By subscribing, you agree to our
