@@ -17,6 +17,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
+if (!GOOGLE_MAPS_API_KEY) {
+    // Surfaces the #1 cause of "Places returns nothing" in release builds:
+    // the EXPO_PUBLIC_ env var wasn't available at build time (e.g. .env not
+    // uploaded to EAS). See eas.json > build.*.env.
+    console.warn('[Places] GOOGLE_MAPS_API_KEY is empty — env var missing at build time.');
+}
+
 const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
@@ -45,6 +52,13 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
 
         try {
             const results = await Promise.all(fetchPromises);
+            // Log any non-OK response so denials (bad/empty key, API not enabled,
+            // billing) surface instead of silently becoming zero results.
+            results
+                .filter((res) => res.status !== 'OK' && res.status !== 'ZERO_RESULTS')
+                .forEach((res) =>
+                    console.warn('[Places] autocomplete non-OK:', res.status, res.error_message)
+                );
             const allPredictions = results
                 .filter((res) => res.status === 'OK')
                 .flatMap((res) => res.predictions);
