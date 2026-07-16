@@ -1,5 +1,6 @@
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { JSX, useCallback, useRef, useState } from 'react'
+import { Image } from 'expo-image'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import Images from '@/constants/images'
@@ -14,12 +15,26 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import Ionicons from '@expo/vector-icons/Ionicons'
 
+const forgotPasswordValidationSchema = yup.object().shape({
+    email: yup
+        .string()
+        .trim()
+        .email('Please enter a valid email')
+        .required('Email is required'),
+})
+
+const initialValues = { email: '' };
+
+const renderBackdrop = (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
+    <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+);
+
 const ForgotPassword = () => {
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-    const requestPasswordReset = async ({ email }: { email: string }) => {
+    const requestPasswordReset = useCallback(async ({ email }: { email: string }) => {
         try {
             setLoading(true);
             const data: any = await axiosRequest.post('/user/forgot-password', { email }, { showGlobalLoader: false });
@@ -31,74 +46,64 @@ const ForgotPassword = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [])
 
-    const renderBackdrop = useCallback(
-        (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
-            <BottomSheetBackdrop
-                {...props}
-                disappearsOnIndex={-1}
-                appearsOnIndex={0}
-            />
-        ),
-        []
-    );
+    const goToSignIn = useCallback(() => router.replace('/(auth)/sign-in'), []);
+    const dismissSheet = useCallback(() => bottomSheetModalRef.current?.dismiss(), []);
 
     return (
-        <SafeAreaView style={{ flex: 1 }} className=' h-full bg-white'>
-            <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }} >
-                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+        <SafeAreaView style={styles.flex} className=' h-full bg-white'>
+            <KeyboardAvoidingView behavior={"padding"} style={styles.flex} >
+                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }} keyboardShouldPersistTaps="handled">
                     <View className='w-full h-full py-16 justify-between'>
                         <Formik
-                            initialValues={{ email: '' }}
+                            initialValues={initialValues}
                             onSubmit={requestPasswordReset}
                             validationSchema={forgotPasswordValidationSchema}
                         >
-                            {({ handleBlur, handleSubmit, values, errors, touched, isValid, setFieldValue }) => {
-                                return (
-                                    <View className='flex-1'>
+                            {({ handleBlur, handleSubmit, values, errors, touched, isValid, setFieldValue }) => (
+                                <View className='flex-1'>
+                                    <View>
+                                        <Image source={Images.logo} style={styles.logo} contentFit='contain' />
+                                        <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Forgot Password</Text>
+                                        <Text className='text-sm text-black font-firamedium mt-3'>Enter the email linked to your account and we&apos;ll send you instructions to reset your password.</Text>
+                                    </View>
+
+                                    <View className='my-5 space-y-3'>
                                         <View>
-                                            <Image source={Images.logo} className='w-20 h-20 mx-auto' resizeMode='contain' />
-                                            <Text className='text-2xl text-black font-semibold mt-10 font-firabold'>Forgot Password</Text>
-                                            <Text className='text-sm text-black font-firamedium mt-3'>Enter the email linked to your account and we'll send you instructions to reset your password.</Text>
-                                        </View>
+                                            <FormField
+                                                title="Email"
+                                                placeholder='Enter your email'
+                                                value={values.email}
+                                                editable={!loading}
 
-                                        <View className='my-5 space-y-3'>
-                                            <View>
-                                                <FormField
-                                                    title="Email"
-                                                    placeholder='Enter your email'
-                                                    value={values.email}
-                                                    editable={!loading}
+                                                onChangeText={(text) => setFieldValue('email', text.trim())}
+                                                onBlur={handleBlur('email')}
 
-                                                    onChangeText={(text) => setFieldValue('email', text.trim())}
-                                                    onBlur={handleBlur('email')}
+                                                errorMessage={errors.email}
+                                                touched={touched.email}
 
-                                                    errorMessage={errors.email}
-                                                    touched={touched.email}
-
-                                                    textContentType="emailAddress"
-                                                    autoComplete="email"
-                                                    keyboardType="email-address"
-                                                />
-                                            </View>
-                                        </View>
-
-                                        <View className='mt-auto'>
-                                            <CustomButton
-                                                disabled={loading || !isValid}
-                                                title={loading ? 'Loading...' : 'Send Instructions'}
-                                                handlePress={handleSubmit}
+                                                textContentType="emailAddress"
+                                                autoComplete="email"
+                                                keyboardType="email-address"
                                             />
                                         </View>
                                     </View>
-                                )
-                            }}
+
+                                    <View className='mt-auto'>
+                                        <CustomButton
+                                            disabled={loading || !isValid}
+                                            title={loading ? 'Loading...' : 'Send Instructions'}
+                                            handlePress={handleSubmit}
+                                        />
+                                    </View>
+                                </View>
+                            )}
                         </Formik>
 
                         <View className='justify-center pt-5 flex-row gap-2'>
                             <Text className='text-sm text-black font-firaregular'>Remember your password?</Text>
-                            <TouchableOpacity onPress={() => router.replace('/(auth)/sign-in')}>
+                            <TouchableOpacity onPress={goToSignIn}>
                                 <Text className='text-sm text-primary font-firaregular underline'>Sign In</Text>
                             </TouchableOpacity>
                         </View>
@@ -110,10 +115,10 @@ const ForgotPassword = () => {
                 ref={bottomSheetModalRef}
                 enableDynamicSizing
                 enablePanDownToClose={true}
-                style={{ borderRadius: 28 }}
-                backgroundStyle={{ borderRadius: 28 }}
+                style={styles.sheet}
+                backgroundStyle={styles.sheet}
                 backdropComponent={renderBackdrop}
-                onDismiss={() => router.replace('/(auth)/sign-in')}
+                onDismiss={goToSignIn}
             >
                 <BottomSheetView>
                     <View style={{ paddingBottom: insets.bottom + 10, paddingHorizontal: 16, paddingTop: 8 }}>
@@ -125,10 +130,10 @@ const ForgotPassword = () => {
                                 Check your inbox
                             </Text>
                             <Text className='text-base font-firaregular text-center'>
-                                We've sent password reset instructions to your email. Please check your inbox or spam folder.
+                                We&apos;ve sent password reset instructions to your email. Please check your inbox or spam folder.
                             </Text>
                         </View>
-                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
+                        <TouchableOpacity onPress={dismissSheet} className='rounded-[26px] h-12 bg-primary flex items-center justify-center'>
                             <Text className='text-base font-firamedium text-white'>
                                 Okay
                             </Text>
@@ -143,6 +148,17 @@ const ForgotPassword = () => {
 export default ForgotPassword
 
 const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    logo: {
+        width: 80,
+        height: 80,
+        alignSelf: 'center',
+    },
+    sheet: {
+        borderRadius: 28,
+    },
     iconContainer: {
         width: 88,
         height: 88,
@@ -153,12 +169,4 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 16,
     },
-})
-
-const forgotPasswordValidationSchema = yup.object().shape({
-    email: yup
-        .string()
-        .trim()
-        .email('Please enter a valid email')
-        .required('Email is required'),
 })

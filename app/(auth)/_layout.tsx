@@ -21,7 +21,7 @@ const AuthLoadingScreen = () => {
   useEffect(() => {
     scale.value = withRepeat(withTiming(1.1, { duration: 1000 }), -1, true);
     opacity.value = withRepeat(withTiming(1, { duration: 1000 }), -1, true);
-  }, []);
+  }, [scale, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -94,7 +94,10 @@ export default function AuthLayout() {
     };
 
     checkAndRedirect();
-  }, [userInfo, isProfileCompleted]);
+    // currentSubscription is a dependency on purpose: it can resolve after
+    // userInfo, and without it a premium user gets sent to /paywall on the
+    // first pass and the effect never re-runs to correct the redirect.
+  }, [userInfo, isProfileCompleted, currentSubscription, router]);
 
   // If userInfo exists, we show the loader while the useEffect above handles the redirect.
   if (userInfo) {

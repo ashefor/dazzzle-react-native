@@ -335,13 +335,13 @@ export default function ProfileSettings() {
             education: userProfileData?.userProfileData.education,
             about_me: userProfileData?.userProfileData.aboutMe,
         }
-        editBottomSheetModalRef.current?.present({ data: profileData })
+        editBottomSheetModalRef.current?.present({ data: profileData } as any);
     };
 
     const openOtherDetailsEditBottomSheet = (type: EditType) => {
         setEditType(type);
         const otherData = userProfileData?.userSpecificationData[type] ? userProfileData?.userSpecificationData[type] : {};
-        editOtherFormBottomSheetModalRef.current?.present({ otherData: otherData })
+        editOtherFormBottomSheetModalRef.current?.present({ otherData: otherData } as any);
     }
 
     const updateBasicInfo = async (params: { [key: string]: any }) => {
@@ -551,7 +551,6 @@ export default function ProfileSettings() {
                     shadowOpacity: 0.1,
                     shadowRadius: 6,
                     elevation: 6,
-                    backgroundColor: 'yellow',
                     borderRadius: 28,
                 }}
                 backgroundStyle={{
@@ -561,7 +560,7 @@ export default function ProfileSettings() {
                 handleComponent={renderHeaderHandle}
             >
 
-                {({ data }) => <EditProfileForm
+                {({ data } : any) => <EditProfileForm
                     initialData={data?.data}
                     appConfig={appConfig!}
                     onSave={(updatedData) => {
@@ -583,7 +582,6 @@ export default function ProfileSettings() {
                     shadowOpacity: 0.1,
                     shadowRadius: 6,
                     elevation: 6,
-                    backgroundColor: 'yellow',
                     borderRadius: 28,
                 }}
                 backgroundStyle={{
@@ -592,7 +590,7 @@ export default function ProfileSettings() {
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
             >
-                {({ data }) => <EditProfileOtherDetailsForm
+                {({ data } : any) => <EditProfileOtherDetailsForm
                     initialData={data?.otherData}
                     onSave={(updatedData) => {
                         updateSpecificationData(updatedData);

@@ -1,5 +1,5 @@
-import { NativeSyntheticEvent, StyleProp, Text, TextInput, TextInputFocusEventData, TextInputProps, TouchableOpacity, View, ViewStyle } from 'react-native';
-import React from 'react';
+import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -7,17 +7,20 @@ interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
   title: string;
   value: string;
   touched?: boolean;
-  errorMessage?: string | null; 
+  errorMessage?: string | null;
   secureTextEntry?: boolean;
-  containerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: string;
   editable?: boolean;
 }
+
+const ERROR_COLOR = '#8E1F0B';
+const FOCUS_COLOR = '#DD3FE5';
 
 const FormField: React.FC<CustomTextInputProps> = ({
   title,
   onChangeText,
   secureTextEntry = false,
-  containerStyle,
+  containerStyle = '',
   errorMessage,
   onBlur,
   value,
@@ -25,46 +28,39 @@ const FormField: React.FC<CustomTextInputProps> = ({
   editable = true,
   ...restProps // This contains textContentType, autoComplete, etc.
 }) => {
-  const [isSecureTextEntry, setIsSecureTextEntry] = React.useState<boolean>(true);
-  const [isFocused, setIsFocused] = React.useState(false);
+  const [isSecureTextEntry, setIsSecureTextEntry] = useState<boolean>(true);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Error Logic: Show error if touched exists and there is an error message
   const hasError = touched && !!errorMessage;
 
-  function getBorderColor() {
-    if (hasError) return '#8E1F0B';
-    if (isFocused) return "#DD3FE5";
-    return "#cccccc80";
-  }
+  const borderColor = hasError ? ERROR_COLOR : isFocused ? FOCUS_COLOR : '#cccccc80';
+  const labelColor = hasError ? ERROR_COLOR : isFocused ? FOCUS_COLOR : '#333';
 
-  function getLabelColor() {
-    if (hasError) return '#8E1F0B';
-    if (isFocused) return "#DD3FE5";
-    return "#333";
-  }
+  const handleFocus = useCallback(() => setIsFocused(true), []);
 
-  const handleFocus = () => setIsFocused(true);
-
-  const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+  const handleBlur = useCallback<NonNullable<TextInputProps['onBlur']>>((e) => {
     setIsFocused(false);
-    onBlur && onBlur(e);
-  };
+    onBlur?.(e);
+  }, [onBlur]);
+
+  const toggleSecureEntry = useCallback(() => setIsSecureTextEntry((current) => !current), []);
 
   return (
     <View className='space-y-1'>
       <View className={`w-full space-y-2 ${containerStyle} ${editable ? '' : 'opacity-80'}`}>
         {title && (
-          <Text 
-            className="text-black text-sm font-firamedium" 
-            style={{ color: getLabelColor() }}
+          <Text
+            className="text-black text-sm font-firamedium"
+            style={{ color: labelColor }}
           >
             {title}
           </Text>
         )}
-        
-        <View 
-          className='border h-14 w-full px-4 bg-[#F2F2F7] rounded-xl items-center flex-row' 
-          style={{ borderColor: getBorderColor() }}
+
+        <View
+          className='border h-14 w-full px-4 bg-[#F2F2F7] rounded-xl items-center flex-row'
+          style={{ borderColor }}
         >
           <TextInput
             className='flex-1 h-full font-firaregular text-black text-sm'
@@ -74,19 +70,19 @@ const FormField: React.FC<CustomTextInputProps> = ({
             onFocus={handleFocus}
             editable={editable}
             placeholderTextColor={"#5B5B5B3A"}
-            selectionColor={'#DD3FE5'}
+            selectionColor={FOCUS_COLOR}
             secureTextEntry={secureTextEntry && isSecureTextEntry}
             autoCapitalize="none"
             // Important: This ensures autofill props passed from parent are applied
             {...restProps}
           />
-          
+
           {secureTextEntry && (
-            <TouchableOpacity onPress={() => setIsSecureTextEntry(!isSecureTextEntry)}>
-              <Ionicons 
-                name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"} 
-                size={20} 
-                color="black" 
+            <TouchableOpacity onPress={toggleSecureEntry}>
+              <Ionicons
+                name={isSecureTextEntry ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color="black"
               />
             </TouchableOpacity>
           )}

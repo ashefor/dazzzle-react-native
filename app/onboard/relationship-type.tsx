@@ -1,16 +1,13 @@
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
-import React, { useState } from 'react'
-import { router } from 'expo-router'
+import { Alert, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
+import React, { memo, useCallback, useState } from 'react'
+import { Image } from 'expo-image'
 import Images from '@/constants/images'
 import CustomButton from '@/components/CustomButton'
 import { ReactionCodes } from '@/models/general'
 import Toast from '@/components/toast/toast'
-import { useAppDispatch } from '@/hooks/reduxHooks'
-import { signUserOut } from '@/redux/thunks/authActions'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import axiosRequest from '@/utils/axios'
 import { OnboardPagesProps } from '.'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const RELATIONSHIP_OPTIONS = [
     { id: '1', label: 'Fun\n&\nFriendship', image: Images.relType1 },
@@ -21,17 +18,11 @@ const RELATIONSHIP_OPTIONS = [
     { id: '6', label: 'Flirting Only', image: Images.relType6 },
 ];
 
-const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
-    const dispatch = useAppDispatch();
+const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ goToNextPage, onLogOut }) => {
     const { show, hide } = useLoader();
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
-    const insets = useSafeAreaInsets();
 
-    const handleLogOut = async () => {
-        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
-    }
-
-    const submit = async () => {
+    const submit = useCallback(async () => {
         try {
             show();
             const data: any = await axiosRequest.post('/user-process-relationship-type-update-profile', { relationship_type: selectedRelationshipTypes });
@@ -44,15 +35,13 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
             hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update')
         }
-    }
+    }, [selectedRelationshipTypes, show, hide, goToNextPage]);
 
-    const chooseRelationshipType = (type: string) => {
-        if (selectedRelationshipTypes.includes(type)) {
-            setSelectedRelationshipTypes(selectedRelationshipTypes.filter((item) => item !== type));
-        } else {
-            setSelectedRelationshipTypes([...selectedRelationshipTypes, type]);
-        }
-    };
+    const chooseRelationshipType = useCallback((type: string) => {
+        setSelectedRelationshipTypes((current) =>
+            current.includes(type) ? current.filter((item) => item !== type) : [...current, type]
+        );
+    }, []);
 
     return (
         <View className='w-full h-full flex-1 space-y-4'>
@@ -60,7 +49,7 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
                 <Text className='text-2xl text-black font-firabold'>Relationship Type</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
-            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: insets.bottom + 20, justifyContent: 'space-between' }} >
+            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20, justifyContent: 'space-between' }} >
                 {selectedRelationshipTypes.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>}
                 <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
                     {RELATIONSHIP_OPTIONS.map((item) => {
@@ -70,14 +59,13 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
                             <Pressable
                                 key={item.id}
                                 onPress={() => chooseRelationshipType(item.id)}
-                                // 2. Dynamic styling based on selection
-                                className={`h-52 w-[48%] border rounded-[24px] p-4 flex flex-col items-center justify-center 
+                                className={`h-52 w-[48%] border rounded-[24px] p-4 flex flex-col items-center justify-center
                         ${isSelected ? 'bg-primary border-primary' : 'border-black bg-white'}`}
                             >
                                 <Image
                                     source={item.image}
-                                    className='w-20 h-20 rounded-full mb-4'
-                                    resizeMode="cover"
+                                    style={styles.optionImage}
+                                    contentFit="cover"
                                 />
                                 <Text className='text-base text-black font-firasemibold mt-2 text-center'>
                                     {item.label}
@@ -90,7 +78,7 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
                 <View>
                     <CustomButton disabled={selectedRelationshipTypes.length === 0} title='Next' handlePress={submit} />
                     <View className='justify-center pt-5 flex-row gap-2'>
-                        <TouchableOpacity onPress={handleLogOut}>
+                        <TouchableOpacity onPress={onLogOut}>
                             <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
                         </TouchableOpacity>
                     </View>
@@ -100,6 +88,13 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNe
     )
 }
 
-export default OnboardRelationshipType
+export default memo(OnboardRelationshipType)
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    optionImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        marginBottom: 16,
+    },
+})

@@ -1,14 +1,8 @@
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { router } from 'expo-router'
-import CustomButton from '@/components/CustomButton'
-// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import { PlaceAutocompletePrediction, ReactionCodes } from '@/models/general'
+import CustomButton from '@/components/CustomButton'
 import Toast from '@/components/toast/toast'
-import { useAppDispatch } from '@/hooks/reduxHooks'
-import { signUserOut } from '@/redux/thunks/authActions'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-// import { GooglePlacesAutocomplete } from "expo-google-places-autocomplete"
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import { OnboardPagesProps } from '.'
@@ -17,6 +11,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
+const SEARCH_DEBOUNCE_MS = 350;
+
 if (!GOOGLE_MAPS_API_KEY) {
     // Surfaces the #1 cause of "Places returns nothing" in release builds:
     // the EXPO_PUBLIC_ env var wasn't available at build time (e.g. .env not
@@ -24,8 +20,31 @@ if (!GOOGLE_MAPS_API_KEY) {
     console.warn('[Places] GOOGLE_MAPS_API_KEY is empty — env var missing at build time.');
 }
 
-const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }) => {
-    const dispatch = useAppDispatch();
+const findPlaceFromText = async (
+    input: string,
+    signal: AbortSignal
+): Promise<PlaceAutocompletePrediction[]> => {
+    const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+            input
+        )}&key=${GOOGLE_MAPS_API_KEY}`,
+        { signal }
+    );
+    const result = await response.json();
+
+    if (result.status !== 'OK') {
+        // Log denials (bad/empty key, API not enabled, billing) so they surface
+        // instead of silently becoming zero results.
+        if (result.status !== 'ZERO_RESULTS') {
+            console.warn('[Places] autocomplete non-OK:', result.status, result.error_message);
+        }
+        return [];
+    }
+
+    return result.predictions ?? [];
+};
+
+const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, onLogOut }) => {
     const { show, hide } = useLoader();
     const [searchText, setSearchText] = useState('');
     const [searchResults, setSearchResults] = useState<PlaceAutocompletePrediction[]>([]);
@@ -39,106 +58,100 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
         longitude: any;
         latitude: any;
     }>();
-    const insets = useSafeAreaInsets();
 
-    const findPlaceFromText = async (input: string, countries: string[] = []) => {
-        if (!input || input.length === 0) return [];
-
-        const fetchPromises = [fetch(
-            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-                input
-            )}&key=${GOOGLE_MAPS_API_KEY}`
-        ).then((res) => res.json())]
-
-        try {
-            const results = await Promise.all(fetchPromises);
-            // Log any non-OK response so denials (bad/empty key, API not enabled,
-            // billing) surface instead of silently becoming zero results.
-            results
-                .filter((res) => res.status !== 'OK' && res.status !== 'ZERO_RESULTS')
-                .forEach((res) =>
-                    console.warn('[Places] autocomplete non-OK:', res.status, res.error_message)
-                );
-            const allPredictions = results
-                .filter((res) => res.status === 'OK')
-                .flatMap((res) => res.predictions);
-
-            return allPredictions as any[];
-        } catch (err) {
-            console.error('Autocomplete error:', err);
-            return [];
-        }
-    };
-
+    // Debounced so typing doesn't fire one Places call per keystroke, and
+    // aborted on change so a slow earlier response can't overwrite a newer one.
     useEffect(() => {
-        setLoading(true);
-        findPlaceFromText(searchText, []).then((res: PlaceAutocompletePrediction[] | []) => {
+        const query = searchText.trim();
+        if (!query) {
+            setSearchResults([]);
             setLoading(false);
-            setSearchResults(res || [])
-        })
-    }, [searchText])
-
-    useEffect(() => {
-        if (pageData) {
-            if (pageData.location_latitude && pageData.location_longitude) {
-                fetchLocationFromLatLong(pageData.location_latitude, pageData.location_longitude);
-            }
+            return;
         }
 
-    }, [pageData])
+        const controller = new AbortController();
+        setLoading(true);
 
+        const timeoutId = setTimeout(() => {
+            findPlaceFromText(query, controller.signal)
+                .then((results) => {
+                    setSearchResults(results);
+                    setLoading(false);
+                })
+                .catch((error) => {
+                    if (controller.signal.aborted) return;
+                    console.error('Autocomplete error:', error);
+                    setSearchResults([]);
+                    setLoading(false);
+                });
+        }, SEARCH_DEBOUNCE_MS);
 
-    const fetchLocationFromLatLong = async (latitude: number, longitude: number) => {
+        return () => {
+            clearTimeout(timeoutId);
+            controller.abort();
+        };
+    }, [searchText]);
+
+    const fetchLocationFromLatLong = useCallback(async (latitude: number, longitude: number) => {
         try {
             const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`);
             const results = data.results[0];
-            const address = results.formatted_address;
-            const params = {
+            setLocation(results.formatted_address);
+            setGoogleMapsLocation({
                 placeData: results.address_components,
                 locality: results.vicinity,
-                longitude: longitude,
-                latitude: latitude
-            }
-            setLocation(address);
-            setGoogleMapsLocation(params);
+                longitude,
+                latitude
+            });
         } catch (error) {
             console.error('Error fetching location from lat/long:', error);
             Alert.alert('Error', 'Failed to fetch location from lat/long');
         }
-    }
+    }, []);
 
-    const fetchLocationFromPlacesApi = async (placeId?: string) => {
-        if (placeId) {
-            try {
-                show();;
-                const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`);
-                const results = data.result;
-                const location = results.geometry.location;
-                const address = results.formatted_address;
-                const params = {
-                    placeData: results.address_components,
-                    locality: results.vicinity || '',
-                    longitude: location.lng,
-                    latitude: location.lat
-                }
-                setLocation(address);
-                setGoogleMapsLocation(params);
-            } catch (error) {
-                console.error('Error fetching location details:', error);
-                Alert.alert('Error', 'Failed to fetch location details');
-            } finally {
-                hide();
-            }
-        } else {
-            Alert.alert('Error', 'Please select a location')
+    useEffect(() => {
+        if (pageData?.location_latitude && pageData?.location_longitude) {
+            fetchLocationFromLatLong(pageData.location_latitude, pageData.location_longitude);
         }
-    }
+    }, [pageData, fetchLocationFromLatLong])
 
-    const handleLogOut = async () => {
-        dispatch(signUserOut()).unwrap().then(() => router.replace('/(auth)/sign-in'))
-    }
+    const fetchLocationFromPlacesApi = useCallback(async (placeId?: string) => {
+        if (!placeId) {
+            Alert.alert('Error', 'Please select a location');
+            return;
+        }
+        try {
+            show();
+            const data: any = await axiosRequest.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`);
+            const results = data.result;
+            const { lat, lng } = results.geometry.location;
+            setLocation(results.formatted_address);
+            setGoogleMapsLocation({
+                placeData: results.address_components,
+                locality: results.vicinity || '',
+                longitude: lng,
+                latitude: lat
+            });
+        } catch (error) {
+            console.error('Error fetching location details:', error);
+            Alert.alert('Error', 'Failed to fetch location details');
+        } finally {
+            hide();
+        }
+    }, [show, hide]);
 
-    const submit = async () => {
+    const handleSearchTextChange = useCallback((text: string) => {
+        setSearchText(text);
+        setShowOptions(Boolean(text));
+    }, []);
+
+    const handleSelectPlace = useCallback((item: PlaceAutocompletePrediction) => {
+        setSearchText(item.description);
+        setShowOptions(false);
+        fetchLocationFromPlacesApi(item.place_id);
+    }, [fetchLocationFromPlacesApi]);
+
+    const submit = useCallback(async () => {
         if (!googleMapsLocation) {
             return Alert.alert('Error', 'Please select a location')
         }
@@ -155,7 +168,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
             hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Failed to update location')
         }
-    }
+    }, [googleMapsLocation, show, hide, goToNextPage]);
 
     return (
         <View className='flex-1 space-y-4'>
@@ -163,45 +176,32 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                 <Text className='text-2xl text-black font-firabold'>Choose location</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
-            <KeyboardAwareScrollView contentContainerStyle={{flex: 1, flexGrow: 1, paddingHorizontal: 16 }}>
+            <KeyboardAwareScrollView
+                contentContainerStyle={{ flex: 1, flexGrow: 1, paddingHorizontal: 16 }}
+                keyboardShouldPersistTaps="handled"
+            >
                 <View className="relative z-50 w-full">
                     <FormField
                         title=''
                         value={searchText}
                         secureTextEntry={false}
                         placeholder='Search location'
-                        onChangeText={(text) => {
-                            if (text) {
-                                if (!showOptions) {
-                                    setShowOptions(true);
-                                }
-                                setSearchText(text)
-                            } else {
-                                setShowOptions(false);
-                                setSearchText(text)
-                                setSearchResults([])
-                            }
-                        }}
+                        onChangeText={handleSearchTextChange}
                     />
 
                     {/* Dropdown Container */}
                     {(showOptions && (searchResults.length > 0 || loading)) && (
-                        <View style={{maxHeight: 250}} className="absolute top-[100%] left-0 right-0 bg-white rounded-b-xl shadow-lg border border-gray-200 z-50 max-h-[250px] overflow-hidden mt-1">
-
+                        <View style={{ maxHeight: 250 }} className="absolute top-[100%] left-0 right-0 bg-white rounded-b-xl shadow-lg border border-gray-200 z-50 max-h-[250px] overflow-hidden mt-1">
                             {loading ? (
                                 <View className="p-4">
                                     <Text className='text-sm text-gray-500 font-firaregular'>Loading...</Text>
                                 </View>
                             ) : (
-                                <ScrollView>
-                                    {searchResults.map((item, index) => (
+                                <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+                                    {searchResults.map((item) => (
                                         <TouchableOpacity
-                                        key={index.toString()}
-                                            onPress={() => {
-                                                setSearchText(item.description);
-                                                setShowOptions(false);
-                                                fetchLocationFromPlacesApi(item.place_id)
-                                            }}
+                                            key={item.place_id}
+                                            onPress={() => handleSelectPlace(item)}
                                             className="active:bg-gray-100"
                                         >
                                             <View className='p-4 border-b border-gray-100'>
@@ -214,48 +214,23 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
                                             </View>
                                         </TouchableOpacity>
                                     ))}
-                                    </ScrollView>
-                                // <FlatList
-                                //     data={searchResults}
-                                //     keyExtractor={(item, index) => index.toString()}
-                                //     keyboardShouldPersistTaps="handled"
-                                //     nestedScrollEnabled={true}
-                                //     showsVerticalScrollIndicator={true}
-                                //     renderItem={({ item }) => (
-                                //         <TouchableOpacity
-                                //             onPress={() => {
-                                //                 setSearchText(item.description);
-                                //                 setShowOptions(false);
-                                //                 fetchLocationFromPlacesApi(item.place_id)
-                                //             }}
-                                //             className="active:bg-gray-100"
-                                //         >
-                                //             <View className='p-4 border-b border-gray-100'>
-                                //                 <Text
-                                //                     numberOfLines={1}
-                                //                     className='font-ps_regular text-[14px] text-black'
-                                //                 >
-                                //                     {item.description}
-                                //                 </Text>
-                                //             </View>
-                                //         </TouchableOpacity>
-                                //     )}
-                                // />
+                                </ScrollView>
                             )}
                         </View>
                     )}
                 </View>
 
-                {location && <View className='mt-12 mb-8 space-y-2'>
-                    <Text className='text-xs  font-firamedium'>Selected Location</Text>
-                    <Text className='text-[##8C8C8C] font-firaregular'>{location}</Text>
-                </View>
-                }
+                {location ? (
+                    <View className='mt-12 mb-8 space-y-2'>
+                        <Text className='text-xs font-firamedium'>Selected Location</Text>
+                        <Text className='text-[#8C8C8C] font-firaregular'>{location}</Text>
+                    </View>
+                ) : null}
 
                 <View className='mt-auto w-full'>
                     <CustomButton title='Next' handlePress={submit} />
                     <View className='justify-center pt-5 flex-row gap-2'>
-                        <TouchableOpacity onPress={() => handleLogOut()}>
+                        <TouchableOpacity onPress={onLogOut}>
                             <Text className='text-sm text-black font-firaregular underline'>Log Out</Text>
                         </TouchableOpacity>
                     </View>
@@ -265,4 +240,4 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage }
     )
 }
 
-export default OnboardLocation
+export default memo(OnboardLocation)

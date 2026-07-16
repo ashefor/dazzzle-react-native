@@ -1,5 +1,5 @@
-import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native'
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import { Alert, View, TouchableOpacity } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
 import { signUserOut } from '@/redux/thunks/authActions'
@@ -7,7 +7,7 @@ import { useAppDispatch } from '@/hooks/reduxHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
-import PagerView, { PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
+import PagerView from 'react-native-pager-view'
 import OnboardBioData from './bio-data'
 import OnboardProfilePicture from './profile-picture'
 import OnboardLocation from './location'
@@ -25,6 +25,9 @@ export interface OnboardPagesProps {
     onLogOut?: () => void
 }
 
+const PAGE_COUNT = 5;
+const PAGE_INDICATORS = Array.from({ length: PAGE_COUNT }, (_, index) => index);
+
 const OnboardPage = () => {
     const dispatch = useAppDispatch();
     const { show, hide } = useLoader();
@@ -32,100 +35,96 @@ const OnboardPage = () => {
     const insets = useSafeAreaInsets();
     const [profileData, setProfileData] = useState<any>(null);
     const viewPager = useRef<PagerView>(null);
+    // Mirrors `page` so the navigation callbacks don't depend on it and stay
+    // referentially stable — the five memoised pages re-render otherwise.
+    const pageRef = useRef(0);
 
-    const fetchUserProfileUpdateStatus = async () => {
+    const fetchUserProfileUpdateStatus = useCallback(async () => {
         try {
             show();
             const response: any = await axiosRequest.get('/profile/check-profile-updated');
             hide();
-            const reaction = response.reaction;
-            const responseData = response.data;
-            if (reaction === ReactionCodes.SUCCESS) {
-                const profileData = responseData['profileInfo'];
-                if (profileData) {
-                    setProfileData(profileData);
+            if (response.reaction === ReactionCodes.SUCCESS) {
+                const profileInfo = response.data['profileInfo'];
+                if (profileInfo) {
+                    setProfileData(profileInfo);
                 }
-
             }
         } catch (error: any) {
             hide();
             Alert.alert('Error', error.errorMessage ? error.errorMessage : 'Unable to fetch data')
         }
-    };
+    }, [show, hide]);
 
-    const handleLogOut = async () => {
+    const handleLogOut = useCallback(async () => {
         show();
         await dispatch(signUserOut()).unwrap();
         hide();
         router.replace('/(auth)/sign-in');
-    }
+    }, [dispatch, show, hide]);
 
     useEffect(() => {
         fetchUserProfileUpdateStatus();
-    }, [])
+    }, [fetchUserProfileUpdateStatus])
 
-    const onPageSelected = (e: PagerViewOnPageSelectedEvent) => {
+    const onPageSelected = useCallback(() => {
         fetchUserProfileUpdateStatus();
-        const pageIndex = e.nativeEvent.position;
-        if (pageIndex === 0) {
-            // setProgress(Math.ceil((1 / 5) * 100))
-        }
-    }
+    }, [fetchUserProfileUpdateStatus])
 
-    const goToNextPage = () => {
-        const nextPage = page + 1;
+    const goToNextPage = useCallback(() => {
+        const nextPage = pageRef.current + 1;
+        pageRef.current = nextPage;
         setPage(nextPage);
         viewPager.current?.setPage(nextPage);
-    }
+    }, [])
 
-    const goToPreviousPage = () => {
-        const previousPage = page - 1;
-        setPage(previousPage);
+    const goToPreviousPage = useCallback(() => {
+        const previousPage = pageRef.current - 1;
         if (previousPage >= 0) {
+            pageRef.current = previousPage;
+            setPage(previousPage);
             viewPager.current?.setPage(previousPage);
+        } else if (router.canGoBack()) {
+            router.back();
         } else {
-            router.canGoBack() ? router.back() : router.replace('/(auth)/sign-in');
+            router.replace('/(auth)/sign-in');
         }
-    }
+    }, [])
 
     return (
-        <Fragment>
-            <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 bg-white h-full'>
-                <View className='pb-2'>
-                    <NavBar leftItem={
-                        <TouchableOpacity
-                            activeOpacity={0.5} onPress={goToPreviousPage} className='flex items-center justify-center w-10 h-10 rounded-full border border-[#E0E0E0]'>
-                            <ArrowBackIcon />
-                        </TouchableOpacity>
-                    } />
-                    <View className='flex-row gap-x-2 px-4 justify-center'>
-                        {[...Array(5).fill('')].map((_, index) => (
-                            <View key={index} className={`h-2 rounded-full ${index <= (page) ? 'bg-primary' : 'bg-[#E0E0E0]'}`} style={{ width: `${100 / 6}%`, flexShrink: 1 }}></View>
-                        ))}
-                    </View>
+        <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 bg-white h-full'>
+            <View className='pb-2'>
+                <NavBar leftItem={
+                    <TouchableOpacity
+                        activeOpacity={0.5} onPress={goToPreviousPage} className='flex items-center justify-center w-10 h-10 rounded-full border border-[#E0E0E0]'>
+                        <ArrowBackIcon />
+                    </TouchableOpacity>
+                } />
+                <View className='flex-row gap-x-2 px-4 justify-center'>
+                    {PAGE_INDICATORS.map((index) => (
+                        <View key={index} className={`h-2 rounded-full ${index <= page ? 'bg-primary' : 'bg-[#E0E0E0]'}`} style={{ width: `${100 / 6}%`, flexShrink: 1 }} />
+                    ))}
                 </View>
-                <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
-                        <View key={1}>
-                            <OnboardBioData pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
-                        </View>
-                        <View key={2}>
-                            <OnboardProfilePicture pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
-                        </View>
-                        <View key={3}>
-                            <OnboardLocation pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
-                        </View>
-                        <View key={4}>
-                            <OnboardRelationshipType goToNextPage={goToNextPage} onLogOut={handleLogOut} />
-                        </View>
-                        <View key={5}>
-                            <OnboardChooseInterests onLogOut={handleLogOut} />
-                        </View>
-                    </PagerView>
             </View>
-        </Fragment>
+            <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
+                <View key={1}>
+                    <OnboardBioData pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                </View>
+                <View key={2}>
+                    <OnboardProfilePicture pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                </View>
+                <View key={3}>
+                    <OnboardLocation pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                </View>
+                <View key={4}>
+                    <OnboardRelationshipType goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                </View>
+                <View key={5}>
+                    <OnboardChooseInterests onLogOut={handleLogOut} />
+                </View>
+            </PagerView>
+        </View>
     )
 }
 
 export default OnboardPage
-
-const styles = StyleSheet.create({})
