@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Alert, Keyboard, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import React, { JSX, useCallback, useRef } from 'react'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
@@ -89,6 +89,7 @@ const SignUp = () => {
             const response: any = await axiosRequest.post('/user/process-sign-up', formValues);
             hide();
             if (response.reaction === ReactionCodes.SUCCESS) {
+                Keyboard.dismiss();
                 bottomSheetModalRef.current?.present();
             }
         } catch (error: any) {

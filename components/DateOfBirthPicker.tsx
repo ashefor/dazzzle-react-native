@@ -5,6 +5,7 @@ import DateTimePicker, { DateType } from 'react-native-ui-datepicker'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import { Feather, Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const renderBackdrop = (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
     <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
@@ -19,6 +20,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
     // server rejected it with a minimum-age error.
     const [draftBirthday, setDraftBirthday] = useState<DateType>();
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const insets = useSafeAreaInsets();
 
     const atLeast18YearsOld = useMemo(() => dayjs().subtract(18, 'year').format('YYYY-MM-DD'), []);
 
@@ -69,7 +71,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                             <Text className='font-firabold text-black text-base mx-auto text-center'>Select Date of Birth</Text>
                         </View>
                     </View>
-                    <View style={styles.calendarContainer}>
+                    <View style={[styles.calendarContainer, { paddingBottom: insets.bottom + 24 }]}>
                         <DateTimePicker
                             calendarTextStyle={styles.calendarText}
                             headerTextStyle={styles.calendarText}
@@ -123,7 +125,6 @@ const styles = StyleSheet.create({
     calendarContainer: {
         paddingTop: 8,
         paddingHorizontal: 12,
-        paddingBottom: 28,
         flex: 1,
     },
     calendarText: {

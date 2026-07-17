@@ -1,4 +1,4 @@
-import { View, Text, Platform, TouchableOpacity, useWindowDimensions, InteractionManager, StyleSheet } from 'react-native';
+import { View, Text, Platform, TouchableOpacity, useWindowDimensions, InteractionManager, StyleSheet, Keyboard } from 'react-native';
 import React, { JSX, useCallback, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { CountryPhoneCode } from '@/models/general';
@@ -42,11 +42,15 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
     const MAX_HEIGHT_PX = height * 0.8;
 
     const dismissSheet = useCallback(() => searchBottomSheetModalRef.current?.dismiss(), []);
-    const presentSheet = useCallback(() => searchBottomSheetModalRef.current?.present(), []);
+    const presentSheet = useCallback(() => {
+        searchBottomSheetModalRef.current?.present();
+        Keyboard.dismiss();
+    }, []);
     const handleDismiss = useCallback(() => setSearch(''), []);
 
     const selectCountryCode = useCallback((country: string) => {
         searchBottomSheetModalRef.current?.dismiss();
+        Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
             onCountryCodeSelect(country);
         });
