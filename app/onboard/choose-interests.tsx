@@ -64,7 +64,13 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
                     <Text className='text-2xl text-black font-firabold'>Interest</Text>
                     <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
                 </View>
-                <ScrollView contentContainerStyle={{ flex: 1, flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20 }}>
+                {/* flex-1 constrains the scroll viewport; contentContainerStyle uses
+                    flexGrow (never flex/flexShrink, which would clamp content to the
+                    viewport and silently disable scrolling on shorter screens). */}
+                <ScrollView
+                    className='flex-1'
+                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20 }}
+                >
                     {interests.length > 0 && <>
                         {selectedInterests.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one interest type</Text>}
                         <View className='flex-row flex-wrap my-6'>

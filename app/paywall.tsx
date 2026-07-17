@@ -503,9 +503,17 @@ const PayWallScreen = () => {
     }
   };
 
+  const convertKoboToNaira = (amount: string | number) => {
+    const nairaAmount = parseFloat(amount.toString());
+    if (isNaN(nairaAmount)) {
+      throw new Error("Invalid amount");
+    }
+    return Math.round(nairaAmount / 100); // Convert kobo to naira
+  };
+
   const processPaystackPayment = (paystackOrderData: CreatePaystackOrderResponse) => {
     popup.checkout({
-      amount: paystackOrderData.amount,
+      amount: convertKoboToNaira(paystackOrderData.amount),
       email: paystackOrderData.email,
       reference: paystackOrderData.reference,
       onSuccess: (data) => {
@@ -652,7 +660,7 @@ const PayWallScreen = () => {
                     </TouchableOpacity>
                   </View>
                 )} */}
-                <View>
+                <View className="mt-3">
                   <Text className="text-xs text-center">
                     By subscribing, you agree to our
                   </Text>

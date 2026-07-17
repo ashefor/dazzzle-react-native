@@ -75,7 +75,11 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
     const handleImageError = useCallback(() => setImage(undefined), []);
 
     return (
-        <ScrollView className='h-full' keyboardShouldPersistTaps="handled">
+        <ScrollView
+            className='flex-1'
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+        >
             <View className='px-4 space-y-4'>
                 <View>
                     <Text className='text-2xl text-black font-firabold'>Profile Picture</Text>

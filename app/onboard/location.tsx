@@ -177,7 +177,8 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, 
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
             <KeyboardAwareScrollView
-                contentContainerStyle={{ flex: 1, flexGrow: 1, paddingHorizontal: 16 }}
+                className='flex-1'
+                contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20 }}
                 keyboardShouldPersistTaps="handled"
             >
                 <View className="relative z-50 w-full">

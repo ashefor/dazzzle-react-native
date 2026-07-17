@@ -44,12 +44,15 @@ const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ goToNextPage, on
     }, []);
 
     return (
-        <View className='w-full h-full flex-1 space-y-4'>
+        <View className='flex-1 space-y-4'>
             <View className='px-4 pb-2'>
                 <Text className='text-2xl text-black font-firabold'>Relationship Type</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
-            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20, justifyContent: 'space-between' }} >
+            <ScrollView
+                className='flex-1'
+                contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20, justifyContent: 'space-between' }}
+            >
                 {selectedRelationshipTypes.length < 1 && <Text className='text-xs text-red-500 text-center font-firaregular mb-2'>Choose at least one relationship type</Text>}
                 <View className='flex-wrap mb-6 flex-row gap-y-4 justify-between'>
                     {RELATIONSHIP_OPTIONS.map((item) => {

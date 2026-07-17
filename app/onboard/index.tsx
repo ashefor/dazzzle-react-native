@@ -1,4 +1,4 @@
-import { Alert, View, TouchableOpacity } from 'react-native'
+import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { router } from 'expo-router'
 import { ReactionCodes } from '@/models/general'
@@ -106,20 +106,24 @@ const OnboardPage = () => {
                     ))}
                 </View>
             </View>
-            <PagerView style={{ flex: 1 }} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
-                <View key={1}>
+            {/* Each page wrapper is explicitly flex: 1 so the screens inside resolve
+                against a known height — percentage heights and ScrollView viewports
+                need a resolved parent, and leaving it implicit is what makes layout
+                differ across devices. */}
+            <PagerView style={styles.pager} ref={viewPager} scrollEnabled={false} initialPage={page} onPageSelected={onPageSelected}>
+                <View key={1} style={styles.page}>
                     <OnboardBioData pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
-                <View key={2}>
+                <View key={2} style={styles.page}>
                     <OnboardProfilePicture pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
-                <View key={3}>
+                <View key={3} style={styles.page}>
                     <OnboardLocation pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
-                <View key={4}>
+                <View key={4} style={styles.page}>
                     <OnboardRelationshipType goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
-                <View key={5}>
+                <View key={5} style={styles.page}>
                     <OnboardChooseInterests onLogOut={handleLogOut} />
                 </View>
             </PagerView>
@@ -128,3 +132,12 @@ const OnboardPage = () => {
 }
 
 export default OnboardPage
+
+const styles = StyleSheet.create({
+    pager: {
+        flex: 1,
+    },
+    page: {
+        flex: 1,
+    },
+})

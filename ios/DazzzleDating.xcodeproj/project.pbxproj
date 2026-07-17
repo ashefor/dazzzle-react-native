@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		182B6A1EE5F91453180A0C4C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D41C5A9F0EF0E1136152DD64 /* PrivacyInfo.xcprivacy */; };
-		2FF6F2F1069B15B26571BB26 /* libPods-DazzzleDating.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68CD9FE01C1CFCB62280FBCA /* libPods-DazzzleDating.a */; };
+		19849D5C915BE400A8ADF5F8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9DDCC92286E989AC782DC906 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		A54D184BB2F948EF9406AC7F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7C73FE2236384530ADE75EC2 /* GoogleService-Info.plist */; };
-		B37B95B864D874BDAC525EEE /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC64D38EA62E2694A6463F0B /* ExpoModulesProvider.swift */; };
+		8447D11A8607EFF48BB81EF3 /* libPods-DazzzleDating.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C450726EDA26247AACD01787 /* libPods-DazzzleDating.a */; };
+		BAF6F0FFAE3A3392A52672BF /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 803B49D3396EED65722D43FB /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		BE276CCDD4614CE08831D894 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9203FDA6C70C4335B0BD0260 /* GoogleService-Info.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -21,14 +21,14 @@
 		13B07F961A680F5B00A75B9A /* DazzzleDating.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DazzzleDating.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = DazzzleDating/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DazzzleDating/Info.plist; sourceTree = "<group>"; };
-		3C560F56571D92A539E766AB /* Pods-DazzzleDating.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.release.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.release.xcconfig"; sourceTree = "<group>"; };
-		68CD9FE01C1CFCB62280FBCA /* libPods-DazzzleDating.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DazzzleDating.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7C73FE2236384530ADE75EC2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "DazzzleDating/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		851EE59A4562B666C22F22D7 /* Pods-DazzzleDating.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.debug.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.debug.xcconfig"; sourceTree = "<group>"; };
+		803B49D3396EED65722D43FB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		9203FDA6C70C4335B0BD0260 /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "DazzzleDating/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		9DDCC92286E989AC782DC906 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = DazzzleDating/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = DazzzleDating/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		CC64D38EA62E2694A6463F0B /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		D41C5A9F0EF0E1136152DD64 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = DazzzleDating/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C1426F4B276D3AA5B6106C06 /* Pods-DazzzleDating.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.debug.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.debug.xcconfig"; sourceTree = "<group>"; };
+		C450726EDA26247AACD01787 /* libPods-DazzzleDating.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DazzzleDating.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE7F20D506E3F676A5CD7193 /* Pods-DazzzleDating.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DazzzleDating.release.xcconfig"; path = "Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DazzzleDating/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* DazzzleDating-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DazzzleDating-Bridging-Header.h"; path = "DazzzleDating/DazzzleDating-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2FF6F2F1069B15B26571BB26 /* libPods-DazzzleDating.a in Frameworks */,
+				8447D11A8607EFF48BB81EF3 /* libPods-DazzzleDating.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,8 +55,8 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				7C73FE2236384530ADE75EC2 /* GoogleService-Info.plist */,
-				D41C5A9F0EF0E1136152DD64 /* PrivacyInfo.xcprivacy */,
+				9203FDA6C70C4335B0BD0260 /* GoogleService-Info.plist */,
+				9DDCC92286E989AC782DC906 /* PrivacyInfo.xcprivacy */,
 			);
 			name = DazzzleDating;
 			sourceTree = "<group>";
@@ -65,17 +65,19 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				68CD9FE01C1CFCB62280FBCA /* libPods-DazzzleDating.a */,
+				C450726EDA26247AACD01787 /* libPods-DazzzleDating.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		451F5FD77BEC84E140D817E6 /* ExpoModulesProviders */ = {
+		5E3A3B328B260312CCB0DAE2 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				C2CA8D39140207185E1EF80E /* DazzzleDating */,
+				C1426F4B276D3AA5B6106C06 /* Pods-DazzzleDating.debug.xcconfig */,
+				DE7F20D506E3F676A5CD7193 /* Pods-DazzzleDating.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -92,8 +94,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				A506724201C3D7231846B287 /* Pods */,
-				451F5FD77BEC84E140D817E6 /* ExpoModulesProviders */,
+				5E3A3B328B260312CCB0DAE2 /* Pods */,
+				AEADBE7B86BD1213F9F2AEBF /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -108,14 +110,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A506724201C3D7231846B287 /* Pods */ = {
+		AEADBE7B86BD1213F9F2AEBF /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				851EE59A4562B666C22F22D7 /* Pods-DazzzleDating.debug.xcconfig */,
-				3C560F56571D92A539E766AB /* Pods-DazzzleDating.release.xcconfig */,
+				D7228E44EC79B04E4929D1F1 /* DazzzleDating */,
 			);
-			name = Pods;
-			path = Pods;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -127,10 +127,10 @@
 			path = DazzzleDating/Supporting;
 			sourceTree = "<group>";
 		};
-		C2CA8D39140207185E1EF80E /* DazzzleDating */ = {
+		D7228E44EC79B04E4929D1F1 /* DazzzleDating */ = {
 			isa = PBXGroup;
 			children = (
-				CC64D38EA62E2694A6463F0B /* ExpoModulesProvider.swift */,
+				803B49D3396EED65722D43FB /* ExpoModulesProvider.swift */,
 			);
 			name = DazzzleDating;
 			sourceTree = "<group>";
@@ -143,13 +143,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "DazzzleDating" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				59F566015D539B0C54BD2643 /* [Expo] Configure project */,
+				CB6E30BC47667191D0ED1E05 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				BDC21FD6FF0FC8D789786394 /* [CP] Embed Pods Frameworks */,
+				02DC2B5E6FE64BFDDB8F43DE /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -199,8 +199,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A54D184BB2F948EF9406AC7F /* GoogleService-Info.plist in Resources */,
-				182B6A1EE5F91453180A0C4C /* PrivacyInfo.xcprivacy in Resources */,
+				BE276CCDD4614CE08831D894 /* GoogleService-Info.plist in Resources */,
+				19849D5C915BE400A8ADF5F8 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,6 +224,28 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
+		02DC2B5E6FE64BFDDB8F43DE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -245,30 +267,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		59F566015D539B0C54BD2643 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/DazzzleDating/DazzzleDating.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-DazzzleDating/expo-configure-project.sh",
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-DazzzleDating/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -292,6 +290,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift/ReachabilitySwift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage/SDWebImage.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-launcher/EXDevLauncher.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-menu/EXDevMenu.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
@@ -314,6 +313,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ReachabilitySwift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevLauncher.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevMenu.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
@@ -325,27 +325,29 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BDC21FD6FF0FC8D789786394 /* [CP] Embed Pods Frameworks */ = {
+		CB6E30BC47667191D0ED1E05 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/DazzzleDating/DazzzleDating.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-DazzzleDating/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-DazzzleDating/ExpoModulesProvider.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DazzzleDating/Pods-DazzzleDating-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-DazzzleDating/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -355,7 +357,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				B37B95B864D874BDAC525EEE /* ExpoModulesProvider.swift in Sources */,
+				BAF6F0FFAE3A3392A52672BF /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,7 +366,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 851EE59A4562B666C22F22D7 /* Pods-DazzzleDating.debug.xcconfig */;
+			baseConfigurationReference = C1426F4B276D3AA5B6106C06 /* Pods-DazzzleDating.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -400,7 +402,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3C560F56571D92A539E766AB /* Pods-DazzzleDating.release.xcconfig */;
+			baseConfigurationReference = DE7F20D506E3F676A5CD7193 /* Pods-DazzzleDating.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
