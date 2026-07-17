@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback } from 'react'
 import { Image } from 'expo-image'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,7 +10,8 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks'
 import { userLogin } from '@/redux/thunks/authActions'
 import * as yup from 'yup'
 import { Formik } from 'formik'
-import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+import { KEYBOARD_GAP } from '@/constants/constants'
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller"
 
 const signInValidationSchema = yup.object().shape({
     password: yup
@@ -46,8 +47,15 @@ const SignIn = () => {
 
     return (
         <SafeAreaView style={styles.flex} className=' h-full bg-white'>
-            <KeyboardAvoidingView behavior={"padding"} style={styles.flex} >
-                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }} keyboardShouldPersistTaps="handled">
+            {/* One KeyboardAwareScrollView rather than KeyboardAvoidingView wrapping a
+                ScrollView: with react-native-keyboard-controller that pairing double-handles
+                the keyboard, and only this one scrolls the focused field into view. */}
+            <KeyboardAwareScrollView
+                className='flex-1'
+                contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+                keyboardShouldPersistTaps="handled"
+                bottomOffset={KEYBOARD_GAP}
+            >
                     <View className='w-full h-full py-16 justify-between'>
                         <Formik
                             initialValues={initialValues}
@@ -123,8 +131,7 @@ const SignIn = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     )
 }

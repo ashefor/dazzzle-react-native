@@ -24,12 +24,15 @@ const OnboardProfilePicture: React.FC<OnboardPagesProps> = ({ pageData, goToNext
 
     const submit = useCallback(async () => {
         try {
-            if (existingPictureUrl) {
-                goToNextPage?.();
-                return;
-            }
+            // A freshly picked image wins over whatever is already on the profile —
+            // checking the existing URL first (as this used to) meant picking a new
+            // picture over an existing one silently discarded it and just advanced.
             if (!image) {
-                Alert.alert('Error', 'Please select a profile picture')
+                if (existingPictureUrl) {
+                    goToNextPage?.();
+                } else {
+                    Alert.alert('Error', 'Please select a profile picture')
+                }
                 return;
             }
             const formData = new FormData();

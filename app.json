@@ -11,7 +11,7 @@
       "backgroundColor": "#FFFFFF"
     },
     "scheme": "dazzzle",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,

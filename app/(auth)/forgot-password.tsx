@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { JSX, useCallback, useRef, useState } from 'react'
 import { Image } from 'expo-image'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,7 +10,8 @@ import axiosRequest from '@/utils/axios'
 import { ReactionCodes } from '@/models/general'
 import * as yup from 'yup'
 import { Formik } from 'formik'
-import { KeyboardAvoidingView } from "react-native-keyboard-controller"
+import { KEYBOARD_GAP } from '@/constants/constants'
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller"
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -53,8 +54,13 @@ const ForgotPassword = () => {
 
     return (
         <SafeAreaView style={styles.flex} className=' h-full bg-white'>
-            <KeyboardAvoidingView behavior={"padding"} style={styles.flex} >
-                <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }} keyboardShouldPersistTaps="handled">
+            {/* Single KeyboardAwareScrollView — see the note in sign-in.tsx. */}
+            <KeyboardAwareScrollView
+                className='flex-1'
+                contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+                keyboardShouldPersistTaps="handled"
+                bottomOffset={KEYBOARD_GAP}
+            >
                     <View className='w-full h-full py-16 justify-between'>
                         <Formik
                             initialValues={initialValues}
@@ -108,8 +114,7 @@ const ForgotPassword = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
 
             <BottomSheetModal
                 ref={bottomSheetModalRef}

@@ -1121,6 +1121,13 @@ export const defaultInterests = [
 export const INPUT_MAX_HEIGHT = 80;
 export const CONNECTION_STATE_HEIGHT = 24;
 
+/**
+ * Gap kept between a focused input and the top of the keyboard, passed as
+ * `bottomOffset` to KeyboardAwareScrollView. The library defaults this to 0,
+ * which leaves the input sitting flush against the keyboard.
+ */
+export const KEYBOARD_GAP = 24;
+
 
 // ...existing code...
 

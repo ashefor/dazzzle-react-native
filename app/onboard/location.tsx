@@ -7,11 +7,14 @@ import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
 import { OnboardPagesProps } from '.'
 import FormField from '@/components/FormField'
+import { KEYBOARD_GAP } from '@/constants/constants'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 const SEARCH_DEBOUNCE_MS = 350;
+
+const DROPDOWN_MAX_HEIGHT = 250;
 
 if (!GOOGLE_MAPS_API_KEY) {
     // Surfaces the #1 cause of "Places returns nothing" in release builds:
@@ -176,10 +179,15 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, 
                 <Text className='text-2xl text-black font-firabold'>Choose location</Text>
                 <Text className='text-sm text-[#8C8C8C] font-firaregular'>Join our community and experience seamlessness finding a soulmate. </Text>
             </View>
+            {/* bottomOffset is the gap kept between the focused input and the top of
+                the keyboard. Left at its 0 default the input sits flush against the
+                keyboard; when the results dropdown is open we also reserve its height,
+                since it renders *below* the input and would otherwise be covered. */}
             <KeyboardAwareScrollView
                 className='flex-1'
                 contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 20 }}
                 keyboardShouldPersistTaps="handled"
+                bottomOffset={showOptions ? DROPDOWN_MAX_HEIGHT + KEYBOARD_GAP : KEYBOARD_GAP}
             >
                 <View className="relative z-50 w-full">
                     <FormField
@@ -192,7 +200,7 @@ const OnboardLocation: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, 
 
                     {/* Dropdown Container */}
                     {(showOptions && (searchResults.length > 0 || loading)) && (
-                        <View style={{ maxHeight: 250 }} className="absolute top-[100%] left-0 right-0 bg-white rounded-b-xl shadow-lg border border-gray-200 z-50 max-h-[250px] overflow-hidden mt-1">
+                        <View style={{ maxHeight: DROPDOWN_MAX_HEIGHT }} className="absolute top-[100%] left-0 right-0 bg-white rounded-b-xl shadow-lg border border-gray-200 z-50 overflow-hidden mt-1">
                             {loading ? (
                                 <View className="p-4">
                                     <Text className='text-sm text-gray-500 font-firaregular'>Loading...</Text>

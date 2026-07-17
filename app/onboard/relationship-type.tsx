@@ -1,5 +1,5 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View, Pressable, ScrollView } from 'react-native'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Image } from 'expo-image'
 import Images from '@/constants/images'
 import CustomButton from '@/components/CustomButton'
@@ -18,9 +18,23 @@ const RELATIONSHIP_OPTIONS = [
     { id: '6', label: 'Flirting Only', image: Images.relType6 },
 ];
 
-const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ goToNextPage, onLogOut }) => {
+const OnboardRelationshipType: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, onLogOut }) => {
     const { show, hide } = useLoader();
     const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
+    // Hydrate the user's saved choices once, from the first profile that arrives.
+    // Guarded by a ref rather than keyed on `pageData`, because the parent refetches
+    // the profile on every page change — a plain [pageData] dep would hand back a new
+    // object each time and wipe selections the user is in the middle of making.
+    const hydratedRef = useRef(false);
+
+    useEffect(() => {
+        if (hydratedRef.current) return;
+        const saved = pageData?.relationship_type;
+        if (Array.isArray(saved)) {
+            hydratedRef.current = true;
+            setSelectedRelationshipTypes(saved.map(String));
+        }
+    }, [pageData]);
 
     const submit = useCallback(async () => {
         try {

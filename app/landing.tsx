@@ -194,7 +194,8 @@
 // });
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Ensure these are installed: npx expo install expo-blur react-native-reanimated
 import { BlurView } from 'expo-blur';
@@ -307,7 +308,10 @@ export default function OnboardingScreen() {
            We add a 'z-10' to ensure this sits ON TOP of the blur view.
         */}
        <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='flex-1 z-10'>
-       <StatusBar barStyle="light-content" /> 
+       {/* Light icons for this screen's dark backdrop. SystemBars (not RN's
+           StatusBar) so it shares one stack with the root default and pops back
+           to dark on unmount instead of leaking white-on-white into other screens. */}
+       <SystemBars style="light" />
             <View className='p-4 flex-1'>
                 <View style={{height: 50}}/>
                 <View className='flex-1 justify-between'>

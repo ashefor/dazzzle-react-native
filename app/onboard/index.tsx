@@ -121,10 +121,10 @@ const OnboardPage = () => {
                     <OnboardLocation pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
                 <View key={4} style={styles.page}>
-                    <OnboardRelationshipType goToNextPage={goToNextPage} onLogOut={handleLogOut} />
+                    <OnboardRelationshipType pageData={profileData} goToNextPage={goToNextPage} onLogOut={handleLogOut} />
                 </View>
                 <View key={5} style={styles.page}>
-                    <OnboardChooseInterests onLogOut={handleLogOut} />
+                    <OnboardChooseInterests pageData={profileData} onLogOut={handleLogOut} />
                 </View>
             </PagerView>
         </View>

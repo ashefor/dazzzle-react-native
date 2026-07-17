@@ -1,5 +1,5 @@
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native'
-import React, { JSX, memo, useCallback, useMemo, useRef, useState } from 'react'
+import React, { JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { router } from 'expo-router'
 import CustomButton from '@/components/CustomButton'
 import { ReactionCodes } from '@/models/general'
@@ -19,12 +19,30 @@ const renderBackdrop = (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackd
 
 const heartbeatAnimation = require('../../assets/heartbeat.json');
 
-const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ onLogOut }) => {
+const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ pageData, onLogOut }) => {
     const { show, hide } = useLoader();
     const appConfigInterests = useAppSelector(state => state.app.appConfig?.interests);
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const insets = useSafeAreaInsets();
     const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+    // Hydrate saved interests once — see the note in relationship-type.tsx: the
+    // parent refetches the profile on every page change, so keying this on
+    // `pageData` would clobber in-progress selections.
+    const hydratedRef = useRef(false);
+
+    useEffect(() => {
+        if (hydratedRef.current) return;
+        const saved = pageData?.interest;
+        if (Array.isArray(saved)) {
+            hydratedRef.current = true;
+            // Interest ids are numeric locally but come back as strings from the API.
+            setSelectedInterests(saved.reduce<number[]>((ids, raw) => {
+                const id = Number(raw);
+                if (!Number.isNaN(id)) ids.push(id);
+                return ids;
+            }, []));
+        }
+    }, [pageData]);
 
     const interests = useMemo(
         () => appConfigInterests ?? defaultInterests,

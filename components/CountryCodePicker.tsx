@@ -127,7 +127,9 @@ const CountryCodePicker = ({ onCountryCodeSelect, countryCode }: { countryCode: 
                     contentContainerStyle={listContentContainerStyle}
                     data={filteredCountryCodes}
                     renderItem={renderItem}
-                    keyExtractor={(item) => item.phone_code.toString()}
+                    // Keyed by name, not phone_code: codes are shared across countries
+                    // (+1 is Canada/US/Sint Maarten, +44 is UK/Guernsey/Jersey/IoM).
+                    keyExtractor={(item) => item.name}
                     ListEmptyComponent={ListEmpty}
                 />
             </BottomSheetModal>

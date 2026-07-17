@@ -19,6 +19,14 @@ about ten rows"). A `FlatList` here would also nest a VirtualizedList inside the
 surrounding `KeyboardAwareScrollView`, which is the reason the previous
 implementation was reverted to a `ScrollView` (see git history).
 
+## `rn-no-legacy-shadow-styles` — the BottomSheetModal `sheet` styles
+
+Deferred, not a false positive. The New Architecture is on, so `boxShadow` would
+work, but these styles also carry Android `elevation`, which drives z-ordering as
+well as the shadow. These are stacked sheets (`stackBehavior="push"`), so the swap
+is a cosmetic change that needs on-device verification across the screens that use
+them. Revisit deliberately rather than as part of a lint sweep.
+
 ## `no-multi-comp` — components/CountryCodePicker.tsx
 
 `renderBackdrop`, `ItemSeparator`, and `ListEmpty` are private implementation

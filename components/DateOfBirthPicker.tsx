@@ -11,7 +11,13 @@ const renderBackdrop = (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackd
 );
 
 const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBirthSelected: (selectedCountry: string) => void, dateOfBirth: string }) => {
-    const [birthday, setBirthday] = useState<DateType>();
+    // `draftBirthday` is only what the calendar is currently showing. The committed
+    // value is the `dateOfBirth` prop — the label reads from that, never from the
+    // draft. Previously the draft was pre-filled with the 18-years-ago bound and
+    // rendered as though it were chosen, while the parent form still held '', so
+    // submitting without touching the calendar sent an empty birthday and the
+    // server rejected it with a minimum-age error.
+    const [draftBirthday, setDraftBirthday] = useState<DateType>();
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
     const atLeast18YearsOld = useMemo(() => dayjs().subtract(18, 'year').format('YYYY-MM-DD'), []);
@@ -20,26 +26,25 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
     const presentSheet = useCallback(() => searchBottomSheetModalRef.current?.present(), []);
 
     const emitSelectedDate = useCallback(() => {
-        onDateOfBirthSelected(birthday ? dayjs(birthday).format('YYYY-MM-DD') : '');
+        onDateOfBirthSelected(draftBirthday ? dayjs(draftBirthday).format('YYYY-MM-DD') : '');
         searchBottomSheetModalRef.current?.dismiss();
-    }, [birthday, onDateOfBirthSelected]);
+    }, [draftBirthday, onDateOfBirthSelected]);
 
+    // Sync the draft to the committed value. With no committed value the calendar
+    // still opens positioned at the 18-years-ago bound, but the label stays on
+    // its placeholder so nothing is submitted that the user didn't pick.
     useEffect(() => {
-        if (dateOfBirth) {
-            setBirthday(dayjs(dateOfBirth).format('YYYY-MM-DD'))
-        } else {
-            setBirthday(dayjs(atLeast18YearsOld).format('YYYY-MM-DD'))
-        }
+        setDraftBirthday(dayjs(dateOfBirth || atLeast18YearsOld).format('YYYY-MM-DD'))
     }, [dateOfBirth, atLeast18YearsOld])
 
-    const handleDateChange = useCallback((params: { date: DateType }) => setBirthday(params.date), []);
+    const handleDateChange = useCallback((params: { date: DateType }) => setDraftBirthday(params.date), []);
 
     return (
         <>
             <View className="space-y-2">
                 <Text className='text-sm text-black font-firamedium'>Birthday</Text>
                 <TouchableOpacity className='px-4 h-14 bg-[#F2F2F7] rounded-xl focus:border-primary flex-row items-center justify-between gap-0.5 flex-1 border border-[#cccccc80]' onPress={presentSheet}>
-                    <Text className='text-sm text-black font-firaregular flex-1'>{birthday ? dayjs(birthday).format('DD MMM YYYY') : 'Select date'}</Text>
+                    <Text className={`text-sm font-firaregular flex-1 ${dateOfBirth ? 'text-black' : 'text-[#5B5B5B3A]'}`}>{dateOfBirth ? dayjs(dateOfBirth).format('DD MMM YYYY') : 'Select date'}</Text>
                     <Feather name="calendar" size={20} color="#666" />
                 </TouchableOpacity>
             </View>
@@ -72,7 +77,7 @@ const DateOfBirthPicker = ({ onDateOfBirthSelected, dateOfBirth }: { onDateOfBir
                             selectedItemColor='#DF3FE5'
                             maxDate={atLeast18YearsOld}
                             mode="single"
-                            date={birthday}
+                            date={draftBirthday}
                             onChange={handleDateChange}
                         />
                         <View className='flex-row items-center justify-end'>

@@ -11,6 +11,7 @@ import Toast from '@/components/toast/toast'
 import Checkbox from 'expo-checkbox'
 import axiosRequest from '@/utils/axios'
 import { useLoader } from '@/context/loader/LoaderProvider'
+import { KEYBOARD_GAP } from '@/constants/constants'
 import { useAppSelector } from '@/hooks/reduxHooks'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as yup from 'yup'
@@ -117,7 +118,12 @@ const SignUp = () => {
 
     return (
         <SafeAreaView className='flex-1 bg-white'>
-            <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }} keyboardShouldPersistTaps="handled">
+            <KeyboardAwareScrollView
+                className='flex-1'
+                contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+                keyboardShouldPersistTaps="handled"
+                bottomOffset={KEYBOARD_GAP}
+            >
                 <View className='w-full h-full justify-center'>
                     <Formik
                         initialValues={initialValues}

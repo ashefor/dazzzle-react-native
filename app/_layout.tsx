@@ -18,6 +18,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SystemBars } from 'react-native-edge-to-edge';
 import NavigationStack from '@/components/NavigationStack';
 
 import { IAPProvider } from '@/context/IAPProvider'; // ← new
@@ -78,12 +79,15 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-         {/* <StatusBar barStyle={'dark-content'} translucent/> */}
       <GestureHandlerRootView style={{
         flex: 1,
       }}>
         <ToastWrapper />
-        {/* <SystemBars style="dark" /> */}
+        {/* App-wide default: dark icons/text, for the light UI every screen uses.
+            Screens with a dark background (e.g. landing) override it locally.
+            SystemBars (not RN's StatusBar) is the edge-to-edge-aware API — under
+            edgeToEdgeEnabled the StatusBar backgroundColor prop is ignored. */}
+        <SystemBars style="dark" />
        <BottomSheetModalProvider>
             <ThemeProvider value={DefaultTheme}>
               <LoaderProvider>

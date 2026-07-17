@@ -108,7 +108,7 @@ const SelectPicker = ({ options, defaultOption, onSelectOption, title, placehold
                     contentContainerStyle={listContentContainerStyle}
                     data={options}
                     renderItem={renderItem}
-                    keyExtractor={(item, index) => item.id.toString() + index.toString()}
+                    keyExtractor={(item) => item.id.toString()}
                 />
             </BottomSheetModal>
         </>

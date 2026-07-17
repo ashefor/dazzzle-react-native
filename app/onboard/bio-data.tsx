@@ -7,9 +7,10 @@ import DateOfBirthPicker from '@/components/DateOfBirthPicker'
 import { useAppSelector } from '@/hooks/reduxHooks'
 import SelectPicker from '@/components/SelectPicker'
 import { useLoader } from '@/context/loader/LoaderProvider'
-import { genders } from '@/constants/constants'
+import { genders, KEYBOARD_GAP } from '@/constants/constants'
 import { OnboardPagesProps } from '.'
 import * as yup from 'yup'
+import dayjs from 'dayjs'
 import { Formik } from 'formik'
 import Toast from '@/components/toast/toast'
 import { ReactionCodes } from '@/models/general'
@@ -34,9 +35,21 @@ const defaultInitial: FormValues = {
     gender: "",
 };
 
+const MIN_AGE = 18;
+
 const bioDataValidationSchema = yup.object().shape({
     first_name: yup.string().required('First name is required'),
-    last_name: yup.string().required('First name is required'),
+    last_name: yup.string().required('Last name is required'),
+    // Validated client-side so an unset or under-age birthday surfaces here
+    // rather than as an opaque minimum-age error from the endpoint.
+    birthday: yup
+        .string()
+        .required('Birthday is required')
+        .test(
+            'is-old-enough',
+            `You must be at least ${MIN_AGE} years old`,
+            (value) => !!value && dayjs().diff(dayjs(value), 'year') >= MIN_AGE
+        ),
 })
 
 const phoneInputStyle = { lineHeight: Platform.OS === 'ios' ? 0 : undefined };
@@ -83,7 +96,16 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                 validationSchema={bioDataValidationSchema}
             >
                 {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
-                    <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20, paddingHorizontal: 16 }} keyboardShouldPersistTaps="never" className='flex-1'>
+                    // keyboardShouldPersistTaps "handled" (not "never"): with "never" a tap
+                    // while the keyboard is open only dismisses it and never reaches the
+                    // control, so Next and the pickers needed two taps. bottomOffset keeps
+                    // the focused field clear of the keyboard.
+                    <KeyboardAwareScrollView
+                        className='flex-1'
+                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20, paddingHorizontal: 16 }}
+                        keyboardShouldPersistTaps="handled"
+                        bottomOffset={KEYBOARD_GAP}
+                    >
                         <View className='my-5 space-y-3 flex-1'>
                             <View>
                                 <FormField
@@ -129,6 +151,9 @@ const OnboardBioData: React.FC<OnboardPagesProps> = ({ pageData, goToNextPage, o
                             </View>
                             <View>
                                 <DateOfBirthPicker dateOfBirth={values.birthday} onDateOfBirthSelected={(date) => setFieldValue('birthday', date)} />
+                                {touched.birthday && errors.birthday ? (
+                                    <Text className='text-xs text-red-500 font-firaregular mt-1'>{errors.birthday}</Text>
+                                ) : null}
                             </View>
                             <View>
                                 <SelectPicker options={genderOptions} onSelectOption={(params) => setFieldValue('gender', params)} defaultOption={values.gender} title='Gender' />
