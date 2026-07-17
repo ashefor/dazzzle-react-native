@@ -71,7 +71,7 @@ export default function AuthLayout() {
     const checkAndRedirect = async () => {
       try {
         // 1. Profile Incomplete? -> Onboarding
-        if (isProfileCompleted) {
+        if (!isProfileCompleted) {
            router.replace('/onboard');
            return;
         }

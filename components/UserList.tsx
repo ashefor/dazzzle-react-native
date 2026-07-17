@@ -1,5 +1,6 @@
-import { View, Text, FlatList, ImageBackground, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert, Platform } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableWithoutFeedback, TouchableOpacity, useWindowDimensions, ActivityIndicator, RefreshControl, Alert, Platform, StyleSheet } from 'react-native';
+import { ImageBackground } from 'expo-image';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import axiosRequest from '@/utils/axios';
@@ -43,14 +44,18 @@ const UserList: React.FC<UserListProps> = ({
     const { show, hide } = useLoader();
     const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
     
-    // Grid calculation
-    const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
-    
+    // Grid calculation — widest breakpoint first. Previously `width > 600 ? 3 : width
+    // > 991 ? 4 : 2` tested 600 first, so any width past 991 already matched it and
+    // the 4-column branch was unreachable.
+    const numColumns = width > 991 ? 4 : width > 600 ? 3 : 2;
+
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [paginationDetails, setPaginationDetails] = useState<{ totalCount: number, nextPageUrl: string } | null>(null);
     const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+    // Read only by onEndReached, never during render — a ref avoids re-rendering the
+    // whole grid every time a page of results lands.
+    const paginationRef = useRef<{ totalCount: number, nextPageUrl: string } | null>(null);
 
     const fetchUsers = useCallback(async (url: string, isRefresh = false, isLoadMore = false) => {
         try {
@@ -71,7 +76,7 @@ const UserList: React.FC<UserListProps> = ({
                     setUsers(usersData);
                 }
                 
-                setPaginationDetails({ totalCount, nextPageUrl });
+                paginationRef.current = { totalCount, nextPageUrl };
             }
         } catch (error) {
             if (!isRefresh && !isLoadMore) hide();
@@ -79,28 +84,30 @@ const UserList: React.FC<UserListProps> = ({
         } finally {
             setHasLoadedInitial(true);
         }
-    }, [endpoint, show, hide]);
+    }, [show, hide]);
 
     // Initial Load
     useEffect(() => {
+        paginationRef.current = null;
         fetchUsers(endpoint);
-    }, [endpoint]);
+    }, [endpoint, fetchUsers]);
 
     // Pull to Refresh
-    const onRefresh = async () => {
+    const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await fetchUsers(endpoint, true);
         setRefreshing(false);
-    };
+    }, [endpoint, fetchUsers]);
 
     // Infinite Scroll
-    const onEndReached = async () => {
-        if (isLoadingMore || !paginationDetails?.nextPageUrl) return;
-        
+    const onEndReached = useCallback(async () => {
+        const nextPageUrl = paginationRef.current?.nextPageUrl;
+        if (isLoadingMore || !nextPageUrl) return;
+
         setIsLoadingMore(true);
-        await fetchUsers(paginationDetails.nextPageUrl, false, true);
+        await fetchUsers(nextPageUrl, false, true);
         setIsLoadingMore(false);
-    };
+    }, [isLoadingMore, fetchUsers]);
 
     // Action Logic (Unlike)
     const performAction = useCallback(async (userId: number | string) => {
@@ -152,9 +159,9 @@ const UserList: React.FC<UserListProps> = ({
                         </View>
                     )}
                     <View className='w-full h-full rounded-xl overflow-hidden bg-[#ccc]'>
-                        <ImageBackground 
-                            resizeMode='cover' 
-                            className='h-full w-full justify-end' 
+                        <ImageBackground
+                            contentFit='cover'
+                            style={styles.cardImage}
                             source={{ uri: item.userImageUrl }}
                         >
                             <View className='bg-black/50 h-full flex flex-col justify-end p-3'>
@@ -167,50 +174,69 @@ const UserList: React.FC<UserListProps> = ({
                 </View>
             </View>
         </TouchableWithoutFeedback>
-    ), [numColumns, showActionButton, createActionAlert]);
+    ), [numColumns, showActionButton, createActionAlert, requirePremium]);
+
+    const refreshControl = useMemo(
+        () => <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#DD3FE5'} />,
+        [refreshing, onRefresh]
+    );
+
+    const listEmptyComponent = useMemo(
+        () => hasLoadedInitial ? (
+            <View className='flex-1 items-center justify-center pt-20'>
+                <Text className='text-gray-500 font-firamedium'>{emptyMessage}</Text>
+            </View>
+        ) : null,
+        [hasLoadedInitial, emptyMessage]
+    );
+
+    const listFooterComponent = useMemo(
+        () => isLoadingMore ? <View className='p-4'><ActivityIndicator size='small' color='#DD3FE5' /></View> : null,
+        [isLoadingMore]
+    );
+
+    const closeModal = useCallback(() => setShowModal(false), [setShowModal]);
 
     return (
-        <View className='h-full bg-white'> 
+        <View className='h-full bg-white'>
              <FlatList
                 className='p-1'
                 data={users}
                 keyExtractor={(item, index) => `${item._uid}-${item._id}-${index}`}
                 numColumns={numColumns}
                 // Key property to force re-render if columns change (though pure keyExtractor handles most cases, this is safer for grid layout changes)
-                key={`grid-${numColumns}`} 
-                
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#DD3FE5'} />
-                }
-                
+                key={`grid-${numColumns}`}
+
+                refreshControl={refreshControl}
+
                 onEndReached={onEndReached}
                 onEndReachedThreshold={0.5}
-                
+
                 removeClippedSubviews={Platform.OS === 'android'}
                 initialNumToRender={10}
                 maxToRenderPerBatch={10}
                 windowSize={5}
 
-                ListEmptyComponent={
-                    hasLoadedInitial ? (
-                        <View className='flex-1 items-center justify-center pt-20'>
-                            <Text className='text-gray-500 font-firamedium'>{emptyMessage}</Text>
-                        </View>
-                    ) : null
-                }
-                ListFooterComponent={
-                    isLoadingMore ? <View className='p-4'><ActivityIndicator size='small' color='#DD3FE5' /></View> : null
-                }
+                ListEmptyComponent={listEmptyComponent}
+                ListFooterComponent={listFooterComponent}
                 renderItem={renderItem}
             />
 
             <PremiumActionModal
                 visible={showModal}
-                onClose={() => setShowModal(false)}
+                onClose={closeModal}
                 {...modalOptions}
-            /> 
+            />
         </View>
     );
 };
 
 export default UserList;
+
+const styles = StyleSheet.create({
+    cardImage: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'flex-end',
+    },
+});
