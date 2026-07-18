@@ -12,6 +12,8 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import LottieView from 'lottie-react-native'
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types'
 import { OnboardPagesProps } from '.'
+import { isFreemiumAccessActive } from '@/utils/freemiumAccess'
+import { handlePermissionNavigation } from '@/utils/notificationHandler'
 
 const renderBackdrop = (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
     <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
@@ -73,7 +75,14 @@ const OnboardChooseInterests: React.FC<OnboardPagesProps> = ({ pageData, onLogOu
     }, [selectedInterests, show, hide]);
 
     const dismissSheet = useCallback(() => bottomSheetModalRef.current?.dismiss(), []);
-    const handleSheetDismiss = useCallback(() => router.replace('/paywall'), []);
+    const handleSheetDismiss = useCallback(() => {
+        if (isFreemiumAccessActive()) {
+            void handlePermissionNavigation('/(tabs)', '/app-permissions');
+            return;
+        }
+
+        router.replace('/paywall');
+    }, []);
 
     return (
         <>

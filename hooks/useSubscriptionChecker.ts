@@ -4,6 +4,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { useAppDispatch, useAppSelector } from './reduxHooks';
 import { signUserOut } from '@/redux/thunks/authActions';
 import { router } from 'expo-router';
+import { isFreemiumAccessActive } from '@/utils/freemiumAccess';
 
 const CHECK_INTERVAL = 60000;
 
@@ -13,6 +14,7 @@ export const useSubscriptionChecker = () => {
 
   useEffect(() => {
     const checkLocalExpiry = () => {
+      if (isFreemiumAccessActive()) return;
       if (!currentSubscription) return;
       const now = Date.now();
       const expiryTime = new Date(currentSubscription.expiry_at).getTime();

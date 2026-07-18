@@ -44,7 +44,6 @@ export function useUsersFeed() {
       });
     } catch (err) {
       // Silent fail on background prefetch
-      console.log("Background fetch failed", err);
     } finally {
       prefetchingRef.current = false;
     }

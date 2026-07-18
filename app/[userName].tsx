@@ -359,7 +359,6 @@ export default function UserDetailsScreen() {
             show();
             const data: any = await axiosRequest.post(`/block-user`, params);
             hide();
-            console.log('Block user response:', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 dispatch(popCard());
                 // setUserDetails((prevUserDetails) => {

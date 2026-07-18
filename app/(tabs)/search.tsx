@@ -91,7 +91,6 @@ const FilterUsers = () => {
                 const data: any = await axiosRequest.get('/get-featured-user-data');
                 if (data.reaction === ReactionCodes.SUCCESS) {
                     const { getFeatureUserList } = data.data;
-                    console.log('Refreshed Users:', data.data);
                     setUsers(getFeatureUserList);
                     setHasLoadedUsers(true);
                 }
@@ -151,11 +150,8 @@ const FilterUsers = () => {
             setHasLoadedUsers(false);
             show();
             const data: any = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`);
-            console.log('Filter Params:', filterParams);
-            console.log('Filter API Response:', data);
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
-                console.log('Filter Response:', data.data);
                 setUsers(filterData);
                 setNextPageUrl(nextPageUrl);
                 setTotalCount(totalCount);

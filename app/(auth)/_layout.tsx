@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
   FadeIn
 } from 'react-native-reanimated';
+import { isFreemiumAccessActive } from '@/utils/freemiumAccess';
 
 // --- FANCY LOADER COMPONENT ---
 const AuthLoadingScreen = () => {
@@ -80,7 +81,7 @@ export default function AuthLayout() {
         const isExpired = currentSubscription?.expiry_at
           ? dayjs().isAfter(dayjs(currentSubscription.expiry_at))
           : true;
-        if (!userInfo.is_premium || isExpired) {
+        if (!isFreemiumAccessActive() && (!userInfo.is_premium || isExpired)) {
             router.replace('/paywall');
             return;
         }

@@ -35,8 +35,6 @@ const registerNotificationListeners = () => {
     // 2. Listener for when user TAPS the notification (Background or Killed state)
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
         const data = response.notification.request.content.data;
-        
-        console.log("Notification Interaction Payload:", data);
 
         // Handle Chat Message Notification (Type "1")
         if (data && (data.type === "1" || data.type == "2")) {

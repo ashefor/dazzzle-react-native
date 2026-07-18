@@ -52,7 +52,6 @@ export const userLogin = createAsyncThunk(
             )
             const authApiResponse = response.data as AuthApiResponse;
             const { reaction, message, data } = response.data;
-            console.log('Login Response:', response.data);
             let errorMessage = message;
             if (reaction === ReactionCodes.ERROR) {
                 if (data) {
@@ -200,13 +199,11 @@ export const deleteUserAccount = createAsyncThunk(
                     ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
                 }
             }
-            console.log('Initiating account deletion with config:', config);
             const response = await axios.post(
                 `${API_URL}/delete-account`,
                 {},
                 config
             )
-            console.log('Delete Account Response:', response.data);
             const authApiResponse = response.data as AuthApiResponse;
             const { reaction, message, data } = response.data;
             let errorMessage = message;

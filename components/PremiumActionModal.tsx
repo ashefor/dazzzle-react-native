@@ -93,15 +93,11 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
             // OPTIMAL: Website redirects to 'dazzzle://payment/success' -> auto-closes
             const result = await WebBrowser.openAuthSessionAsync(url, 'dazzzle://payment');
             
-            console.log('WebBrowser result:', result);
-            
             // Handle different result types
             if (result.type === 'success' && result.url) {
                 // Website redirected to deep link (dazzzle://payment/*)
                 // Browser auto-closed - this is the optimal flow
                 const redirectUrl = result.url;
-                console.log('Deep link redirect detected:', redirectUrl);
-                
                 if (redirectUrl.includes('success')) {
                     // Payment successful - verify account status
                     show();
@@ -120,7 +116,6 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
             } else {
                 // User manually closed browser (current flow with HTTPS redirect)
                 // Website navigated to HTTPS success page, user tapped "Done"
-                console.log('Browser closed by user, checking account status...');
                 await checkAccountStatus();
             }
         } catch (error) {
@@ -140,7 +135,6 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
             if (user) {
                 dispatch(updateUserInfo(user));
             }
-            console.log('Account status check result:', result);
             if (user?.is_premium && userSubscription) {
                 const isExpired = dayjs().isAfter(dayjs(userSubscription.expiry_at));
                 
@@ -229,18 +223,14 @@ export const PremiumActionModal: React.FC<PremiumActionModalProps> = ({
 
     const handleNavigationStateChange = async (navState: any) => {
         const { url } = navState;
-        
-        console.log('WebView URL changed:', url);
-        
+                
         if (url.includes(PAYMENT_SUCCESS_URL) || url.includes('success')) {
-            console.log('Success URL detected, verifying...');
             setTimeout(async () => {
                 await verifyPaymentAndRoute();
             }, 300);
         }
         
         if (url.includes(PAYMENT_CANCEL_URL) || url.includes('cancel') || url.includes('failed')) {
-            console.log('Cancelled/failed URL detected');
             onClose();
             Alert.alert(
                 'Upgrade Cancelled',

@@ -309,6 +309,7 @@ import { useIAPContext } from "@/context/IAPProvider";
 import { resetIAP } from "@/redux/slices/iapSlice";
 import type { Product } from "expo-iap";
 import { usePaystack } from "react-native-paystack-webview";
+import { isFreemiumAccessActive } from "@/utils/freemiumAccess";
 
 // const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -365,6 +366,7 @@ const convertFeaturesToStrings = (obj: PremiumFeature): string[] =>
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 const PayWallScreen = () => {
+  const hasFreemiumAccess = isFreemiumAccessActive();
   // Paystack (Android)
   const { popup } = usePaystack();
 
@@ -387,7 +389,7 @@ const PayWallScreen = () => {
   const [premiumFeatures, setPremiumFeatures] = useState<string[]>(defaultPremiumFeatures);
   const [creditPlans, setCreditPlans] = useState<CreditPlan[]>(defaultCreditPlans);
   const [selectedCreditPlan, setSelectedCreditPlan] = useState<CreditPlan | null>(null);
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState(hasFreemiumAccess);
 
   // ── Fetch subscription plan details from backend ──────────────────────────
   const fetchSubscriptionDetails = useCallback(async () => {
@@ -397,7 +399,6 @@ const PayWallScreen = () => {
       hide();
       const premiumPlanData = data.data?.premiumPlanData as SubscriptionResponse;
       if (premiumPlanData) {
-        console.log('Fetched subscription details:', premiumPlanData);
         setPremiumFeatures(convertFeaturesToStrings(premiumPlanData.premiumFeature));
         setCreditPlans(
           premiumPlanData.creditPlans.filter((p) => p.credits !== 0)
@@ -415,6 +416,11 @@ const PayWallScreen = () => {
 
   useEffect(() => {
     const init = async () => {
+      if (hasFreemiumAccess) {
+        await handlePermissionNavigation("/(tabs)", "/app-permissions");
+        return;
+      }
+
       if (currentSubscription) {
         if (dayjs().isAfter(dayjs(currentSubscription.expiry_at))) {
           // fetchSubscriptionDetails();
@@ -437,7 +443,7 @@ const PayWallScreen = () => {
       }
     };
     init();
-  }, []);
+  }, [currentSubscription, hasFreemiumAccess]);
 
   // ── Dismiss IAP error after showing it ───────────────────────────────────
   useEffect(() => {

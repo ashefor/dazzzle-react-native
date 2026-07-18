@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { isFreemiumAccessActive } from '@/utils/freemiumAccess';
 
 const { width } = Dimensions.get('window');
 
@@ -121,6 +122,7 @@ export default function HomeScreen() {
   };
 
   const isSubActive = checkSubscriptionStatus();
+  const hasAppAccess = isFreemiumAccessActive() || isSubActive;
 
   // --- EFFECTS ---
 
@@ -146,7 +148,7 @@ export default function HomeScreen() {
 
       const performRouting = async () => {
           // 1. Subscription Check (Keep your existing logic)
-          if (!isSubActive) {
+          if (!hasAppAccess) {
               router.replace('/paywall');
               return;
           }
@@ -179,7 +181,7 @@ export default function HomeScreen() {
 
       performRouting();
       
-  }, [isInitializing, appConfig, userToken, userInfo, isProfileCompleted, isSubActive, isCheckingPermissions]);
+  }, [isInitializing, appConfig, userToken, userInfo, isProfileCompleted, hasAppAccess, isCheckingPermissions, router]);
 
 
   // --- RENDER ---

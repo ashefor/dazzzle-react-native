@@ -63,7 +63,6 @@ export default function ProfileScreen() {
       show();
       await dispatch(deleteUserAccount())
       hide();
-      console.log('Account deleted successfully');
       // router.replace('/landing')
     } catch (error) {
       hide();
