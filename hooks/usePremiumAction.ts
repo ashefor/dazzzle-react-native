@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAppSelector } from './reduxHooks';
 import dayjs from 'dayjs';
+import { isFreemiumAccessActive } from '@/utils/freemiumAccess';
 
 interface UsePremiumActionReturn {
     requirePremium: (action: () => void, options?: {
@@ -59,6 +60,10 @@ export const usePremiumAction = (): UsePremiumActionReturn => {
 
     // Check if user is premium and subscription is not expired
     const isPremium = useCallback(() => {
+        if (isFreemiumAccessActive()) {
+            return true;
+        }
+
         if (!userInfo?.is_premium) {
             return false;
         }

@@ -14,6 +14,12 @@ import { usePremiumAction } from '@/hooks/usePremiumAction';
 const { width } = Dimensions.get('window');
 const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
 
+const NoUsers = () => (
+    <View className="flex-1 items-center justify-center py-20">
+        <Text className="text-gray-400 text-base font-firaregular">No blocked users found.</Text>
+    </View>
+);
+
 const BlockedUsers = () => {
     const { show, hide } = useLoader();
     const [users, setUsers] = useState<LikedUserProfile[]>([]);
@@ -108,6 +114,7 @@ const BlockedUsers = () => {
                         onRefresh={refreshUsers}
                         tintColor={'#DD3FE5'}
                     />}
+                ListEmptyComponent={refreshing ? null : <NoUsers />}
                 ListFooterComponent={isLoadingMore ? <View className='p-3'><ActivityIndicator size={'small'} color={'#DD3FE5'} /></View> : null}
                 renderItem={renderItem}
             />

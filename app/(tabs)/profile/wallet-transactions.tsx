@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import CustomButton from "@/components/CustomButton";
+import { FREEMIUM_ACCESS_END, isFreemiumAccessActive } from '@/utils/freemiumAccess';
 
 export interface FinancialTransaction {
     _id: number
@@ -37,8 +38,13 @@ const SubscriptionCard = ({ planName, expiryDate }: { planName: string; expiryDa
             <View className="flex-row items-center mb-2">
                 <View>
                     <Text className="text-white/80 text-base font-firaregular capitalize">Current Subscription</Text>
+                    {isFreemiumAccessActive() ? <>
+                    <Text className="text-white text-xl font-firabold capitalize">Freemium</Text>
+                    <Text className="text-white/80 text-sm font-firaregular">Expires On: {dayjs(FREEMIUM_ACCESS_END).format('ddd, MMM D, YYYY h:mm A')}</Text>
+                    </>: <>
                     <Text className="text-white text-xl font-firabold capitalize">{planName}</Text>
                     <Text className="text-white/80 text-sm font-firaregular">Expires On: {dayjs(expiryDate).format('ddd, MMM D, YYYY h:mm A')}</Text>
+                    </>}
                 </View>
             </View>
         </LinearGradient>
@@ -85,6 +91,12 @@ const TransactionListSkeleton = () => {
         </View>
     );
 }
+
+const NoTransactions = () => (
+    <View className="flex-1 items-center justify-center py-20">
+        <Text className="text-gray-400 text-base font-firaregular">No transactions found.</Text>
+    </View>
+);
 
 const TransactionItem = ({ transaction, onPress }: { transaction: WalletTransaction; onPress: (transaction: any) => void }) => {
     return (
@@ -186,7 +198,7 @@ const WalletTransactions = () => {
                     data={transactions}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item) => item._uid}
-                    ListEmptyComponent={loading ? <TransactionListSkeleton /> : null}
+                    ListEmptyComponent={loading ? <TransactionListSkeleton /> : <NoTransactions />}
                     refreshControl={
                         <RefreshControl
                             tintColor="#fff"
