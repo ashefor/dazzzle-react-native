@@ -1,373 +1,408 @@
-import { View, Image, TouchableOpacity, useWindowDimensions, ImageBackground, TouchableWithoutFeedback, FlatList, RefreshControl, Text, ActivityIndicator, Dimensions, Platform, Animated, EmitterSubscription, Keyboard } from 'react-native';
 import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import UsersBasicFilter, { BasicFilter } from '@/components/UsersBasicFilter';
+import {
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    useWindowDimensions,
+} from 'react-native';
 import { router } from 'expo-router';
-import icons from '@/constants/icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ImageBackground } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ReactionCodes } from '@/models/general';
-import axiosRequest from '@/utils/axios';
-import { useLoader } from '@/context/loader/LoaderProvider';
+import {
+    BottomSheetBackdrop,
+    BottomSheetHandle,
+    BottomSheetHandleProps,
+    BottomSheetModal,
+    BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import UsersBasicFilter, { BasicFilter } from '@/components/UsersBasicFilter';
 import NavBar from '@/components/NavBar';
 import FilterIcon from '@/components/icons/FilterIcon';
-import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
-import { usePremiumAction } from '@/hooks/usePremiumAction';
 import { PremiumActionModal } from '@/components/PremiumActionModal';
+import icons from '@/constants/icons';
+import { useLoader } from '@/context/loader/LoaderProvider';
+import { usePremiumAction } from '@/hooks/usePremiumAction';
+import { ReactionCodes } from '@/models/general';
+import axiosRequest from '@/utils/axios';
 
 interface FeaturedUser {
-    _id: number
-    _uid: string
-    username: string
-    created_at: string
-    userFullName: string
-    profile_picture: string
-    userImageUrl?: string
-    userCoverUrl: string
-    isPremiumUser: boolean
-    id: number
-    fullName: string
-    profileImage?: string
-    coverImage: string
-    gender: string
-    dob: string
-    userAge: number
-    countryName: string
-    userOnlineStatus: number
-    detailString: string
+    _id: number;
+    _uid: string;
+    username: string;
+    userFullName: string;
+    userImageUrl?: string;
+    isPremiumUser: boolean;
+    id: number;
+    fullName: string;
+    profileImage?: string;
+    coverImage: string;
 }
 
-const AnimatedView = Animated.createAnimatedComponent(View);
+type LoadMode = 'initial' | 'filter' | 'refresh';
+
+const buildFilterQuery = (filter: BasicFilter) => new URLSearchParams({
+    username: filter.username.trim(),
+    min_age: String(filter.age[0]),
+    max_age: String(filter.age[1]),
+    looking_for: filter.looking_for,
+    distance: filter.distance.trim(),
+    user_type: filter.user_type ?? '0',
+}).toString();
 
 const FilterUsers = () => {
     const { show, hide } = useLoader();
-    // const [modalVisible, setModalVisible] = useState(false);
-    const { width } = useWindowDimensions();
-    const numColumns = width > 600 ? 3 : width > 991 ? 4 : 2;
+    const { width, height } = useWindowDimensions();
+    const numColumns = width > 991 ? 4 : width > 600 ? 3 : 2;
+    const cardWidth = (width - 16 - (numColumns - 1) * 8) / numColumns;
     const [users, setUsers] = useState<FeaturedUser[]>([]);
     const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [totalCount, setTotalCount] = useState(0);
     const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [filterParams, setFilterParams] = useState<BasicFilter | null>(null)
-    const [sliderActive, setSliderActive] = useState(false)
+    const [filterParams, setFilterParams] = useState<BasicFilter | null>(null);
+    const [sliderActive, setSliderActive] = useState(false);
     const searchBottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const latestRequestId = useRef(0);
+    const isLoadingMoreRef = useRef(false);
     const insets = useSafeAreaInsets();
     const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
 
-    const snapPoints = useMemo(() => ["65%", "90%"], []);
+    const loadUsers = useCallback(async (filter: BasicFilter | null, mode: LoadMode) => {
+        const requestId = ++latestRequestId.current;
+        const usesGlobalLoader = mode !== 'refresh';
 
-    const fetchLikedUsers = async () => {
-        try {
-            show();
-            setFilterParams(null);
-            const data: any = await axiosRequest.get('/get-featured-user-data');
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const { getFeatureUserList } = data.data;
-                setUsers(getFeatureUserList);
-                setHasLoadedUsers(true);
-            }
-            hide();
-        } catch (error) {
-            hide();
-            console.error('Error fetching liked users:', error);
-        }
-    };
-
-    const refreshUsers = async () => {
-        try {
+        if (mode === 'refresh') {
             setRefreshing(true);
-            if (filterParams) {
-                const searchParams = new URLSearchParams(filterParams as any);
-                const data: any = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`);
-                if (data.reaction === ReactionCodes.SUCCESS) {
-                    const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
-                    setUsers(filterData);
-                    setNextPageUrl(nextPageUrl);
-                    setTotalCount(totalCount);
-                }
-            } else {
-                const data: any = await axiosRequest.get('/get-featured-user-data');
-                if (data.reaction === ReactionCodes.SUCCESS) {
-                    const { getFeatureUserList } = data.data;
-                    setUsers(getFeatureUserList);
-                    setHasLoadedUsers(true);
-                }
-            }
-            setRefreshing(false);
-        } catch (error) {
-            setRefreshing(false);
+        } else {
+            show();
+            setHasLoadedUsers(false);
+            if (mode === 'filter') setUsers([]);
         }
-    }
+        setNextPageUrl(null);
 
-    const fetchMoreUsers = async () => {
         try {
-            if (filterParams && nextPageUrl) {
-                setIsLoadingMore(true);
-                const data: any = await axiosRequest.get(nextPageUrl);
-                if (data.reaction === ReactionCodes.SUCCESS) {
-                    const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
-                    const newUsers = [users, filterData];
-                    setUsers(newUsers.flat());
-                    setHasLoadedUsers(true);
-                    setTotalCount(totalCount);
-                    setNextPageUrl(nextPageUrl);
+            const endpoint = filter
+                ? `/find-matches-data?${buildFilterQuery(filter)}`
+                : '/get-featured-user-data';
+            const data: any = await axiosRequest.get(endpoint, { showGlobalLoader: false });
+
+            if (requestId !== latestRequestId.current) return;
+
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                if (filter) {
+                    const { filterData = [], nextPageUrl: nextUrl = null } = data.data;
+                    setUsers(filterData);
+                    setNextPageUrl(nextUrl);
+                } else {
+                    setUsers(data.data.getFeatureUserList ?? []);
+                    setNextPageUrl(null);
                 }
-                setIsLoadingMore(false);
             }
         } catch (error) {
-            setIsLoadingMore(false);
+            if (requestId === latestRequestId.current) {
+                console.error('Error fetching search users:', error);
+            }
+        } finally {
+            if (requestId === latestRequestId.current) {
+                setHasLoadedUsers(true);
+                setRefreshing(false);
+                if (usesGlobalLoader) hide();
+            }
         }
-    };
-
+    }, [hide, show]);
 
     useEffect(() => {
-        fetchLikedUsers();
-    }, []);
+        loadUsers(null, 'initial');
 
-    const filterUsers = async (params: BasicFilter) => {
+        return () => {
+            latestRequestId.current += 1;
+            hide();
+        };
+    }, [hide, loadUsers]);
+
+    const refreshUsers = useCallback(() => loadUsers(filterParams, 'refresh'), [filterParams, loadUsers]);
+
+    const fetchMoreUsers = useCallback(async () => {
+        if (!filterParams || !nextPageUrl || isLoadingMoreRef.current) return;
+
+        isLoadingMoreRef.current = true;
+        setIsLoadingMore(true);
+        const requestId = latestRequestId.current;
+
         try {
-            const filterParams = {
-                username: params.username,
-                min_age: params.age[0].toString(),
-                max_age: params.age[1].toString(),
-                looking_for: params.looking_for,
-                distance: params.distance
-            } as {
-                username: string;
-                min_age: string;
-                max_age: string
-                looking_for: string;
-                distance: string;
-            }
-            const searchParams = new URLSearchParams(filterParams);
-            // setModalVisible(false);
-            searchBottomSheetModalRef.current?.dismiss();
-            setFilterParams(params);
-            // const oldUSers = [...users];
-            setUsers([]);
-            setHasLoadedUsers(false);
-            show();
-            const data: any = await axiosRequest.get(`/find-matches-data?${searchParams.toString()}`);
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const { filterData, totalCount, filterCount, nextPageUrl } = data.data;
-                setUsers(filterData);
-                setNextPageUrl(nextPageUrl);
-                setTotalCount(totalCount);
-            }
-            hide();
-        } catch (error) {
-            hide();
-        } finally {
-            // setUsers(oldUSers);
-            setRefreshing(false);
-            setHasLoadedUsers(true);
-            hide();
-        }
-    }
+            const data: any = await axiosRequest.get(nextPageUrl, { showGlobalLoader: false });
+            if (requestId !== latestRequestId.current) return;
 
-    const clearFilter = () => {
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                const { filterData = [], nextPageUrl: nextUrl = null } = data.data;
+                setUsers((currentUsers) => [...currentUsers, ...filterData]);
+                setNextPageUrl(nextUrl);
+            }
+        } catch (error) {
+            if (requestId === latestRequestId.current) {
+                console.error('Error loading more search users:', error);
+            }
+        } finally {
+            isLoadingMoreRef.current = false;
+            setIsLoadingMore(false);
+        }
+    }, [filterParams, nextPageUrl]);
+
+    const filterUsers = useCallback(async (params: BasicFilter) => {
+        searchBottomSheetModalRef.current?.dismiss();
+        setFilterParams(params);
+        await loadUsers(params, 'filter');
+    }, [loadUsers]);
+
+    const clearFilter = useCallback(() => {
         setFilterParams(null);
-        setUsers([]);
-        setHasLoadedUsers(false);
-        fetchLikedUsers();
-    }
+        loadUsers(null, 'filter');
+    }, [loadUsers]);
 
     const renderBackdrop = useCallback(
         (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
-            <BottomSheetBackdrop
-                {...props}
-                disappearsOnIndex={-1}
-                appearsOnIndex={0}
-            // onPress={handleBlur}
-            />
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
         ),
-        []
+        [],
     );
 
-    const MAX_HEIGHT_PX = useMemo(() => {
-        return Dimensions.get("screen").height * 0.9
-    }, [])
+    const dismissFilters = useCallback(() => searchBottomSheetModalRef.current?.dismiss(), []);
 
     const renderHeaderHandle = useCallback(
         (props: BottomSheetHandleProps) => (
-            <BottomSheetHandle
-                {...props}
-            >
-                <View className="py-4 relative">
-
-                    <View className=' w-full'>
-                        <TouchableOpacity onPress={() => searchBottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
-                            position: 'absolute',
-                            top: '50%',
-                            transform: [
-                                { translateY: '-50%' }
-                            ],
-                            left: 16,
-                            zIndex: 10,
-                            backgroundColor: 'white'
-                        }}>
-                            <Ionicons name="close-circle" size={24} color="black" />
-                        </TouchableOpacity>
-                        <Text className='font-firabold text-black text-base mx-auto text-center'>Filter</Text>
-                    </View>
+            <BottomSheetHandle {...props}>
+                <View style={styles.sheetHeader}>
+                    <TouchableOpacity
+                        accessibilityLabel="Close filters"
+                        accessibilityRole="button"
+                        hitSlop={8}
+                        onPress={dismissFilters}
+                        style={styles.closeButton}
+                    >
+                        <Ionicons name="close-circle" size={24} color="black" />
+                    </TouchableOpacity>
+                    <Text className="font-firabold text-black text-base text-center">Filter</Text>
                 </View>
             </BottomSheetHandle>
         ),
-        []
+        [dismissFilters],
     );
 
+    const openUser = useCallback((username: string) => {
+        requirePremium(() => {
+            router.push({ pathname: '/[userName]', params: { userName: username } });
+        });
+    }, [requirePremium]);
+
     const renderItem = useCallback(({ item }: { item: FeaturedUser }) => {
+        const displayName = item.fullName || item.userFullName || item.username;
+        const imageUri = item.profileImage || item.userImageUrl || item.coverImage;
+
         return (
-            <TouchableWithoutFeedback onPress={() => requirePremium(() => {
-                router.push({
-                    pathname: '/[userName]',
-                    params: { userName: item.username }
-                })
-            })} className=''>
-                <View className='m-2 h-52' style={{ flex: 1 / numColumns, width: width / numColumns }}>
-                    <View className='flex-1 rounded-xl overflow-hidden'>
-                        <ImageBackground resizeMode='cover' className=' rounded-xl flex-1 bg-[#ccc]' source={{ uri: item.profileImage ? item.profileImage : item.userImageUrl ? item.userImageUrl : item.coverImage }}>
-                            <View className='bg-black/[0.5] flex-1 justify-end p-4'>
-                                <Text className='text-sm font-firabold text-white'>{item.fullName ? item.fullName : item.userFullName ? item.userFullName : item.username}</Text>
-                                {item.isPremiumUser && <Image source={icons.premium} className='w-5 h-5' resizeMode='contain' />}
-                            </View>
-                        </ImageBackground>
+            <TouchableOpacity
+                accessibilityLabel={`View ${displayName}'s profile`}
+                accessibilityRole="button"
+                activeOpacity={0.85}
+                onPress={() => openUser(item.username)}
+                style={[styles.card, { width: cardWidth }]}
+            >
+                <ImageBackground contentFit="cover" style={styles.cardImage} source={{ uri: imageUri }}>
+                    <View style={styles.cardOverlay}>
+                        <Text className="text-sm font-firabold text-white" numberOfLines={1}>
+                            {displayName}
+                        </Text>
+                        {item.isPremiumUser ? (
+                            <Image source={icons.premium} style={styles.premiumIcon} resizeMode="contain" />
+                        ) : null}
                     </View>
-                </View>
-            </TouchableWithoutFeedback>
-        )
-    }, [])
+                </ImageBackground>
+            </TouchableOpacity>
+        );
+    }, [cardWidth, openUser]);
 
-    const keyboardPadding = useRef(new Animated.Value(0)).current;
+    const keyExtractor = useCallback((item: FeaturedUser) => (
+        String(item._uid || item._id || item.id || item.username)
+    ), []);
 
-    // Helper to animate paddingTop
-    const animateKeyboardPadding = useCallback((toValue: number, duration = 250) => {
-        Animated.timing(keyboardPadding, {
-            toValue,
-            duration,
-            useNativeDriver: false, // paddingTop not supported by native driver
-        }).start();
-    }, [keyboardPadding]);
+    const refreshControl = useMemo(() => (
+        <RefreshControl refreshing={refreshing} onRefresh={refreshUsers} tintColor="#DD3FE5" />
+    ), [refreshUsers, refreshing]);
 
-    useEffect(() => {
-        // Choose event names for platform
-        const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-        const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const emptyComponent = useMemo(() => hasLoadedUsers ? (
+        <View style={styles.emptyState}>
+            <Text className="text-gray-500 font-firamedium">No users found</Text>
+            <Text className="text-gray-500 font-firamedium text-center">
+                Try adjusting your filters or refresh
+            </Text>
+            <TouchableOpacity
+                accessibilityRole="button"
+                onPress={refreshUsers}
+                className="mt-4 px-4 py-2 bg-primary rounded-full"
+            >
+                <Text className="text-white">Refresh</Text>
+            </TouchableOpacity>
+        </View>
+    ) : null, [hasLoadedUsers, refreshUsers]);
 
-        const onKeyboardShow = (e: any) => {
-            // e.endCoordinates.height is the keyboard height
-            const keyboardHeight = e?.endCoordinates?.height ?? 300;
-            // convert to a reasonable top padding value (you can tweak multiplier)
-            const topPadding = Math.min(keyboardHeight * 0.5, 120); // clamp to 120
-            animateKeyboardPadding(topPadding, 250);
-        };
+    const footerComponent = useMemo(() => isLoadingMore ? (
+        <View style={styles.footerLoader}>
+            <ActivityIndicator size="small" color="#DD3FE5" />
+        </View>
+    ) : null, [isLoadingMore]);
 
-        const onKeyboardHide = () => {
-            animateKeyboardPadding(0, 200);
-        };
+    const presentFilters = useCallback(() => {
+        requirePremium(() => searchBottomSheetModalRef.current?.present());
+    }, [requirePremium]);
 
-        const showSub: EmitterSubscription = Keyboard.addListener(showEvent, onKeyboardShow);
-        const hideSub: EmitterSubscription = Keyboard.addListener(hideEvent, onKeyboardHide);
-
-        return () => {
-            showSub.remove();
-            hideSub.remove();
-        };
-    }, [animateKeyboardPadding]);
+    const closePremiumModal = useCallback(() => setShowModal(false), [setShowModal]);
 
     return (
-        <View className='flex-1 bg-white' style={{ paddingTop: insets.top }}>
-            <NavBar leftItem={<Text className="text-2xl text-primary font-firasemibold">Search</Text>} rightItem={<TouchableOpacity onPress={() => requirePremium(() => searchBottomSheetModalRef.current?.present())} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
-                <FilterIcon stroke={"#DD3FE5"} />
-            </TouchableOpacity>} />
-            <View className='flex-1 h-full'>
-                {filterParams && <View style={{ justifyContent: 'flex-start', width: 'auto', flex: 0, alignItems: 'center', flexDirection: 'row', }} className='px-4 py-2'>
-                    <Text className='text-sm'>Clear Filters</Text>
-                    <TouchableOpacity onPress={clearFilter} className='items-center justify-center p-0.5 rounded-full bg-[#E0E0E0] ml-2'>
+        <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+            <NavBar
+                leftItem={<Text className="text-2xl text-primary font-firasemibold">Search</Text>}
+                rightItem={(
+                    <TouchableOpacity
+                        accessibilityLabel="Open search filters"
+                        accessibilityRole="button"
+                        onPress={presentFilters}
+                        className="flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full"
+                    >
+                        <FilterIcon stroke="#DD3FE5" />
+                    </TouchableOpacity>
+                )}
+            />
+
+            {filterParams ? (
+                <View style={styles.clearFilterRow}>
+                    <Text className="text-sm">Filters applied</Text>
+                    <TouchableOpacity
+                        accessibilityLabel="Clear search filters"
+                        accessibilityRole="button"
+                        hitSlop={8}
+                        onPress={clearFilter}
+                        className="items-center justify-center p-0.5 rounded-full bg-[#E0E0E0] ml-2"
+                    >
                         <Ionicons name="close" size={20} color="#DD3FE5" />
                     </TouchableOpacity>
-                </View>}
-                <View style={{ flexGrow: 1 }} className='h-full flex-1'>
-                    <FlatList
-                        className='p-1 flex-1 h-full'
-                        data={users}
-                        ListEmptyComponent={
-                            hasLoadedUsers ? (
-                                <View className='flex-1 items-center justify-center mt-20 py-10 bg-primary/10 mx-4 rounded-xl'>
-                                    <Text className='text-gray-500 font-firamedium'>No users found</Text>
-                                    <Text className='text-gray-500 font-firamedium'>Try adjusting your filters or refresh</Text>
-                                    <TouchableOpacity onPress={refreshUsers} className='mt-4 px-4 py-2 bg-primary rounded-full'>
-                                        <Text className='text-white'>Refresh</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            ) : null
-                        }
-                        keyExtractor={(item, index) => `${item.username}-${index}`}
-                        numColumns={numColumns}
-                        ListFooterComponent={filterParams && (totalCount > users.length) ? <TouchableOpacity onPress={() => fetchMoreUsers()} className='flex items-center justify-center my-4'>
-                            {isLoadingMore && <ActivityIndicator size='small' color="#DD3FE5" />}
-                            <Text className='text-white'>Load More</Text>
-                        </TouchableOpacity> : null}
-                        refreshing={refreshing}
-                        onRefresh={() => refreshUsers()}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={refreshUsers}
-                                tintColor='#DD3FE5'
-                            />
-                        }
-                        onEndReachedThreshold={0.5}
-                        renderItem={renderItem}
-                    />
                 </View>
-            </View>
+            ) : null}
+
+            <FlatList
+                key={`search-grid-${numColumns}`}
+                data={users}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                numColumns={numColumns}
+                contentContainerStyle={users.length === 0 ? styles.emptyListContent : styles.listContent}
+                columnWrapperStyle={styles.columnWrapper}
+                ListEmptyComponent={emptyComponent}
+                ListFooterComponent={footerComponent}
+                refreshControl={refreshControl}
+                onEndReached={fetchMoreUsers}
+                onEndReachedThreshold={0.5}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                removeClippedSubviews={Platform.OS === 'android'}
+                keyboardDismissMode="on-drag"
+            />
+
             <BottomSheetModal
-                enableDynamicSizing={true}
-                maxDynamicContentSize={MAX_HEIGHT_PX}
-                enablePanDownToClose={true}
-                enableContentPanningGesture={false}
-                // snapPoints={['80%']}
                 ref={searchBottomSheetModalRef}
-                handleIndicatorStyle={{
-                    backgroundColor: "red",
-                    display: "none"
-                }}
+                enableDynamicSizing
+                maxDynamicContentSize={height * 0.9}
+                enablePanDownToClose
+                enableContentPanningGesture={false}
+                handleIndicatorStyle={styles.hiddenHandleIndicator}
                 topInset={insets.top}
-                handleStyle={{ padding: 0 }}
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 6 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 6,
-                    elevation: 6,
-                    borderRadius: 28,
-                }}
-                backgroundStyle={{
-                    borderRadius: 28,
-                }}
+                handleStyle={styles.handle}
+                style={styles.sheet}
+                backgroundStyle={styles.sheetBackground}
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
                 keyboardBehavior="interactive"
-                keyboardBlurBehavior="none"
-                {...(Platform.OS === "android"
-                    ? { android_keyboardInputMode: "adjustResize" }
-                    : {})}
+                keyboardBlurBehavior="restore"
+                enableBlurKeyboardOnGesture
+                {...(Platform.OS === 'android' ? { android_keyboardInputMode: 'adjustResize' as const } : {})}
             >
-                <BottomSheetScrollView scrollEnabled={!sliderActive}>
-                    <UsersBasicFilter filterUsers={filterUsers} onSliderStart={() => setSliderActive(true)} onSliderEnd={() => setSliderActive(false)} filterParams={filterParams} />
+                <BottomSheetScrollView scrollEnabled={!sliderActive} keyboardShouldPersistTaps="handled">
+                    <UsersBasicFilter
+                        key={filterParams ? buildFilterQuery(filterParams) : 'default-filters'}
+                        filterUsers={filterUsers}
+                        onSliderStart={() => setSliderActive(true)}
+                        onSliderEnd={() => setSliderActive(false)}
+                        filterParams={filterParams}
+                    />
                 </BottomSheetScrollView>
             </BottomSheetModal>
-            <PremiumActionModal
-                visible={showModal}
-                onClose={() => setShowModal(false)}
-                {...modalOptions}
-            />
+
+            <PremiumActionModal visible={showModal} onClose={closePremiumModal} {...modalOptions} />
         </View>
+    );
+};
 
-    )
-}
+const styles = StyleSheet.create({
+    listContent: { padding: 8, paddingBottom: 24 },
+    emptyListContent: { flexGrow: 1, padding: 16 },
+    columnWrapper: { gap: 8 },
+    card: {
+        height: 208,
+        marginBottom: 8,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#CCCCCC',
+    },
+    cardImage: { flex: 1 },
+    cardOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        padding: 16,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    premiumIcon: { width: 20, height: 20 },
+    clearFilterRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+    },
+    emptyState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(221, 63, 229, 0.1)',
+    },
+    footerLoader: { padding: 16, alignItems: 'center' },
+    sheetHeader: { position: 'relative', paddingVertical: 16 },
+    closeButton: {
+        position: 'absolute',
+        left: 16,
+        top: 16,
+        zIndex: 1,
+        backgroundColor: 'white',
+    },
+    hiddenHandleIndicator: { display: 'none' },
+    handle: { padding: 0 },
+    sheet: {
+        borderRadius: 28,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 6,
+    },
+    sheetBackground: { borderRadius: 28 },
+});
 
-export default FilterUsers
+export default FilterUsers;

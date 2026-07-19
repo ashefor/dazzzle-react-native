@@ -1,17 +1,17 @@
-import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    Image,
     TouchableOpacity,
-    Dimensions,
     Pressable,
     LayoutChangeEvent,
     Modal,
-    TouchableWithoutFeedback, Alert,
-    Platform
+    Alert,
+    Platform,
+    useWindowDimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
     useAnimatedScrollHandler,
@@ -50,16 +50,16 @@ import { usePremiumAction } from '@/hooks/usePremiumAction';
 import { PremiumActionModal } from '@/components/PremiumActionModal';
 
 
-const { width } = Dimensions.get('window');
 const HEADER_HEIGHT = 60;
 
-// --- SUB-COMPONENTS ---
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (typeof error === 'object' && error && 'errorMessage' in error) {
+        return String(error.errorMessage);
+    }
+    return error instanceof Error ? error.message : fallback;
+};
 
-const Chip = ({ label, type }: { label: string; type?: 'pill' | 'transparent' }) => (
-    <View style={[styles.chip, type === 'transparent' && styles.transparentChip]}>
-        <Text style={styles.chipText}>{label}</Text>
-    </View>
-);
+// --- SUB-COMPONENTS ---
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <View style={styles.section}>
@@ -68,20 +68,20 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
     </View>
 );
 
-const InfoPiills = (infoArray: string[]) => {
-    if (!infoArray || infoArray.length === 0) return <Text style={styles.bodyText}>-</Text>;
+const InfoPills = ({ values }: { values?: string[] }) => {
+    if (!values?.length) return <Text style={styles.bodyText}>-</Text>;
     return (
         <View className='flex-1 space-y-1'>
-            {infoArray.map((info, index) => (
-                <Text className='flex-1 text-right text-black text-xs font-firaregular' key={index}>{info}</Text>
+            {values.map((info, index) => (
+                <Text className='flex-1 text-right text-black text-xs font-firaregular' key={`${info}-${index}`}>{info}</Text>
             ))}
         </View>
     );
 }
 
 const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
-    const { userProfileData, userSpecificationData, formatteduserSpecificationData } = userDetails;
-    const { aboutMe, interest, formatted_preferred_language, formatted_education, formatted_work_status, city, country_name, gender_text, birthday, relationship_type, formatted_relationship_status, mobile_number } = userProfileData;
+    const { userProfileData, formatteduserSpecificationData } = userDetails;
+    const { aboutMe, interest, formatted_preferred_language, formatted_education, formatted_work_status, city, country_name, gender_text, birthday, relationship_type, formatted_relationship_status } = userProfileData;
     const { looks, personality, lifestyle, favorites } = formatteduserSpecificationData;
     const location = city && country_name ? `${city}, ${country_name}` : country_name ? `${country_name}` : city ? `${city}` : '-';
     return (
@@ -97,11 +97,11 @@ const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
                 <ProfileInfoItem icon={<Feather name="calendar" size={18} color="#666" />} label="Date of Birth" value={birthday} />
                 <ProfileInfoItem icon={<MaterialCommunityIcons name="gender-male-female" size={18} color="#666" />} label="Gender" value={gender_text} />
                 <ProfileInfoItem icon={<Feather name="users" size={18} color="#666" />} label="Rel. Status" value={formatted_relationship_status} />
-                <ProfileInfoItem icon={<Feather name="heart" size={18} color="#666" />} label="Rel. Type" value={InfoPiills(relationship_type)} />
+                <ProfileInfoItem icon={<Feather name="heart" size={18} color="#666" />} label="Rel. Type" value={<InfoPills values={relationship_type} />} />
                 <ProfileInfoItem icon={<MaterialIcons name="school" size={18} color="#666" />} label="Education" value={formatted_education} />
                 <ProfileInfoItem icon={<Fontisto name="language" size={18} color="#666" />} label="Preferred Language" value={formatted_preferred_language} />
                 <ProfileInfoItem icon={<Feather name="briefcase" size={18} color="#666" />} label="Work Status" value={formatted_work_status} />
-                <ProfileInfoItem icon={<Feather name="heart" size={18} color="#666" />} label="Interest" value={InfoPiills(interest)} />
+                <ProfileInfoItem icon={<Feather name="heart" size={18} color="#666" />} label="Interest" value={<InfoPills values={interest} />} />
                 <ProfileInfoItem icon={<LocationIcon width={18} height={18} stroke="#666" />} label="Location" value={location} />
             </View>
 
@@ -198,59 +198,79 @@ const BasicInfoTab = ({ userDetails }: { userDetails: SingleUserDetails }) => {
 };
 
 const PhotosTab = ({ photos }: { photos: { image_url: string }[] }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [item, setItem] = useState<{ image_url: string } | null>(null);
-  const insets = useSafeAreaInsets();
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setItem(null);
-  };
-  const openModal = (item: { image_url: string }) => {
-    setItem(item);
-    setIsModalOpen(true);
-  };
+    const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+    const insets = useSafeAreaInsets();
+    const closeModal = useCallback(() => setSelectedPhoto(null), []);
+
     return (
-        <><View className='mx-4'>
-            {photos.length === 0 ? (
-                <Text style={styles.bodyText}>No photos available.</Text>
-            ) : (
-                <View style={[styles.photoGrid]}>
-                    {photos.map((photo, index) => (
-                        <TouchableWithoutFeedback onPress={() => openModal(photo)} key={`${photo.image_url}_${index}`}>
-                            <Image key={index} source={{ uri: photo.image_url }} style={styles.gridPhoto} />
-                        </TouchableWithoutFeedback>
-                    ))}
-                </View>
-            )}
-        </View>
-        <Modal
-            visible={isModalOpen}
-            animationType="fade"
-            onRequestClose={closeModal}
-        >
-                <View style={{ 
-          flex: 1, 
-          backgroundColor: 'white',
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right
-        }}>
-                    <NavBar leftItem={<TouchableOpacity onPress={closeModal} className=' flex items-center justify-center'>
-                        <Ionicons name="close-circle" size={24} color="black" />
-                    </TouchableOpacity>} title={'View Image'} />
-                    <View className='flex-1 justify-center items-center p-6'>
-                        <Image source={{ uri: item?.image_url }} style={{ resizeMode: 'contain', width: '100%', height: '100%', maxHeight: Dimensions.get('screen').height * 0.9, maxWidth: Dimensions.get('screen').width * 0.9, margin: 'auto' }} />
+        <>
+            <View className="mx-4">
+                {photos.length === 0 ? (
+                    <Text style={styles.bodyText}>No photos available.</Text>
+                ) : (
+                    <View style={styles.photoGrid}>
+                        {photos.map((photo) => (
+                            <Pressable
+                                accessibilityLabel="View profile photo"
+                                accessibilityRole="button"
+                                key={photo.image_url}
+                                onPress={() => setSelectedPhoto(photo.image_url)}
+                                style={styles.gridPhoto}
+                            >
+                                <Image
+                                    cachePolicy="memory-disk"
+                                    contentFit="cover"
+                                    source={{ uri: photo.image_url }}
+                                    style={styles.photoThumbnail}
+                                    transition={150}
+                                />
+                            </Pressable>
+                        ))}
+                    </View>
+                )}
+            </View>
+            <Modal visible={selectedPhoto !== null} animationType="fade" onRequestClose={closeModal}>
+                <View style={[styles.photoModal, {
+                    paddingTop: insets.top,
+                    paddingBottom: insets.bottom,
+                    paddingLeft: insets.left,
+                    paddingRight: insets.right,
+                }]}>
+                    <NavBar
+                        leftItem={(
+                            <TouchableOpacity
+                                accessibilityLabel="Close photo"
+                                accessibilityRole="button"
+                                hitSlop={8}
+                                onPress={closeModal}
+                                className="flex items-center justify-center"
+                            >
+                                <Ionicons name="close-circle" size={24} color="black" />
+                            </TouchableOpacity>
+                        )}
+                        title="View Image"
+                    />
+                    <View className="flex-1 justify-center items-center p-6">
+                        {selectedPhoto ? (
+                            <Image
+                                accessibilityLabel="Profile photo preview"
+                                contentFit="contain"
+                                source={{ uri: selectedPhoto }}
+                                style={styles.photoPreview}
+                            />
+                        ) : null}
                     </View>
                 </View>
             </Modal>
-            </>
-    )
-}
+        </>
+    );
+};
 
 export default function UserDetailsScreen() {
-    const { userName } = useLocalSearchParams();
+    const params = useLocalSearchParams<{ userName?: string | string[] }>();
+    const userName = Array.isArray(params.userName) ? params.userName[0] : params.userName;
     const insets = useSafeAreaInsets();
+    const { height } = useWindowDimensions();
     const { show, hide } = useLoader();
     const dispatch = useAppDispatch();
     const { requirePremium, showModal, setShowModal, modalOptions } = usePremiumAction();
@@ -262,7 +282,10 @@ export default function UserDetailsScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [reportReason, setReportReason] = useState('');
     const [reportCategory, setReportCategory] = useState('');
+    const [pendingAction, setPendingAction] = useState<'block' | 'unblock' | 'like' | 'dislike' | 'report' | null>(null);
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+    const profileRequestId = useRef(0);
+    const actionInFlight = useRef(false);
 
     // Layout Measurements (Reset these on data fetch to prevent jumpiness)
     const [tabContainerWidth, setTabContainerWidth] = useState(0);
@@ -272,317 +295,263 @@ export default function UserDetailsScreen() {
     const scrollY = useSharedValue(0);
     const activeTabValue = useSharedValue(0);
 
-    // --- EFFECT: STATE SYNC & RESET ---
-    // This solves the issue where animation state persists after data refresh/hot-reload
+    const fetchUserDetails = useCallback(async (username: string, requestId: number) => {
+        try {
+            const data: any = await axiosRequest.get(`/${username}/get-user-profile-data`, { showGlobalLoader: false });
+            if (requestId !== profileRequestId.current) return;
+
+            if (data.reaction === ReactionCodes.SUCCESS) {
+                const profile: SingleUserDetails = data.data;
+                setUserDetails({
+                    ...profile,
+                    formatteduserSpecificationData: arrayToObject(profile.userSpecificationData),
+                });
+            }
+        } catch (error: unknown) {
+            if (requestId === profileRequestId.current) {
+                const message = typeof error === 'object' && error && 'errorMessage' in error
+                    ? String(error.errorMessage)
+                    : 'An error occurred while fetching user details. Please try again later.';
+                Alert.alert('Error', message);
+                setUserDetails(null);
+            }
+        } finally {
+            if (requestId === profileRequestId.current) setIsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        // Reset layout dependent states
+        const requestId = ++profileRequestId.current;
         setNameLayoutY(0);
         setTabContainerWidth(0);
-
-        // Reset Shared Values to 0 (Top of screen, first tab)
+        setActiveTab('basic');
+        setUserDetails(null);
+        setIsLoading(true);
         scrollY.value = 0;
         activeTabValue.value = 0;
-        setActiveTab('basic');
 
-        fetchUserDetails();
-    }, [userName]);
-
-    // Sync active tab state with animation value
-    useEffect(() => {
-        activeTabValue.value = withTiming(activeTab === 'basic' ? 0 : 1, { duration: 150 });
-    }, [activeTab]);
-
-    const fetchUserDetails = async () => {
-        try {
-            setIsLoading(true);
-            const data: any = await axiosRequest.get(`/${userName}/get-user-profile-data`, { headers: { 'hide-loader': 'true' } });
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                const userDetails: SingleUserDetails = data.data;
-                const userSpecificationData = userDetails.userSpecificationData;
-                const formatteduserSpecificationData = arrayToObject(userSpecificationData);
-                const userProfileData = { ...userDetails, formatteduserSpecificationData: formatteduserSpecificationData };
-                setUserDetails(userProfileData);
-            }
-            setIsLoading(false);
-        } catch (error: any) {
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while fetching user details. Please try again later.');
-            setUserDetails(null);
+        if (userName) {
+            fetchUserDetails(userName, requestId);
+        } else {
             setIsLoading(false);
         }
-    }
+
+        return () => {
+            profileRequestId.current += 1;
+        };
+    }, [activeTabValue, fetchUserDetails, scrollY, userName]);
+
+    useEffect(() => {
+        activeTabValue.value = withTiming(activeTab === 'basic' ? 0 : 1, { duration: 150 });
+    }, [activeTab, activeTabValue]);
 
     // --- HANDLERS ---
     const handleScroll = useAnimatedScrollHandler((event) => {
         scrollY.value = event.contentOffset.y;
     });
 
-    const onNameLayout = (event: LayoutChangeEvent) => {
+    const onNameLayout = useCallback((event: LayoutChangeEvent) => {
         setNameLayoutY(event.nativeEvent.layout.y);
-    };
+    }, []);
 
-    const handleTabPress = (tab: 'basic' | 'photos') => {
+    const handleTabPress = useCallback((tab: 'basic' | 'photos') => {
         setActiveTab(tab);
-    };
+    }, []);
 
-    const locationText = useCallback(() => {
+    const locationText = useMemo(() => {
         if (!userDetails) return '-';
         const { city, country_name } = userDetails.userProfileData;
         return city && country_name ? `${city}, ${country_name}` : country_name ? `${country_name}` : city ? `${city}` : '-';
     }, [userDetails]);
 
-    const hasUserLiked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
-        if (likeData && Array.isArray(likeData)) {
-            return likeData.some((like) => like.like == 1)
-        } else if (likeData && typeof likeData === 'object') {
-            return likeData.like == 1
-        } else {
-            return false
-        }
-    }, [userDetails?.userLikeData])
+    const reactionList = useMemo(() => {
+        const likeData = userDetails?.userLikeData;
+        if (!likeData) return [];
+        return Array.isArray(likeData) ? likeData : [likeData];
+    }, [userDetails?.userLikeData]);
+    const hasUserLiked = reactionList.some((reaction) => reaction.like === 1);
+    const hasUserDisliked = reactionList.some((reaction) => reaction.like === 0);
 
-    const hasUserDisliked = useCallback((likeData: { like: number, _id: number }[] | { like: number, _id: number }) => {
-        if (likeData && Array.isArray(likeData)) {
-            return likeData.some((like) => like.like == 0)
-        } else if (likeData && typeof likeData === 'object') {
-            return likeData.like == 0
-        } else {
-            return false
-        }
-    }, [userDetails?.userLikeData])
+    const toggleMenu = useCallback(() => setMenuVisible((visible) => !visible), []);
+    const closeMenu = useCallback(() => setMenuVisible(false), []);
 
-    const handleBlockUser = async () => {
+    const beginAction = useCallback((action: NonNullable<typeof pendingAction>) => {
+        if (actionInFlight.current) return false;
+        actionInFlight.current = true;
+        setPendingAction(action);
+        show();
+        return true;
+    }, [show]);
+
+    const endAction = useCallback(() => {
+        actionInFlight.current = false;
+        setPendingAction(null);
+        hide();
+    }, [hide]);
+
+    const handleBlockUser = useCallback(async () => {
         closeMenu();
-        try {
-            const params = {
-                block_user_id: userDetails?.userData.userId
-            }
-            show();
-            const data: any = await axiosRequest.post(`/block-user`, params);
-            hide();
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                dispatch(popCard());
-                // setUserDetails((prevUserDetails) => {
-                //     return {
-                //         ...prevUserDetails!,
-                //         blockByMeUser: true
-                //     }
-                // })
-                Toast.success('User blocked successfully');
-                router.replace('/(tabs)');
-            }
-        } catch (error: any) {
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while blocking the user. Please try again later.');
-            hide();
-        }
-    }
+        const userId = userDetails?.userData.userId;
+        if (!userId || !beginAction('block')) return;
 
-    const unblockUser = async () => {
+        try {
+            const data: any = await axiosRequest.post('/block-user', { block_user_id: userId });
+            if (data.reaction !== ReactionCodes.SUCCESS) throw new Error('Failed to block user');
+
+            dispatch(popCard());
+            Toast.success('User blocked successfully');
+            router.replace('/(tabs)');
+        } catch (error: unknown) {
+            Alert.alert('Error', getErrorMessage(error, 'An error occurred while blocking the user. Please try again later.'));
+        } finally {
+            endAction();
+        }
+    }, [beginAction, closeMenu, dispatch, endAction, userDetails?.userData.userId]);
+
+    const unblockUser = useCallback(async () => {
         closeMenu();
-        try {
-            const userId = userDetails?.userData.userId;
-            const params = {
-                block_user_id: userDetails?.userData.userId
-            }
-            show();
-            const data: any = await axiosRequest.post(`${userId}/unblock-user-data`, {});
-            hide();
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                setUserDetails((prevUserDetails) => {
-                    return {
-                        ...prevUserDetails!,
-                        blockByMeUser: false
-                    }
-                })
-            }
-        } catch (error: any) {
-            hide();
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while unblocking the user. Please try again later.');
-        }
-    }
+        const userId = userDetails?.userData.userId;
+        if (!userId || !beginAction('unblock')) return;
 
-    const likeUser = async () => {
+        try {
+            const data: any = await axiosRequest.post(`/${userId}/unblock-user-data`, {});
+            if (data.reaction !== ReactionCodes.SUCCESS) throw new Error('Failed to unblock user');
+            setUserDetails((current) => current ? { ...current, blockByMeUser: false } : current);
+        } catch (error: unknown) {
+            Alert.alert('Error', getErrorMessage(error, 'An error occurred while unblocking the user. Please try again later.'));
+        } finally {
+            endAction();
+        }
+    }, [beginAction, closeMenu, endAction, userDetails?.userData.userId]);
+
+    const reactToUser = useCallback((reaction: 0 | 1) => {
+        const action = reaction === 1 ? 'like' : 'dislike';
         requirePremium(async () => {
+            const userId = userDetails?.userData.userId;
+            if (!userId || !beginAction(action)) return;
+
             try {
-                const userId = userDetails?.userData.userId;
-                if (!userId) {
-                    return new Error('User ID not found');
-                }
-                show();
-                const data: any = await axiosRequest.post(`/${userId}/1/user-like-dislike`, {})
-                hide();
+                const data: any = await axiosRequest.post(`/${userId}/${reaction}/user-like-dislike`, {});
+                if (data.reaction !== ReactionCodes.SUCCESS) throw new Error(`Failed to ${action} user`);
+
                 dispatch(popCard());
-                if (data.reaction === ReactionCodes.SUCCESS) {
-                    const oldUserDetails = Object.assign({}, userDetails);
-                    if (oldUserDetails) {
-                        let newLikeData = oldUserDetails.userLikeData || [];
-                        if (Array.isArray(newLikeData)) {
-                            if (newLikeData.some((like) => like.like == 1)) {
-                                // User has already liked, remove the like
-                                newLikeData = newLikeData.filter((like) => like.like != 1);
-                            } else {
-                                newLikeData.push({ like: 1, _id: Date.now() });
-                            }
-                        } else {
-                            if (newLikeData.like == 1) {
-                                newLikeData = [];
-                            } else {
-                                newLikeData = [{ like: 1, _id: Date.now() }];
-                            }
-                        }
-                        setUserDetails({
-                            ...oldUserDetails,
-                            userLikeData: newLikeData
-                        });
-                    }
-                } else {
-                    throw new Error('Failed to like user');
-                }
-            } catch (error: any) {
-                hide();
-                Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while liking the user. Please try again later.');
+                setUserDetails((current) => {
+                    if (!current) return current;
+                    const currentReactions = Array.isArray(current.userLikeData)
+                        ? current.userLikeData
+                        : current.userLikeData ? [current.userLikeData] : [];
+                    const alreadySelected = currentReactions.some((item) => item.like === reaction);
+                    const nextReactions = alreadySelected
+                        ? currentReactions.filter((item) => item.like !== reaction)
+                        : [
+                            ...currentReactions.filter((item) => item.like !== (reaction === 1 ? 0 : 1)),
+                            { like: reaction, _id: Date.now() },
+                        ];
+                    return { ...current, userLikeData: nextReactions };
+                });
+            } catch (error: unknown) {
+                const verb = action === 'like' ? 'liking' : 'disliking';
+                Alert.alert('Error', getErrorMessage(error, `An error occurred while ${verb} the user. Please try again later.`));
+            } finally {
+                endAction();
             }
         });
-    }
+    }, [beginAction, dispatch, endAction, requirePremium, userDetails?.userData.userId]);
+
+    const likeUser = useCallback(() => reactToUser(1), [reactToUser]);
+    const dislikeUser = useCallback(() => reactToUser(0), [reactToUser]);
 
     const renderBackdrop = useCallback(
         (props: JSX.IntrinsicAttributes & BottomSheetDefaultBackdropProps) => (
-            <BottomSheetBackdrop
-                {...props}
-                disappearsOnIndex={-1}
-                appearsOnIndex={0}
-            // onPress={handleBlur}
-            />
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
         ),
         []
     );
+
+    const dismissReportSheet = useCallback(() => bottomSheetModalRef.current?.dismiss(), []);
 
     const renderHeaderHandle = useCallback(
         (props: BottomSheetHandleProps) => (
-            <BottomSheetHandle
-                {...props}
-            >
-                <View className="py-4 relative">
-
-                    <View className=' w-full'>
-                        <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()} className=' flex items-center justify-center' style={{
-                            position: 'absolute',
-                            top: '50%',
-                            transform: [
-                                { translateY: '-50%' }
-                            ],
-                            left: 16,
-                            zIndex: 10,
-                            backgroundColor: 'white'
-                        }}>
-                            <Ionicons name="close-circle" size={24} color="black" />
-                        </TouchableOpacity>
-                        <Text className='font-firabold text-black text-base mx-auto text-center'>Report User</Text>
-                    </View>
+            <BottomSheetHandle {...props}>
+                <View style={styles.sheetHeader}>
+                    <TouchableOpacity
+                        accessibilityLabel="Close report form"
+                        accessibilityRole="button"
+                        hitSlop={8}
+                        onPress={dismissReportSheet}
+                        style={styles.sheetCloseButton}
+                    >
+                        <Ionicons name="close-circle" size={24} color="black" />
+                    </TouchableOpacity>
+                    <Text className="font-firabold text-black text-base text-center">Report User</Text>
                 </View>
             </BottomSheetHandle>
         ),
-        []
+        [dismissReportSheet]
     );
 
-    const dislikeUser = async () => {
-        requirePremium(async () => {
-            try {
-                const userId = userDetails?.userData.userId;
-                if (!userId) {
-                    return new Error('User ID not found');
-                }
-                show();
-                const data: any = await axiosRequest.post(`/${userId}/0/user-like-dislike`, {})
-                hide();
-                dispatch(popCard());
-                if (data.reaction === ReactionCodes.SUCCESS) {
-                    const oldUserDetails = Object.assign({}, userDetails);
-                    if (oldUserDetails) {
-                        let newLikeData = oldUserDetails.userLikeData || [];
-                        if (Array.isArray(newLikeData)) {
-                            if (newLikeData.some((like) => like.like == 0)) {
-                                // User has already disliked, remove the dislike
-                                newLikeData = newLikeData.filter((like) => like.like != 0);
-                            } else {
-                                newLikeData.push({ like: 0, _id: Date.now() });
-                            }
-                        } else {
-                            if (newLikeData.like == 0) {
-                                newLikeData = [];
-                            } else {
-                                newLikeData = [{ like: 0, _id: Date.now() }];
-                            }
-                        }
-                        setUserDetails({
-                            ...oldUserDetails,
-                            userLikeData: newLikeData
-                        });
-                    }
-                } else {
-                    throw new Error('Failed to like user');
-                }
-            } catch (error: any) {
-                hide();
-                Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while disliking the user. Please try again later.');
-            }
-        });
-    }
-
-    const toggleMenu = () => setMenuVisible(!isMenuVisible);
-    const closeMenu = () => setMenuVisible(false);
-
-    const handleMenuItemPress = (action: string) => {
+    const openReportSheet = useCallback(() => {
         closeMenu();
-        // API Logic here
-        if (action === 'block') {
-            handleBlockUser();
-        } else if (action === 'report') {
-            bottomSheetModalRef.current?.present();
-        }
-    };
+        bottomSheetModalRef.current?.present();
+    }, [closeMenu]);
 
-    const reportAccount = async () => {
+    const reportAccount = useCallback(async () => {
+        const userId = userDetails?.userData.userId;
+        if (!userId) return;
+        if (!reportCategory) {
+            Alert.alert('Select a reason', 'Please choose a reason for your report.');
+            return;
+        }
+        if (!beginAction('report')) return;
+
         try {
-            const userId = userDetails?.userData.userId;
-            if (!userId) {
-                return new Error('User ID not found');
-            }
-            if (!reportCategory) {
-                Alert.alert('Select a reason', 'Please choose a reason for your report.');
-                return;
-            }
-            show();
             const params = {
                 report_reason: reportReason.trim()
                     ? `[${reportCategory}] ${reportReason.trim()}`
                     : reportCategory
-            }
-            const data: any = await axiosRequest.post(`/${userId}/report-user`, params)
-            hide();
-            dispatch(popCard());
-            if (data.reaction === ReactionCodes.SUCCESS) {
-                Toast.success('User reported successfully');
-                bottomSheetModalRef.current?.dismiss();
-            } else {
-                throw new Error('Failed to report user');
-            }
-        } catch (error: any) {
-            hide();
-            Alert.alert('Error', error && error.errorMessage ? error.errorMessage : 'An error occurred while reporting the user. Please try again later.');
-        }
-    }
+            };
+            const data: any = await axiosRequest.post(`/${userId}/report-user`, params);
+            if (data.reaction !== ReactionCodes.SUCCESS) throw new Error('Failed to report user');
 
-    const createBlockNotificationAlert = () => {
+            dispatch(popCard());
+            Toast.success('User reported successfully');
+            dismissReportSheet();
+        } catch (error: unknown) {
+            Alert.alert('Error', getErrorMessage(error, 'An error occurred while reporting the user. Please try again later.'));
+        } finally {
+            endAction();
+        }
+    }, [beginAction, dismissReportSheet, dispatch, endAction, reportCategory, reportReason, userDetails?.userData.userId]);
+
+    const createBlockNotificationAlert = useCallback(() => {
         closeMenu();
         Alert.alert(`Block @${userDetails?.userData.userName}`, 'Are you sure you want to block this user? You will no longer see content from this user.', [
             {
                 text: 'Cancel',
-                onPress: () => {},
                 style: 'cancel',
             },
-            { text: 'Block', style: 'destructive', onPress: () => handleBlockUser() },
-        ])
-    };
+            { text: 'Block', style: 'destructive', onPress: handleBlockUser },
+        ]);
+    }, [closeMenu, handleBlockUser, userDetails?.userData.userName]);
+
+    const onTabContainerLayout = useCallback((event: LayoutChangeEvent) => {
+        setTabContainerWidth(event.nativeEvent.layout.width);
+    }, []);
+
+    const messageUser = useCallback(() => {
+        const userId = userDetails?.userData.userId;
+        if (!userId) return;
+        requirePremium(() => {
+            router.navigate({ pathname: '/single-chat/[userId]', params: { userId } });
+        });
+    }, [requirePremium, userDetails?.userData.userId]);
+
+    const resetReportForm = useCallback(() => {
+        setReportReason('');
+        setReportCategory('');
+    }, []);
+
+    const closePremiumModal = useCallback(() => setShowModal(false), [setShowModal]);
 
     // --- ANIMATIONS ---
     const headerNameStyle = useAnimatedStyle(() => {
@@ -628,7 +597,13 @@ export default function UserDetailsScreen() {
                     {userDetails?.userData.first_name} {userDetails?.userData.last_name}, {userDetails?.userData.userAge}
                 </Text>
             </Animated.View>}
-                rightItem={userDetails ? <TouchableOpacity onPress={toggleMenu} style={styles.iconButton}>
+                rightItem={userDetails ? <TouchableOpacity
+                    accessibilityLabel="Open profile actions"
+                    accessibilityRole="button"
+                    disabled={pendingAction !== null}
+                    onPress={toggleMenu}
+                    style={styles.iconButton}
+                >
                     <EllipsisIcon width={24} height={24} color="#000" />
                 </TouchableOpacity> : null}
             />
@@ -649,35 +624,39 @@ export default function UserDetailsScreen() {
             </View> */}
 
             <Modal
-                transparent={true}
+                transparent
                 visible={isMenuVisible}
                 animationType="fade"
                 onRequestClose={closeMenu}
             >
-                <TouchableWithoutFeedback onPress={closeMenu}>
-                    <View style={styles.modalOverlay}>
-                        <View style={[styles.menuContainer, { top: HEADER_HEIGHT + insets.top + 5 }]}>
+                <View style={styles.modalOverlay}>
+                    <Pressable
+                        accessibilityLabel="Close profile actions"
+                        accessibilityRole="button"
+                        onPress={closeMenu}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <View style={[styles.menuContainer, { top: HEADER_HEIGHT + insets.top + 5 }]}>
                             {/* <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('message')}>
                                 <Ionicons name="chatbubble-outline" size={20} color="#333" style={styles.menuIcon} />
                                 <Text style={styles.menuText}>Message User</Text>
                             </TouchableOpacity>
                             <View style={styles.menuDivider} /> */}
-                            <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuItemPress('report')}>
+                            <TouchableOpacity accessibilityRole="button" style={styles.menuItem} onPress={openReportSheet}>
                                 <Ionicons name="flag-outline" size={20} color="#FF3B30" style={styles.menuIcon} />
                                 <Text style={[styles.menuText, styles.destructiveText]}>Report Account</Text>
                             </TouchableOpacity>
                             <View style={styles.menuDivider} />
-                            {userDetails && !userDetails.blockByMeUser && <TouchableOpacity style={styles.menuItem} onPress={createBlockNotificationAlert}>
+                            {userDetails && !userDetails.blockByMeUser && <TouchableOpacity accessibilityRole="button" style={styles.menuItem} onPress={createBlockNotificationAlert}>
                                 <Ionicons name="ban-outline" size={20} color="#FF3B30" style={styles.menuIcon} />
                                 <Text style={[styles.menuText, styles.destructiveText]}>Block User</Text>
                             </TouchableOpacity>}
-                            {userDetails && userDetails.blockByMeUser && <TouchableOpacity style={styles.menuItem} onPress={unblockUser}>
+                            {userDetails && userDetails.blockByMeUser && <TouchableOpacity accessibilityRole="button" style={styles.menuItem} onPress={unblockUser}>
                                 <Ionicons name="ban-outline" size={20} color="#FF3B30" style={styles.menuIcon} />
                                 <Text style={[styles.menuText, styles.destructiveText]}>Unblock User</Text>
                             </TouchableOpacity>}
-                        </View>
                     </View>
-                </TouchableWithoutFeedback>
+                </View>
             </Modal>
 
             {isLoading ? (
@@ -685,7 +664,7 @@ export default function UserDetailsScreen() {
             ) : (
                 !userDetails ? (
                     <View style={[styles.contentPadding, { marginTop: 20 }]}>
-                         <Skeleton style={{ width: '100%', height: Dimensions.get('screen').height * 0.35, borderRadius: 24, marginBottom: 20 }} />
+                         <Skeleton style={{ width: '100%', height: height * 0.35, borderRadius: 24, marginBottom: 20 }} />
                         <Text className='text-base font-firasemibold text-center'>User not found.</Text>
                     </View>
                 ) : (
@@ -700,10 +679,12 @@ export default function UserDetailsScreen() {
 
                             <View style={styles.contentPadding}>
                                 <Image
+                                    accessibilityLabel={`${userDetails.userData.first_name}'s profile photo`}
+                                    cachePolicy="memory-disk"
+                                    contentFit="cover"
                                     source={{ uri: userDetails?.userData.profilePicture }}
-                                    style={styles.mainImage}
-                                    resizeMode='cover'
-                                    resizeMethod='resize'
+                                    style={[styles.mainImage, { height: height * 0.35 }]}
+                                    transition={200}
                                 />
 
                                 <View onLayout={onNameLayout}>
@@ -715,7 +696,7 @@ export default function UserDetailsScreen() {
                                     </View>
                                     <View style={styles.locationRow}>
                                         <LocationIcon stroke="#666" />
-                                        <Text style={styles.locationText}>{locationText()}</Text>
+                                        <Text style={styles.locationText}>{locationText}</Text>
                                     </View>
                                 </View>
 
@@ -727,15 +708,15 @@ export default function UserDetailsScreen() {
                                 </View> :
                                     <View
                                         style={styles.tabSwitcher}
-                                        onLayout={(e) => setTabContainerWidth(e.nativeEvent.layout.width)}
+                                        onLayout={onTabContainerLayout}
                                     >
                                         <Animated.View style={[styles.activeTabIndicator, tabIndicatorStyle]} />
 
-                                        <Pressable style={styles.tabButton} onPress={() => handleTabPress('basic')}>
+                                        <Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'basic' }} style={styles.tabButton} onPress={() => handleTabPress('basic')}>
                                             <Animated.Text style={[styles.tabText, basicTextStyle]}>Basic Info</Animated.Text>
                                         </Pressable>
 
-                                        <Pressable style={styles.tabButton} onPress={() => handleTabPress('photos')}>
+                                        <Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'photos' }} style={styles.tabButton} onPress={() => handleTabPress('photos')}>
                                             <Animated.Text style={[styles.tabText, photosTextStyle]}>Photos</Animated.Text>
                                         </Pressable>
                                     </View>
@@ -749,40 +730,24 @@ export default function UserDetailsScreen() {
                             <View style={{ height: HEADER_HEIGHT + insets.bottom }} />
                         </Animated.ScrollView>
                         
-                        {!(userDetails?.blockByMeUser || userDetails.isBlockUser) && 
-                            <View style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 90,
-                            paddingBottom: insets.bottom,
-                            borderTopLeftRadius: 12,
-                            borderTopRightRadius: 12,
-                            paddingHorizontal: 16,
-                            backgroundColor: 'rgba(255,255,255,0.95)',
-                        }}>
+                        {!(userDetails.blockByMeUser || userDetails.isBlockUser) ? (
+                            <View style={[styles.actionBar, { paddingBottom: insets.bottom }]}>
                             <View className='flex-row items-center justify-center gap-8 py-2'>
-                                <TouchableOpacity onPress={likeUser} className='items-center justify-center space-y-0.5'>
-                                    <HeartOutlineIcon fill={hasUserLiked(userDetails.userLikeData) ? "#DD3FE5" : "#fff"} stroke={hasUserLiked(userDetails.userLikeData) ? "#fff" : "#141B34"} />
-                                    <Text className={`text-xs font-firaregular ${hasUserLiked(userDetails.userLikeData) ? "text-[#DD3FE5]" : "text-[#141B34]"}`}>{hasUserLiked(userDetails.userLikeData) ? "Liked" : "Like"}</Text>
+                                <TouchableOpacity accessibilityLabel={hasUserLiked ? 'Unlike user' : 'Like user'} accessibilityRole="button" disabled={pendingAction !== null} onPress={likeUser} className='items-center justify-center space-y-0.5'>
+                                    <HeartOutlineIcon fill={hasUserLiked ? "#DD3FE5" : "#fff"} stroke={hasUserLiked ? "#fff" : "#141B34"} />
+                                    <Text className={`text-xs font-firaregular ${hasUserLiked ? "text-[#DD3FE5]" : "text-[#141B34]"}`}>{hasUserLiked ? "Liked" : "Like"}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={dislikeUser} className='items-center justify-center space-y-0.5'>
-                                    <HeartbreakIcon fill={hasUserDisliked(userDetails.userLikeData) ? "#FF383C" : "#fff"} stroke={hasUserDisliked(userDetails.userLikeData) ? "#fff" : "#141B34"} />
-                                    <Text className={`text-xs font-firaregular ${hasUserDisliked(userDetails.userLikeData) ? "text-[#FF383C]" : "text-[#141B34]"}`}>{hasUserDisliked(userDetails.userLikeData) ? "Disliked" : "Dislike"}</Text>
+                                <TouchableOpacity accessibilityLabel={hasUserDisliked ? 'Remove dislike' : 'Dislike user'} accessibilityRole="button" disabled={pendingAction !== null} onPress={dislikeUser} className='items-center justify-center space-y-0.5'>
+                                    <HeartbreakIcon fill={hasUserDisliked ? "#FF383C" : "#fff"} stroke={hasUserDisliked ? "#fff" : "#141B34"} />
+                                    <Text className={`text-xs font-firaregular ${hasUserDisliked ? "text-[#FF383C]" : "text-[#141B34]"}`}>{hasUserDisliked ? "Disliked" : "Dislike"}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => requirePremium(() => {
-                                    router.navigate({
-                                        pathname: '/single-chat/[userId]',
-                                        params: { userId: userDetails?.userData.userId }
-                                    });
-                                })} className='items-center justify-center space-y-0.5'>
+                                <TouchableOpacity accessibilityLabel="Message user" accessibilityRole="button" disabled={pendingAction !== null} onPress={messageUser} className='items-center justify-center space-y-0.5'>
                                     <CommentIcon />
                                     <Text className="text-xs font-firaregular">Message</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
-}
+                        ) : null}
                     </View>
                 )
             )}
@@ -790,20 +755,16 @@ export default function UserDetailsScreen() {
             <BottomSheetModal
                 ref={bottomSheetModalRef}
                 enableDynamicSizing
-                enablePanDownToClose={true}
-                style={{
-                    borderRadius: 28,
-                }}
-                backgroundStyle={{
-                    borderRadius: 28,
-                }}
+                enablePanDownToClose
+                style={styles.reportSheet}
+                backgroundStyle={styles.reportSheet}
                 backdropComponent={renderBackdrop}
                 handleComponent={renderHeaderHandle}
                 keyboardBehavior="interactive"
                 enableBlurKeyboardOnGesture
                 keyboardBlurBehavior='restore'
                 android_keyboardInputMode={Platform.OS === 'android' ? 'adjustResize' : 'adjustPan'}
-                onDismiss={() => { setReportReason(''); setReportCategory(''); }}
+                onDismiss={resetReportForm}
             >
 
                 <BottomSheetView>
@@ -816,6 +777,8 @@ export default function UserDetailsScreen() {
                                 const selected = reportCategory === reason;
                                 return (
                                     <TouchableOpacity
+                                        accessibilityRole="radio"
+                                        accessibilityState={{ selected }}
                                         key={reason}
                                         onPress={() => setReportCategory(reason)}
                                         style={{
@@ -840,6 +803,7 @@ export default function UserDetailsScreen() {
                         </View>
                         <View className="bg-[#F2F2F7] text-black rounded-xl px-4 min-h-[100px] max-h-[200px] focus:border-primary border border-[#cccccc80]">
                             <BottomSheetTextInput
+                                accessibilityLabel="Additional report details"
                                 multiline
                                 value={reportReason}
                                 style={{
@@ -862,7 +826,7 @@ export default function UserDetailsScreen() {
                         </View>
 
                         <View className='mt-4'>
-                            <CustomButton title="Report" handlePress={reportAccount} />
+                            <CustomButton title="Report" handlePress={reportAccount} isLoading={pendingAction === 'report'} disabled={pendingAction !== null} />
                         </View>
                     </View>
                 </BottomSheetView>
@@ -870,7 +834,7 @@ export default function UserDetailsScreen() {
 
             <PremiumActionModal
                 visible={showModal}
-                onClose={() => setShowModal(false)}
+                onClose={closePremiumModal}
                 {...modalOptions}
             />
         </View>
@@ -960,12 +924,9 @@ const styles = StyleSheet.create({
     },
     mainImage: {
         width: '100%',
-        height: Dimensions.get('screen').height * 0.35,
         borderRadius: 24,
         marginBottom: 20,
         backgroundColor: '#f0f0f0',
-        objectFit: 'cover',
-        backgroundPosition: 'center',
     },
     nameText: {
         fontSize: 24,
@@ -1035,29 +996,6 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         color: '#666',
     },
-    chipContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    chip: {
-        backgroundColor: '#F0F0F0',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-    },
-    transparentChip: {
-        backgroundColor: 'transparent',
-        paddingHorizontal: 0,
-        paddingVertical: 8,
-        borderRadius: 0
-    },
-    chipText: {
-        fontSize: 14,
-        color: '#333',
-        fontWeight: '500',
-        fontFamily: 'Onest_400Regular'
-    },
     photoGrid: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -1068,7 +1006,44 @@ const styles = StyleSheet.create({
         width: '31%',
         height: 150,
         borderRadius: 16,
-        // marginBottom: 12,
+        overflow: 'hidden',
         backgroundColor: '#eee',
+    },
+    photoThumbnail: {
+        width: '100%',
+        height: '100%',
+    },
+    photoModal: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
+    photoPreview: {
+        width: '100%',
+        height: '100%',
+    },
+    actionBar: {
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 90,
+        paddingHorizontal: 16,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.95)',
+    },
+    sheetHeader: {
+        position: 'relative',
+        paddingVertical: 16,
+    },
+    sheetCloseButton: {
+        position: 'absolute',
+        top: 16,
+        left: 16,
+        zIndex: 10,
+        backgroundColor: '#FFFFFF',
+    },
+    reportSheet: {
+        borderRadius: 28,
     },
 });

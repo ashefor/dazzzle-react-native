@@ -105,7 +105,8 @@ const messagesSlice = createSlice({
         loadingInitial: false,
         loadingUpdate: false,
       };
-      bucket.items.push(message);
+      const alreadyExists = bucket.items.some(item => item.chat_id === message.chat_id);
+      if (!alreadyExists) bucket.items.push(message);
       state.byUserId[user_id] = bucket;
     }
   },
@@ -119,7 +120,7 @@ const messagesSlice = createSlice({
           loadingInitial: false,
           loadingUpdate: false,
         };
-        bucket.loadingInitial = true;
+        bucket.loadingInitial = bucket.items.length === 0;
         bucket.error = undefined;
         state.byUserId[user_id] = bucket;
       })

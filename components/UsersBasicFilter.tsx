@@ -1,4 +1,4 @@
-import { Text, Dimensions, View, TextInputProps } from 'react-native'
+import { Text, View, TextInputProps, useWindowDimensions } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import CustomButton from './CustomButton'
@@ -8,7 +8,7 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 
 export type BasicFilter = {
     username: string;
-    age: number[];
+    age: [number, number];
     looking_for: string;
     user_type?: string;
     distance: string;
@@ -29,36 +29,33 @@ const userTypeOptions = [
     }
 ]
 
-const UsersBasicFilter = ({ filterUsers, onSliderStart, onSliderEnd, filterParams: initialFilterParams }: { filterUsers: (value: BasicFilter) => void, onSliderStart?: () => void, onSliderEnd?: () => void, filterParams?: BasicFilter | null }) => {
+const DEFAULT_FILTERS: BasicFilter = {
+    username: '',
+    age: [18, 60],
+    looking_for: 'all',
+    distance: '',
+    user_type: '0',
+}
+
+const UsersBasicFilter = ({ filterUsers, onSliderStart, onSliderEnd, filterParams: initialFilterParams }: { filterUsers: (value: BasicFilter) => void | Promise<void>, onSliderStart?: () => void, onSliderEnd?: () => void, filterParams?: BasicFilter | null }) => {
     const insets = useSafeAreaInsets();
-    const [filterParams, setFilterParams] = useState<BasicFilter>(initialFilterParams || {
-        username: '',
-        age: [18, 60],
-        looking_for: 'all',
-        distance: '',
-        user_type: '0'
-    })
+    const { width } = useWindowDimensions();
+    const [isApplying, setIsApplying] = useState(false);
+    const [filterParams, setFilterParams] = useState<BasicFilter>(initialFilterParams ?? DEFAULT_FILTERS)
 
-    const updateFilterParams = useCallback((key: keyof BasicFilter, value: any) => {
-        setFilterParams({
-            ...filterParams,
-            [key]: value
-        })
-    }, [filterParams])
-
-    const resetFilterParams = useCallback(() => {
-        setFilterParams({
-            username: '',
-            age: [18, 60],
-            looking_for: 'all',
-            distance: ''
-        })
+    const updateFilterParams = useCallback(<Key extends keyof BasicFilter>(key: Key, value: BasicFilter[Key]) => {
+        setFilterParams((current) => ({ ...current, [key]: value }));
     }, [])
 
-    const applyFilter = useCallback(() => {
-        filterUsers(filterParams);
-        // resetFilterParams();
-    }, [filterParams])
+    const applyFilter = useCallback(async () => {
+        if (isApplying) return;
+        setIsApplying(true);
+        try {
+            await filterUsers(filterParams);
+        } finally {
+            setIsApplying(false);
+        }
+    }, [filterParams, filterUsers, isApplying])
 
 
     return (
@@ -86,11 +83,14 @@ const UsersBasicFilter = ({ filterUsers, onSliderStart, onSliderEnd, filterParam
                             customLabel={(value) =>
                                 <Text style={{marginLeft: -14}} className='text-primary'>Between: {value.oneMarkerValue} and {value.twoMarkerValue} </Text>}
                             markerStyle={{ backgroundColor: '#DD3FE5', borderWidth: 0 }}
-                            sliderLength={Dimensions.get('window').width - 64}
+                            sliderLength={Math.max(width - 64, 200)}
                             selectedStyle={{ backgroundColor: '#DD3FE5' }}
                             trackStyle={{ backgroundColor: '#ccc' }}
                             onValuesChangeStart={onSliderStart}
-                            onValuesChangeFinish={(values) => { updateFilterParams('age', values); onSliderEnd?.(); }}
+                            onValuesChangeFinish={(values) => {
+                                updateFilterParams('age', [values[0], values[1]]);
+                                onSliderEnd?.();
+                            }}
                         />
                     </View>
                 </View>
@@ -107,7 +107,7 @@ const UsersBasicFilter = ({ filterUsers, onSliderStart, onSliderEnd, filterParam
                     />
                 </View>
             </View>
-            <CustomButton title='Apply' handlePress={applyFilter} />
+            <CustomButton title='Apply' handlePress={applyFilter} isLoading={isApplying} disabled={isApplying} />
         </View>
 
     )
@@ -117,15 +117,14 @@ interface CustomTextInputProps extends Omit<TextInputProps, 'style'> {
     label: string;
 }
 
-const CustomTextInput: React.FC<CustomTextInputProps> = ({ label, value, onChangeText, keyboardType = 'default' }) => (
+const CustomTextInput: React.FC<CustomTextInputProps> = ({ label, ...inputProps }) => (
     <View className="mb-5">
         <Text className="text-black text-sm font-firamedium mb-2">{label}</Text>
         <View className="bg-[#F2F2F7] text-black rounded-xl px-4 h-14 focus:border-primary border border-[#cccccc80]">
             <BottomSheetTextInput
-                value={value}
+                {...inputProps}
+                accessibilityLabel={label}
                 style={{ height: '100%', color: 'black' }}
-                onChangeText={onChangeText}
-                keyboardType={keyboardType}
                 autoCapitalize="none"
                 importantForAutofill='no'
                 placeholderTextColor={"#5B5B5B3A"}
