@@ -31,6 +31,7 @@ const EncounterScreen = () => {
   const { requirePremium, showModal, setShowModal, modalOptions, isPremium } = usePremiumAction();
   
   const { users, topCardIndex, status } = useAppSelector((state) => state.encounter);
+  const unreadNotificationCount = useAppSelector((state) => state.notifications.unreadCount);
   
   const [triggerSwipeDirection, setTriggerSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [pendingSwipe, setPendingSwipe] = useState<{ direction: 'left' | 'right', user: any } | null>(null);
@@ -105,8 +106,18 @@ const EncounterScreen = () => {
       }, {
         title: 'View Notifications',
         message: 'Upgrade your account to view notifications and get more insights about your matches!'
-      })} className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
+      })}
+        accessibilityRole='button'
+        accessibilityLabel={`Notifications${unreadNotificationCount > 0 ? `, ${unreadNotificationCount} unread` : ''}`}
+        className='flex items-center justify-center h-10 w-10 bg-[#E0E0E0] rounded-full'>
         <NotificationIcon color={"#DD3FE5"} />
+        {unreadNotificationCount > 0 ? (
+          <View style={styles.notificationBadge}>
+            <Text style={styles.notificationBadgeText}>
+              {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+            </Text>
+          </View>
+        ) : null}
       </TouchableOpacity>} />
 
       {/* Card Stack */}
@@ -178,6 +189,26 @@ const styles = StyleSheet.create({
   },
   headerIcons: {
       flexDirection: 'row',
+  },
+  // Overhangs the bell's top-right corner; colours match the chat list badge.
+  notificationBadge: {
+      position: 'absolute',
+      top: -2,
+      right: -2,
+      minWidth: 18,
+      height: 18,
+      paddingHorizontal: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 9,
+      backgroundColor: '#FF4DD2',
+      borderWidth: 1.5,
+      borderColor: '#FFFFFF',
+  },
+  notificationBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 10,
+      fontWeight: '700',
   },
   iconBtn: {
       padding: 10,

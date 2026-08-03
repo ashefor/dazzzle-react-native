@@ -151,6 +151,16 @@ const axiosRequest = {
     notifications: {
         registerToken: (fcm_token: string, platform?: string, options?: CustomAxiosRequestConfig) =>
              axiosRequest.post("/update-user-fcm-token", { fcm_token, platform }, { showGlobalLoader: false, ...options }),
+        list: (page: number = 1, options?: CustomAxiosRequestConfig) =>
+            axiosRequest.get("/notifications/notification-list", { params: { page }, ...options }),
+        unreadCount: (options?: CustomAxiosRequestConfig) =>
+            axiosRequest.get("/notifications/unread-count", { showGlobalLoader: false, ...options }),
+        // Both write calls are background work triggered by navigation, never by
+        // an explicit "please wait" action, so they must not raise the overlay.
+        markRead: (notification_uids: string[], options?: CustomAxiosRequestConfig) =>
+            axiosRequest.post("/notifications/mark-read", { notification_uids }, { showGlobalLoader: false, ...options }),
+        markAllRead: (options?: CustomAxiosRequestConfig) =>
+            axiosRequest.post("/notifications/read-all-notification", {}, { showGlobalLoader: false, ...options }),
     },
 
     auth: {

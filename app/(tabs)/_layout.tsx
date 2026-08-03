@@ -6,20 +6,41 @@ import HomeTabIcon from '@/components/icons/HomeTabIcon';
 import ProfileTabIcon from '@/components/ProfileTabIcon';
 import MessagesTabIcon from '@/components/icons/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
-import { Text } from 'react-native';
+import { AppState, Text } from 'react-native';
 import {
   registerForPushNotificationsAsync,
   registerNotificationListeners,
   registerPushTokenRotationListener,
+  setAppBadgeCount,
 } from '@/utils/notificationHandler';
-import { useAppDispatch } from '@/hooks/reduxHooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAuthenticatedUser } from '@/redux/thunks/authActions';
+import { fetchUnreadNotificationCount } from '@/redux/slices/notificationsSlice';
 
 export default function TabLayout() {
   const dispatch = useAppDispatch();
+  const unreadNotificationCount = useAppSelector((state) => state.notifications.unreadCount);
+
+  // Keep the springboard badge on the real number rather than clearing it to 0.
+  useEffect(() => {
+    setAppBadgeCount(unreadNotificationCount);
+  }, [unreadNotificationCount]);
+
+  // Pushes that land while the app is backgrounded never reach the foreground
+  // listener, so the count is re-read on every return to active.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        dispatch(fetchUnreadNotificationCount());
+      }
+    });
+
+    return () => subscription.remove();
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchAuthenticatedUser());
+    dispatch(fetchUnreadNotificationCount());
 
     // Shared handler — it knows the API's payload contract and routes every
     // notification type, not just chat.

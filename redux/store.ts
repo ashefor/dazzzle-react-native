@@ -8,6 +8,7 @@ import usersSlice from "./slices/usersSlice";
 import chatsSlice from "./slices/chatsSlice";
 import messagesSlice from "./slices/messagesSlice";
 import encounterSlice from "./slices/encounterSlice";
+import notificationsSlice from "./slices/notificationsSlice";
 import iapSlice from "./slices/iapSlice"; // ← new
 
 export const store = configureStore({
@@ -19,6 +20,7 @@ export const store = configureStore({
         chats: chatsSlice,
         messages: messagesSlice,
         encounter: encounterSlice,
+        notifications: notificationsSlice,
         iap: iapSlice, // ← new
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({

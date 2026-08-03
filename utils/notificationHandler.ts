@@ -1,4 +1,5 @@
 import { upsertChat, incrementUnread } from '@/redux/slices/chatsSlice';
+import { incrementUnreadNotificationCount } from '@/redux/slices/notificationsSlice';
 import { AppDispatch } from '@/redux/store';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -44,6 +45,20 @@ export type PushPayload = {
 };
 
 const CHAT_TYPES: PushNotificationType[] = ['chat_message', 'message_request'];
+
+/**
+ * Types the API also writes a `notifications` row for (see the notificationLog()
+ * calls in UserEngine / MessengerEngine). Only these move the bell badge —
+ * a plain chat_message is counted by the chat list, not the notifications list.
+ */
+const NOTIFICATION_FEED_TYPES: PushNotificationType[] = [
+  'profile_like',
+  'profile_visit',
+  'gift',
+  'message_request',
+  'message_request_accepted',
+  'group_message',
+];
 
 // Configure how notifications appear when the app is in foreground
 Notifications.setNotificationHandler({
@@ -162,6 +177,12 @@ export function registerNotificationListeners(dispatch: AppDispatch) {
   const onReceive = (notification: Notifications.Notification) => {
     const data = (notification.request.content.data ?? {}) as PushPayload;
 
+    // Keep the bell badge live while the app is foregrounded, so the user does
+    // not have to leave and come back for the count to move.
+    if (data.type && NOTIFICATION_FEED_TYPES.includes(data.type)) {
+      dispatch(incrementUnreadNotificationCount());
+    }
+
     if (!data.type || !CHAT_TYPES.includes(data.type)) return;
 
     const userId = Number(data.user_id);
@@ -238,10 +259,17 @@ export const handlePermissionNavigation = async (
   }
 };
 
-export const clearAppBadge = async () => {
+/**
+ * Point the springboard badge at the real unread count.
+ *
+ * Replaces the old clearAppBadge(): blanking to 0 on screen open was wrong the
+ * moment a notification arrived that the user had not read yet. The badge now
+ * follows the server's unread count, synced from the tabs layout.
+ */
+export const setAppBadgeCount = async (count: number) => {
   try {
-    await Notifications.setBadgeCountAsync(0);
+    await Notifications.setBadgeCountAsync(Math.max(0, count));
   } catch (error) {
-    console.error("Failed to clear app badge:", error);
+    console.error("Failed to set app badge:", error);
   }
 };
