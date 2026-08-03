@@ -149,8 +149,8 @@ const axiosRequest = {
             axiosRequest.put("/random-user", profileData, options),
     },
     notifications: {
-        registerToken: (fcm_token: string, options?: CustomAxiosRequestConfig) =>
-             axiosRequest.post("/update-user-fcm-token", { fcm_token }, { showGlobalLoader: false, ...options }),
+        registerToken: (fcm_token: string, platform?: string, options?: CustomAxiosRequestConfig) =>
+             axiosRequest.post("/update-user-fcm-token", { fcm_token, platform }, { showGlobalLoader: false, ...options }),
     },
 
     auth: {

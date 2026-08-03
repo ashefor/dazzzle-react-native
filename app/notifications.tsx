@@ -19,6 +19,18 @@ type Notification = {
     action: string
 }
 
+type PaginationData = {
+    currentPage: number;
+    lastPage: number;
+    nextPageURL: string;
+    hasMorePages: boolean;
+    remainingItems: number;
+    lastItem: number;
+    perPage: number;
+    count: number;
+    total: number;
+}
+
 const NotificationItem = ({ item }: { item: Notification }) => {
     const userName = extractUsername(item.action);
     return (
@@ -54,55 +66,70 @@ const NotificationsScreen = () => {
     const { show, hide } = useLoader();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [paginationDetails, setPaginationDetails] = useState<any>(null);
+    const paginationDetailsRef = useRef<PaginationData | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
 
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await fetchNotifications()
-        setRefreshing(false);
-    }, []);
-
-    useEffect(() => {
-        clearAppBadge();
-        fetchNotifications();
-    }, []);
-
-    const fetchNotifications = async (page: number = 1, isRefresh = false, isLoadMore = false) => {
+    const fetchNotifications = useCallback(async (page: number = 1, isRefresh = false, isLoadMore = false) => {
         try {
             if (!isRefresh && !isLoadMore) {
                 show();
             };
-            const data: any = await axiosRequest.get('/notifications/notification-list');
+            const data: any = await axiosRequest.get('/notifications/notification-list', {
+                params: { page },
+            });
             if (!isRefresh && !isLoadMore) hide();
             if (data.reaction === ReactionCodes.SUCCESS) {
                 const notificationsData = data.data;
-                const notifications = notificationsData.data;
-                const paginationData = notificationsData.paginationData;
-                
+                const incoming: Notification[] = notificationsData.data ?? [];
+                const paginationData: PaginationData | null = notificationsData.paginationData ?? null;
+
                 if (isLoadMore) {
-                    setNotifications(prev => [...prev, ...notifications]);
+                    // A notification arriving between page loads shifts the server-side
+                    // window, so the next page can repeat rows we already hold.
+                    setNotifications(prev => {
+                        const seen = new Set(prev.map(item => item._id));
+                        return [...prev, ...incoming.filter(item => !seen.has(item._id))];
+                    });
                 } else {
-                    setNotifications(notifications);
+                    setNotifications(incoming);
                 }
                 // Handle notifications data
-                setPaginationDetails(paginationData);
+                paginationDetailsRef.current = paginationData;
             }
         } catch (error) {
             if (!isRefresh && !isLoadMore) hide();
         } finally {
             setHasLoadedInitial(true);
         }
-    }
+    }, [show, hide]);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            // isRefresh suppresses the fullscreen overlay; RefreshControl is the affordance here.
+            await fetchNotifications(1, true);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [fetchNotifications]);
+
+    useEffect(() => {
+        clearAppBadge();
+        fetchNotifications();
+    }, [fetchNotifications]);
 
     const onEndReached = async () => {
-        if (isLoadingMore || !paginationDetails.nextPageURL) return;
+        const pagination = paginationDetailsRef.current;
+        if (isLoadingMore || !pagination?.hasMorePages) return;
 
         setIsLoadingMore(true);
-        await fetchNotifications(paginationDetails.nextPageURL, false, true);
-        setIsLoadingMore(false);
+        try {
+            await fetchNotifications(pagination.currentPage + 1, false, true);
+        } finally {
+            setIsLoadingMore(false);
+        }
     };
 
     const renderItem = useCallback(({ item }: { item: Notification }) => <NotificationItem item={item} />, []);
@@ -113,7 +140,7 @@ const NotificationsScreen = () => {
             <FlatList
             contentContainerStyle={{ padding: 16 }}
                 data={notifications}
-                keyExtractor={(item, index) => `${item._id}-${item._id}-${index}`}
+                keyExtractor={(item) => item._id}
                 renderItem={renderItem}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#DD3FE5'} />

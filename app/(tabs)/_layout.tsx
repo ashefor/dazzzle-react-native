@@ -1,5 +1,5 @@
-import { Tabs, useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import { Tabs } from 'expo-router';
+import React, { useEffect } from 'react';
 import { HapticTab } from '@/components/HapticTab';
 import LikeTabIcon from '@/components/icons/LikeTabIcon';
 import HomeTabIcon from '@/components/icons/HomeTabIcon';
@@ -7,62 +7,36 @@ import ProfileTabIcon from '@/components/ProfileTabIcon';
 import MessagesTabIcon from '@/components/icons/MessagesTabIcon';
 import SearchTabIcon from '@/components/SearchTabIcon';
 import { Text } from 'react-native';
-// import { registerNotificationListeners } from '@/utils/notificationHandler';
+import {
+  registerForPushNotificationsAsync,
+  registerNotificationListeners,
+  registerPushTokenRotationListener,
+} from '@/utils/notificationHandler';
 import { useAppDispatch } from '@/hooks/reduxHooks';
-import { DeviceEventEmitter } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { fetchAuthenticatedUser } from '@/redux/thunks/authActions';
 
 export default function TabLayout() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
 
-  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-const responseListener = useRef<Notifications.EventSubscription | null>(null);
-// const navigation = useNavigation();
-
-const registerNotificationListeners = () => {
-    // 1. Listener for when a notification arrives while app is in FOREGROUND
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-    const data = notification.request.content.data;
-
-    if (data && (data.type === "1" || data.type == "2")) {
-        DeviceEventEmitter.emit('onNewMessage', data);
-    }
-});
-    
-
-    // 2. Listener for when user TAPS the notification (Background or Killed state)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-        const data = response.notification.request.content.data;
-
-        // Handle Chat Message Notification (Type "1")
-        if (data && (data.type === "1" || data.type == "2")) {
-            const { userId } = data;
-
-            // OPTION A: If using Expo Router
-            router.push({
-                pathname: "/single-chat/[userId]",
-                params: { 
-                    userId: userId as string,
-                }
-            });
-        }
-    });
-};
-
-useEffect(() => {
+  useEffect(() => {
     dispatch(fetchAuthenticatedUser());
-    registerNotificationListeners();
+
+    // Shared handler — it knows the API's payload contract and routes every
+    // notification type, not just chat.
+    const unsubscribeListeners = registerNotificationListeners(dispatch);
+    const unsubscribeRotation = registerPushTokenRotationListener();
+
+    // Re-register on every entry into the authenticated app. Registering only
+    // on the permissions screen meant a token that rotated after that one
+    // visit was never sent to the API again. Safe here: the tabs are behind
+    // auth, so the request always carries a session.
+    registerForPushNotificationsAsync();
+
     return () => {
-        if (notificationListener.current) {
-            notificationListener.current.remove();
-        }
-        if (responseListener.current) {
-            responseListener.current.remove();
-        }
+      unsubscribeListeners();
+      unsubscribeRotation();
     };
-}, []);
+  }, [dispatch]);
 
   return (
     <Tabs
