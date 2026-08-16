@@ -1,0 +1,15 @@
+# Files excluded from the expo-updates fingerprint (runtimeVersion policy).
+#
+# EAS Build runs `pod install` BEFORE the CONFIGURE_EXPO_UPDATES phase computes
+# the fingerprint. CocoaPods rewrites both of these files on every run --
+# project.pbxproj gets freshly generated random 24-hex UUIDs for every Pods file
+# reference, and Podfile.lock records the CocoaPods version that produced it.
+# Because ios/ is committed to this repo, that churn made the iOS runtime version
+# differ between this machine and EAS on every single build, which fails the
+# build outright. Android has no equivalent step and always matched.
+#
+# Excluding them is safe: genuine native changes are still captured by the other
+# fingerprint sources -- the resolved Expo config, config plugins, and the
+# autolinked native module directories under node_modules.
+ios/Podfile.lock
+ios/**/project.pbxproj
