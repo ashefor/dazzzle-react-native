@@ -20,6 +20,7 @@
     "@expo-google-fonts/onest": "^0.3.0",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5",
+    "@lottiefiles/dotlottie-react": "^0.13.5",
     "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-masked-view/masked-view": "0.3.2",

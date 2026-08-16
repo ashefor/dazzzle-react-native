@@ -19,8 +19,7 @@ export const fetchMoreUsers = createAsyncThunk(
   'encounter/fetchMoreUsers',
   async (_, { getState }) => {
     // In a real app, pass pagination params like page number
-    const response = await axiosRequest.get('https://dummyjson.com/users?limit=10'); 
-    const res = await axiosRequest.profiles.get();
+  const res = await axiosRequest.profiles.get();
   const data = res.data;
 
   // Normalize to an array. Supports either raw array or { users: [...] } shapes.
