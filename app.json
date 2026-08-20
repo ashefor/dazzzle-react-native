@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dazzzle Dating",
     "slug": "dazzzle-react-native",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/images/icon-new.png",
@@ -95,9 +95,7 @@
         "projectId": "c3498daf-a4a4-4eff-9672-bcc669e3eb2d"
       }
     },
-    "runtimeVersion": {
-      "policy": "fingerprint"
-    },
+    "runtimeVersion": "1.0.12",
     "updates": {
       "url": "https://u.expo.dev/c3498daf-a4a4-4eff-9672-bcc669e3eb2d",
       "enabled": true,

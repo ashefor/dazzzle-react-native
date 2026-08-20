@@ -1,15 +1,20 @@
-# Files excluded from the expo-updates fingerprint (runtimeVersion policy).
+# Files excluded from `@expo/fingerprint` hashing.
 #
-# EAS Build runs `pod install` BEFORE the CONFIGURE_EXPO_UPDATES phase computes
-# the fingerprint. CocoaPods rewrites both of these files on every run --
-# project.pbxproj gets freshly generated random 24-hex UUIDs for every Pods file
-# reference, and Podfile.lock records the CocoaPods version that produced it.
-# Because ios/ is committed to this repo, that churn made the iOS runtime version
-# differ between this machine and EAS on every single build, which fails the
-# build outright. Android has no equivalent step and always matched.
+# NOTE: runtimeVersion uses the "appVersion" policy, so the fingerprint no
+# longer determines the runtime version and can no longer fail a build. This
+# file exists so that `eas fingerprint:compare --build-id <ID>` stays useful as
+# the manual "did native code actually change?" check before publishing an OTA
+# update. Without these rules that comparison is drowned in tooling noise.
 #
-# Excluding them is safe: genuine native changes are still captured by the other
-# fingerprint sources -- the resolved Expo config, config plugins, and the
-# autolinked native module directories under node_modules.
+# CocoaPods rewrites both of these on every `pod install` -- project.pbxproj
+# gets freshly generated random UUIDs for each Pods file reference, and
+# Podfile.lock records the CocoaPods version that produced it. Neither reflects
+# a real change to the app.
 ios/Podfile.lock
 ios/**/project.pbxproj
+
+# A local Android build (expo run:android) makes Gradle rewrite this library
+# manifest in place, stripping package="org.reactnative.maskedview" as part of
+# the AGP 8 namespace migration. EAS installs pristine via `npm ci`, so the two
+# disagree until node_modules is reinstalled.
+node_modules/@react-native-masked-view/masked-view/android/src/main/AndroidManifest.xml
