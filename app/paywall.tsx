@@ -522,6 +522,9 @@ const PayWallScreen = () => {
       amount: convertKoboToNaira(paystackOrderData.amount),
       email: paystackOrderData.email,
       reference: paystackOrderData.reference,
+      metadata: {
+        custom_fields: paystackOrderData
+      },
       onSuccess: (data) => {
         verifyPaystackPayment(data.reference);
       },
