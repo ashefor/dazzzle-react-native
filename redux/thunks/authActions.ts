@@ -1,12 +1,13 @@
 // // authActions.js
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosRequestConfig, isAxiosError } from 'axios'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import dayjs from 'dayjs'
-import { RootState } from '../store'
+import type { RootState } from '../store'
 import { API_URL } from '@/constants/constants'
+import { clearUserSession } from '../actions/sessionActions'
 
 // const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -187,63 +188,62 @@ export const signUserOut = createAsyncThunk(
     }
 )
 
-export const deleteUserAccount = createAsyncThunk(
-    '/user/delete-account',
-    async (_, { rejectWithValue, getState }) => {
+export type DeleteAccountPayload = {
+    password?: string;
+    confirmation: 'DELETE';
+};
+
+type DeleteAccountApiResponse = {
+    reaction: typeof ReactionCodes[keyof typeof ReactionCodes];
+    message?: string;
+    data?: { message?: string } | null;
+};
+
+export const deleteUserAccount = createAsyncThunk<
+    boolean,
+    DeleteAccountPayload,
+    { state: RootState; rejectValue: string }
+>(
+    'user/delete-account',
+    async (payload, { dispatch, rejectWithValue, getState }) => {
         try {
-            const state = (getState() as any).auth;
+            const state = getState().auth;
             const config: AxiosRequestConfig = {
                 headers: {
-                    "Accept": "*/*",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
                     "Api-Request-Signature": "mobile-app-request",
                     ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
                 }
             }
-            const response = await axios.post(
+            const response = await axios.post<DeleteAccountApiResponse>(
                 `${API_URL}/delete-account`,
-                {},
+                payload,
                 config
             )
-            const authApiResponse = response.data as AuthApiResponse;
             const { reaction, message, data } = response.data;
-            let errorMessage = message;
-            if (reaction === ReactionCodes.ERROR) {
-                if (data) {
-                    errorMessage = data.message;
-                }
-            } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
-                errorMessage = message
+
+            if (reaction !== ReactionCodes.SUCCESS) {
+                return rejectWithValue(data?.message ?? message ?? 'Account deletion failed.')
             }
-            if (errorMessage) {
-                return rejectWithValue(errorMessage)
-            }
-            await removeItem('dazzzle-token');
-            await removeItem('dazzzle-user');
-            clear();
+
+            await Promise.all([
+                removeItem('dazzzle-token'),
+                removeItem('dazzzle-user'),
+                removeItem('dazzzle-user-subscription'),
+            ]);
+            await clear();
+            dispatch(clearUserSession());
+
             return true;
-        } catch (error: any) {
-            console.error('Account deletion failed:', JSON.stringify(error, null, 2));
-            console.error('Error details:', {
-                message: error.message,
-                response: error.response ? {
-                    status: error.response.status,
-                    data: error.response.data,
-                    headers: error.response.headers
-                } : null,
-                request: error.request ? {
-                    method: error.request.method,
-                    url: error.request.url,
-                    headers: error.request.headers,
-                    data: error.request.data
-                } : null
-            });
-            console.error('Stack trace:', error.response.data.message);
-            // return custom error message from API if any
-            if (error.response && error.response.data.message) {
-                return rejectWithValue(error.response.data.message)
-            } else {
-                return rejectWithValue(error.message)
+        } catch (error: unknown) {
+            if (isAxiosError<{ message?: string }>(error)) {
+                return rejectWithValue(
+                    error.response?.data?.message ?? error.message ?? 'Account deletion failed.'
+                )
             }
+
+            return rejectWithValue('Account deletion failed.')
         }
     }
 )

@@ -18,7 +18,7 @@ import LockIcon from '@/components/icons/LockIcon';
 import MailIcon from '@/components/icons/MailIcon';
 import ShieldIcon from '@/components/icons/ShieldIcon';
 import { fetchUserProfileData } from '@/redux/thunks/userActions';
-import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetHandle, BottomSheetHandleProps, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
 import CustomButton from '@/components/CustomButton';
 import axiosRequest from '@/utils/axios';
@@ -41,6 +41,7 @@ export default function ProfileScreen() {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const notificationSettingsBottomSheetModalRef = useRef<BottomSheetModal>(null);
   const deleteAccountBottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
   
   const isPremium = userInfo?.is_premium || false;
   const isExpired = currentSubscription ? dayjs().isAfter(dayjs(currentSubscription.expiry_at)) : false;
@@ -61,12 +62,19 @@ export default function ProfileScreen() {
   const handleDeleteAccount = async () => {
     try {
       show();
-      await dispatch(deleteUserAccount())
-      hide();
-      // router.replace('/landing')
+      await dispatch(deleteUserAccount({
+        confirmation: 'DELETE',
+        ...(deleteAccountPassword.length > 0 && { password: deleteAccountPassword }),
+      })).unwrap();
+      deleteAccountBottomSheetModalRef.current?.dismiss();
+      router.replace('/(auth)/sign-in');
     } catch (error) {
+      const message = typeof error === 'string'
+        ? error
+        : 'Unable to delete account at the moment. Please try again later.';
+      Alert.alert('Unable to delete account', message);
+    } finally {
       hide();
-      Alert.alert('Error', 'Unable to delete account at the moment. Please try again later.');
     }
   }
 
@@ -350,9 +358,14 @@ export default function ProfileScreen() {
 
       {/* Delete Account Modal */}
       <BottomSheetModal
+      topInset={insets.top}
         ref={deleteAccountBottomSheetModalRef}
         enableDynamicSizing
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        enableBlurKeyboardOnGesture
         enablePanDownToClose={true}
+        onDismiss={() => setDeleteAccountPassword('')}
         style={{
           borderRadius: 28,
         }}
@@ -370,8 +383,23 @@ export default function ProfileScreen() {
                 Delete your account?
               </Text>
               <Text className='text-base font-firaregular text-center'>
-                Are you sure you want to delete your account? All content including photos and other data will be permanently removed! This action cannot be undone.
+                Your profile and photos will be permanently removed and you will be signed out. Existing conversations may remain visible to their participants as a deleted account.
               </Text>
+            </View>
+            <View className='mb-4'>
+              <Text className='text-sm font-firamedium text-black mb-2'>
+                Current password
+              </Text>
+              <BottomSheetTextInput
+                value={deleteAccountPassword}
+                onChangeText={setDeleteAccountPassword}
+                placeholder='Leave blank for Google or Facebook accounts'
+                secureTextEntry
+                autoCapitalize='none'
+                autoCorrect={false}
+                accessibilityLabel='Current password for account deletion'
+                style={{borderColor: '#DD3FE5', borderWidth: 1, borderRadius: 12, height: 48, paddingHorizontal: 16, fontFamily: 'Onest_400Regular', fontSize: 16, color: '#000'}}
+              />
             </View>
             <View className='space-y-4'>
               <TouchableOpacity onPress={handleDeleteAccount} className='rounded-[26px] h-12 bg-white border border-red-500 flex items-center justify-center'>
