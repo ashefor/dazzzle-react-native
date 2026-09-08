@@ -4,6 +4,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { getItem } from "./asyncStorage";
 import { ReactionCodes } from "@/models/general";
 import { API_URL } from "@/constants/constants";
+import { persistRefreshedAuthToken } from "./authToken";
 
 // const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -62,7 +63,8 @@ axiosInstance.interceptors.request.use(async (config) => {
 
 // Response Interceptor
 axiosInstance.interceptors.response.use(
-    (response) => {
+    async (response) => {
+        await persistRefreshedAuthToken(response.data);
         const { showGlobalLoader = true } = response.config as any;
         if (showGlobalLoader) {
             // store.dispatch(hideLoading());

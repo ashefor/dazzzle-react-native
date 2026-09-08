@@ -8,6 +8,44 @@ import dayjs from 'dayjs'
 import type { RootState } from '../store'
 import { API_URL } from '@/constants/constants'
 import { clearUserSession } from '../actions/sessionActions'
+import { persistRefreshedAuthToken } from '@/utils/authToken'
+
+export type AuthSessionFailure = {
+    message: string;
+    sessionInvalid: boolean;
+};
+
+type AuthSessionResult = {
+    user: AuthApiResponse['data']['auth_info']['profile'];
+    isProfileComplete: boolean;
+    userSubscription: AuthApiResponse['data']['userSubscription'];
+    token: string;
+};
+
+type ApiErrorData = {
+    message?: string;
+    reaction?: number;
+    auth_info?: { reaction_code?: number };
+    data?: {
+        message?: string;
+        auth_info?: { reaction_code?: number };
+    };
+};
+
+const getSessionFailure = (response: ApiErrorData): AuthSessionFailure => {
+    const reactionCode = response.auth_info?.reaction_code
+        ?? response.data?.auth_info?.reaction_code;
+
+    return {
+        message: response.data?.message
+            ?? response.message
+            ?? (reactionCode === ReactionCodes.NOT_AUTHENTICATED
+                ? 'Session expired. Please login again.'
+                : 'Unable to verify your account. Please try again.'),
+        sessionInvalid: response.reaction === ReactionCodes.NOT_AUTHENTICATED
+            || reactionCode === ReactionCodes.NOT_AUTHENTICATED,
+    };
+};
 
 // const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -92,7 +130,11 @@ export const userLogin = createAsyncThunk(
     }
 )
 
-export const fetchAuthenticatedUser = createAsyncThunk(
+export const fetchAuthenticatedUser = createAsyncThunk<
+    AuthSessionResult,
+    void,
+    { rejectValue: AuthSessionFailure }
+>(
     'get-user-auth-info',
     async (_, { rejectWithValue }) => {
         try {
@@ -109,82 +151,77 @@ export const fetchAuthenticatedUser = createAsyncThunk(
                 {},
                 config
             )
-            const authApiResponse = response.data as AuthApiResponse;
-            const authInfo = authApiResponse.data.auth_info;
+            const responseData = response.data as AuthApiResponse & ApiErrorData;
+            const refreshedToken = await persistRefreshedAuthToken(responseData);
+
+            if (responseData.reaction !== ReactionCodes.SUCCESS || !responseData.data?.auth_info) {
+                return rejectWithValue(getSessionFailure(responseData));
+            }
+
+            const authInfo = responseData.data.auth_info;
             const user = authInfo.profile;
             const isProfileComplete = authInfo.isProfileComplete;
-            const userSubscription = authApiResponse.data.userSubscription;
+            const userSubscription = responseData.data.userSubscription;
+            const activeToken = refreshedToken ?? token;
 
-            const { reaction, message, data, redirect_to, auth_info } = response.data;
-            let errorMessage = message;
-            if ([ReactionCodes.ERROR, ReactionCodes.NOT_AUTHENTICATED].includes(reaction)) {
-                if (data) {
-                    errorMessage = data.message;
-                }
-            } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
-                errorMessage = message
+            if (!activeToken) {
+                return rejectWithValue({
+                    message: 'Session expired. Please login again.',
+                    sessionInvalid: true,
+                });
             }
-            if (errorMessage) {
-                return rejectWithValue(errorMessage)
-            }
-            // store user's token in local storage
+
             if (user) {
                 await setItem('dazzzle-user', user);
             }
-            return { user, isProfileComplete, userSubscription };
-        } catch (error: any) {
-            // return custom error message from API if any
-            if (error.response && error.response.data.message) {
-                return rejectWithValue(error.response.data.message)
-            } else {
-                return rejectWithValue(error.message)
+            await setItem('dazzzle-user-subscription', userSubscription);
+
+            return { user, isProfileComplete, userSubscription, token: activeToken };
+        } catch (error: unknown) {
+            if (isAxiosError<ApiErrorData>(error)) {
+                const failure = getSessionFailure(error.response?.data ?? {});
+                return rejectWithValue({
+                    ...failure,
+                    message: error.response ? failure.message : (error.message ?? failure.message),
+                });
             }
+
+            return rejectWithValue({
+                message: error instanceof Error ? error.message : 'Unable to verify your account.',
+                sessionInvalid: false,
+            });
         }
     }
 )
 
 export const signUserOut = createAsyncThunk(
     '/user/logout',
-    async (_, { rejectWithValue, getState }) => {
+    async (_, { dispatch, getState }) => {
+        const state = (getState() as RootState).auth;
+
+        // Local logout must never depend on the server being reachable.
+        await clear();
+        dispatch(clearUserSession());
+
         try {
-            const state = (getState() as any).auth;
             const config: AxiosRequestConfig = {
                 headers: {
                     "Accept": "*/*",
                     "Api-Request-Signature": "mobile-app-request",
                     ...(state.userToken && { Authorization: `Bearer ${state.userToken}` })
-                }
+                },
+                timeout: 5000,
             }
-            const response = await axios.post(
+            await axios.post(
                 `${API_URL}/user/logout`,
                 {},
                 config
             )
-            const authApiResponse = response.data as AuthApiResponse;
-            const { reaction, message, data } = response.data;
-            let errorMessage = message;
-            if (reaction === ReactionCodes.ERROR) {
-                if (data) {
-                    errorMessage = data.message;
-                }
-            } else if ([ReactionCodes.RECORDS_NOT_EXIST, ReactionCodes.VALIDATION_ERROR].includes(reaction)) {
-                errorMessage = message
-            }
-            if (errorMessage) {
-                return rejectWithValue(errorMessage)
-            }
-            await removeItem('dazzzle-token');
-            await removeItem('dazzzle-user');
-            clear();
-            return true;
-        } catch (error: any) {
-            // return custom error message from API if any
-            if (error.response && error.response.data.message) {
-                return rejectWithValue(error.response.data.message)
-            } else {
-                return rejectWithValue(error.message)
-            }
+        } catch {
+            // The device is already signed out. Server logout is best-effort.
         }
+
+        return true;
     }
 )
 

@@ -1,7 +1,6 @@
 // counterSlice.js
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { deleteUserAccount, fetchAuthenticatedUser, signUserOut, userLogin } from '../thunks/authActions';
-import { clear, setItem } from '@/utils/asyncStorage';
 import { LoggedInUserProfile } from '@/models/user';
 import { fetchUserProfileData } from '../thunks/userActions';
 import { arrayToObject } from '@/utils/helpers';
@@ -15,7 +14,8 @@ type UserState = {
     error: any,
     userProfileData: {[key: string]: any} | null,
     loadingUserProfileData: boolean,
-    loggingOut: boolean
+    loggingOut: boolean,
+    sessionInvalid: boolean,
     // shouldSignUserOut: boolean,
 }
 
@@ -28,7 +28,8 @@ const initialState: UserState = {
     error: null,
     userProfileData: null,
     loadingUserProfileData: false,
-    loggingOut: false
+    loggingOut: false,
+    sessionInvalid: false,
     // shouldSignUserOut: false
 }
 
@@ -42,8 +43,8 @@ export const userSlice = createSlice({
          * @returns The new state with the updated user state.
          */
 
-        setUser: (state: UserState, action: PayloadAction<UserState>) => {
-            return { ...state, ...action.payload };
+        setUser: (state: UserState, action: PayloadAction<LoggedInUserProfile | null>) => {
+            state.userInfo = action.payload;
         },
         setToken: (state: UserState, action: PayloadAction<string>) => {
             return { ...state, userToken: action.payload };
@@ -61,6 +62,7 @@ export const userSlice = createSlice({
         builder.addCase(userLogin.pending, (state) => {
             state.error = null
             state.loading = true
+            state.sessionInvalid = false
         })
         builder.addCase(userLogin.fulfilled, (state, action) => {
             state.loading = false;
@@ -68,56 +70,60 @@ export const userSlice = createSlice({
             state.userInfo = action.payload.user;
             state.userToken = action.payload.token;
             state.isProfileCompleted = action.payload.isProfileComplete;
-            setItem('dazzzle-user', action.payload.user);
-            setItem('dazzzle-token', action.payload.token);
+            state.sessionInvalid = false;
         })
         builder.addCase(userLogin.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
-        }),
-            builder.addCase(fetchAuthenticatedUser.pending, (state, action) => {
-                state.loadingUser = true;
-            })
+        })
+        builder.addCase(fetchAuthenticatedUser.pending, (state) => {
+            state.loadingUser = true;
+            state.error = null;
+            state.sessionInvalid = false;
+        })
         builder.addCase(fetchAuthenticatedUser.fulfilled, (state, action) => {
             state.loadingUser = false;
             state.userInfo = action.payload.user;
+            state.userToken = action.payload.token;
             state.isProfileCompleted = action.payload.isProfileComplete;
-            setItem('dazzzle-user', action.payload.user);
-        }),
+            state.error = null;
+            state.sessionInvalid = false;
+        })
         builder.addCase(fetchAuthenticatedUser.rejected, (state, action) => {
             state.loadingUser = false;
-            state.error = action.payload;
+            state.error = action.payload?.message ?? action.error.message;
+            state.sessionInvalid = action.payload?.sessionInvalid ?? false;
         })
-        builder.addCase(signUserOut.pending, (state, action) => {
+        builder.addCase(signUserOut.pending, (state) => {
             state.loggingOut = true;
-        }),
-        builder.addCase(signUserOut.fulfilled, (state, action) => {
+        })
+        builder.addCase(signUserOut.fulfilled, (state) => {
             state.loggingOut = false;
             // state.shouldSignUserOut = action.payload;
             state.userInfo = null;
             state.userToken = '';
             state.isProfileCompleted = false;
+            state.sessionInvalid = false;
             // state.shouldSignUserOut = false;
-            clear()
-        }),
+        })
         builder.addCase(signUserOut.rejected, (state, action) => {
             state.loggingOut = false;
             state.error = action.payload;
         })
-        builder.addCase(deleteUserAccount.pending, (state, action) => {
+        builder.addCase(deleteUserAccount.pending, (state) => {
             state.loading = true;
-        }),
-        builder.addCase(deleteUserAccount.fulfilled, (state, action) => {
+        })
+        builder.addCase(deleteUserAccount.fulfilled, (state) => {
             state.loading = false;
             state.userInfo = null;
             state.userToken = '';
             state.isProfileCompleted = false;
-            clear()
-        }),
+            state.sessionInvalid = false;
+        })
         builder.addCase(deleteUserAccount.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
-        }),
+        })
         builder.addCase(fetchUserProfileData.pending, (state) => {
             state.userProfileData = null
             state.loadingUserProfileData = true

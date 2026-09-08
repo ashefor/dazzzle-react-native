@@ -76,7 +76,7 @@ const ErrorScreen = ({ error, onRetry }: { error: string, onRetry: () => void })
         </Text>
         
         <Text className="text-gray-500 text-center font-firaregular mb-8 leading-5">
-          We couldn't load the app configuration. Please check your internet and try again.
+          We couldn&apos;t load the app configuration. Please check your internet and try again.
           {'\n'}({error})
         </Text>
 
@@ -104,8 +104,8 @@ export default function HomeScreen() {
     userInfo, 
     loadingUser, 
     userToken, 
-    error: authError, 
-    isProfileCompleted 
+    isProfileCompleted,
+    sessionInvalid,
   } = useAppSelector(state => state.auth);
   const { currentSubscription } = useAppSelector(state => state.subscription);
 
@@ -134,10 +134,10 @@ export default function HomeScreen() {
   }, [dispatch, userToken]);
 
   useEffect(() => {
-    if (authError) {
+    if (sessionInvalid) {
         dispatch(signUserOut());
     }
-  }, [authError, dispatch]);
+  }, [sessionInvalid, dispatch]);
 
  // ... inside app/index.tsx
 
