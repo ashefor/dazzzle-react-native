@@ -1,4 +1,4 @@
-import { setItem } from '@/utils/asyncStorage';
+import { setAuthToken } from '@/utils/tokenStorage';
 
 /**
  * The API can rotate a still-valid access token in the response metadata.
@@ -22,6 +22,6 @@ export const persistRefreshedAuthToken = async (
         return null;
     }
 
-    await setItem('dazzzle-token', refreshedToken);
+    await setAuthToken(refreshedToken);
     return refreshedToken;
 };

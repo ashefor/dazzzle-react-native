@@ -1,15 +1,15 @@
-import { setItem } from './asyncStorage';
 import { persistRefreshedAuthToken } from './authToken';
+import { setAuthToken } from './tokenStorage';
 
-jest.mock('./asyncStorage', () => ({
-    setItem: jest.fn().mockResolvedValue(undefined),
+jest.mock('./tokenStorage', () => ({
+    setAuthToken: jest.fn().mockResolvedValue(undefined),
 }));
 
-const mockedSetItem = jest.mocked(setItem);
+const mockedSetAuthToken = jest.mocked(setAuthToken);
 
 describe('persistRefreshedAuthToken', () => {
     beforeEach(() => {
-        mockedSetItem.mockClear();
+        mockedSetAuthToken.mockClear();
     });
 
     it('stores and returns a refreshed access token', async () => {
@@ -18,14 +18,14 @@ describe('persistRefreshedAuthToken', () => {
         });
 
         expect(token).toBe('new-token');
-        expect(mockedSetItem).toHaveBeenCalledWith('dazzzle-token', 'new-token');
+        expect(mockedSetAuthToken).toHaveBeenCalledWith('new-token');
     });
 
     it('ignores responses without a refreshed token', async () => {
         await expect(persistRefreshedAuthToken({ data: {} })).resolves.toBeNull();
         await expect(persistRefreshedAuthToken(null)).resolves.toBeNull();
 
-        expect(mockedSetItem).not.toHaveBeenCalled();
+        expect(mockedSetAuthToken).not.toHaveBeenCalled();
     });
 
     it('ignores empty or non-string refreshed tokens', async () => {
@@ -36,6 +36,6 @@ describe('persistRefreshedAuthToken', () => {
             additional: { token_refreshed: 123 },
         })).resolves.toBeNull();
 
-        expect(mockedSetItem).not.toHaveBeenCalled();
+        expect(mockedSetAuthToken).not.toHaveBeenCalled();
     });
 });

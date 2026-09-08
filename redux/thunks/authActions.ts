@@ -1,7 +1,7 @@
 // // authActions.js
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { clear, getItem, removeItem, setItem } from '@/utils/asyncStorage'
+import { clear, removeItem, setItem } from '@/utils/asyncStorage'
 import { ReactionCodes } from '@/models/general'
 import { AuthApiResponse } from '@/models/user'
 import dayjs from 'dayjs'
@@ -9,6 +9,7 @@ import type { RootState } from '../store'
 import { API_URL } from '@/constants/constants'
 import { clearUserSession } from '../actions/sessionActions'
 import { persistRefreshedAuthToken } from '@/utils/authToken'
+import { getAuthToken, removeAuthToken, setAuthToken } from '@/utils/tokenStorage'
 
 export type AuthSessionFailure = {
     message: string;
@@ -108,7 +109,7 @@ export const userLogin = createAsyncThunk(
             const token = authApiResponse.data.access_token;
             const isProfileComplete = authInfo.isProfileComplete;
 
-            await setItem('dazzzle-token', token);
+            await setAuthToken(token);
             await setItem('dazzzle-user', user);
             await setItem('dazzzle-user-subscription', userSubscription);
 
@@ -138,7 +139,7 @@ export const fetchAuthenticatedUser = createAsyncThunk<
     'get-user-auth-info',
     async (_, { rejectWithValue }) => {
         try {
-            const token = await getItem('dazzzle-token');
+            const token = await getAuthToken();
             const config: AxiosRequestConfig = {
                 headers: {
                     "Accept": "*/*",
@@ -200,8 +201,12 @@ export const signUserOut = createAsyncThunk(
         const state = (getState() as RootState).auth;
 
         // Local logout must never depend on the server being reachable.
-        await clear();
-        dispatch(clearUserSession());
+        try {
+            await removeAuthToken();
+        } finally {
+            await clear();
+            dispatch(clearUserSession());
+        }
 
         try {
             const config: AxiosRequestConfig = {
@@ -265,7 +270,7 @@ export const deleteUserAccount = createAsyncThunk<
             }
 
             await Promise.all([
-                removeItem('dazzzle-token'),
+                removeAuthToken(),
                 removeItem('dazzzle-user'),
                 removeItem('dazzzle-user-subscription'),
             ]);

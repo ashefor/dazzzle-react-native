@@ -1,10 +1,10 @@
 // api.ts
 // import { store } from "@/redux/store";
 import axios, { AxiosRequestConfig } from "axios";
-import { getItem } from "./asyncStorage";
 import { ReactionCodes } from "@/models/general";
 import { API_URL } from "@/constants/constants";
 import { persistRefreshedAuthToken } from "./authToken";
+import { getAuthToken } from "./tokenStorage";
 
 // const API_URL = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -41,7 +41,7 @@ axiosInstance.interceptors.request.use(async (config) => {
         //     token = await getItem("dazzzle-token");
         // }
 
-        token = await getItem("dazzzle-token");
+        token = await getAuthToken();
 
         // Attach token if available
         if (token) {

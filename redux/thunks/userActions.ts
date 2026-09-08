@@ -1,6 +1,7 @@
 import { API_URL } from "@/constants/constants";
 import { ReactionCodes } from "@/models/general";
 import { getItem, setItem } from "@/utils/asyncStorage";
+import { getAuthToken } from "@/utils/tokenStorage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosRequestConfig } from "axios";
 
@@ -8,7 +9,7 @@ export const fetchUserProfileData = createAsyncThunk(
     'user/update',
     async (_, { rejectWithValue, dispatch, getState }) => {
         try {
-            const token = await getItem('dazzzle-token');
+            const token = await getAuthToken();
 
             const state = (getState() as any).auth;
             const username = state.userInfo.username;
@@ -54,7 +55,7 @@ export const updateUserBioData = createAsyncThunk(
     async (bioData: any, { rejectWithValue, dispatch }) => {
         try {
             const {first_name, last_name, about_me} = bioData
-            const token = await getItem('dazzzle-token');
+            const token = await getAuthToken();
             const config: AxiosRequestConfig = {
                 headers: {
                     "Accept": "*/*",

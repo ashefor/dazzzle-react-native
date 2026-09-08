@@ -2,8 +2,11 @@
   "expo": {
     "name": "Dazzzle Dating",
     "slug": "dazzzle-react-native",
-    "version": "1.0.13",
-    "platforms": ["ios", "android"],
+    "version": "1.0.14",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon-new.png",
     "splash": {
@@ -82,7 +85,8 @@
         {
           "userTrackingPermission": "Dazzzle uses tracking to show you relevant matches and personalized content, and to measure the effectiveness of our ads. Your data helps us improve your dating experience."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -95,7 +99,7 @@
         "projectId": "c3498daf-a4a4-4eff-9672-bcc669e3eb2d"
       }
     },
-    "runtimeVersion": "1.0.12",
+    "runtimeVersion": "1.0.14",
     "updates": {
       "url": "https://u.expo.dev/c3498daf-a4a4-4eff-9672-bcc669e3eb2d",
       "enabled": true,

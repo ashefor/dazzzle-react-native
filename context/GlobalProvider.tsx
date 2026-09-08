@@ -1,5 +1,6 @@
 // import { getCurrentUser } from '@/lib/appwrite';
 import { getItem } from '@/utils/asyncStorage';
+import { getAuthToken } from '@/utils/tokenStorage';
 import { createContext, useContext, useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { Text } from 'react-native'
 
@@ -36,10 +37,12 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchUserAuthState = async () => {
         try {
             setIsLoading(true);
-            const token = await getItem('dazzzle-token');
-            const user = await getItem('dazzzle-user');
-            const profileCompletion = await getItem('profileCompletion');
-            setToken(token);
+            const [token, user, profileCompletion] = await Promise.all([
+                getAuthToken(),
+                getItem('dazzzle-user'),
+                getItem('profileCompletion'),
+            ]);
+            setToken(token ?? '');
             if (profileCompletion === 'completed') {
                 setAuthState('completed');
             } else {
