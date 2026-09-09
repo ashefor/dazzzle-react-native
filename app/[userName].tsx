@@ -312,7 +312,7 @@ export default function UserDetailsScreen() {
                 const message = typeof error === 'object' && error && 'errorMessage' in error
                     ? String(error.errorMessage)
                     : 'An error occurred while fetching user details. Please try again later.';
-                Alert.alert('Error', message);
+                Alert.alert('Error', `${message} for user: ${userName}`, );
                 setUserDetails(null);
             }
         } finally {

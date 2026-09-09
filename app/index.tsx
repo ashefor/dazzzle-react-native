@@ -176,7 +176,7 @@ export default function HomeScreen() {
 
           // 3. Default: Go to Tabs (Your existing logic)
           setIsCheckingPermissions(true);
-          await handlePermissionNavigation('/(tabs)', '/permissions'); 
+          await handlePermissionNavigation('/(tabs)', '/app-permissions');
       };
 
       performRouting();
